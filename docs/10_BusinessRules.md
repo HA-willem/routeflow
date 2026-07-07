@@ -68,16 +68,21 @@ Eindstaat: gefactureerd | geannuleerd | niet_thuis
 | `gepland` | `geannuleerd` | Planner annuleert; dienstafspraak pauzering; klant-verzoek | Klant notified; slot in route-planning vrijgemaakt |
 | Alle | `herplan` | Ziekte medewerker, slechtweer-voorspelling, niet-thuis | Beurt in herplan-wachtrij; prioriteit ingesteld |
 
-### 2.4 Immutable Transitieregels (hard)
+### 2.4 Kernregels statusmachine (canoniek, PRD §15)
+
+- **BR-010 (Hard):** Een beurt kan alleen naar `gefactureerd` vanuit `uitgevoerd`. Geen enkele andere status gaat rechtstreeks naar `gefactureerd`.
+- **BR-015 (Hard):** `niet_thuis` telt **niet** als uitvoering: de frequentieteller loopt niet door (ideale datum blijft gebaseerd op laatste `uitgevoerd`, BR-001) en de beurt gaat naar de herplan-wachtrij met prioriteit.
+
+### 2.5 Immutable Transitieregels (hard)
 
 - **BR-051 (Hard):** Beurt in status `gefactureerd` kan NIET terug naar `onderweg` of `gepland`. Correcties via creditfactuur.
 - **BR-052 (Hard):** Beurt in status `geannuleerd` is finaal; geen wijzigingen meer.
 
 ---
 
-## 3. Frequentie- en Datumregels (BR-100 t/m BR-110)
+## 3. Frequentie- en Datumregels
 
-### BR-100 (Hard): Ideale datum volgende beurt
+### BR-001 (Hard): Ideale datum volgende beurt
 
 > **Ideale datum = datum LAATSTE `uitgevoerd`-beurt + interval**
 
@@ -184,9 +189,9 @@ Ideale datum = 1e donderdag van Q-maand.
 
 ---
 
-## 5. Facturatie- en Nummeringsregels (BR-300 t/m BR-320)
+## 5. Facturatie- en Nummeringsregels
 
-### BR-300 (Hard): Factuurnummers doorlopend en gap-loos
+### BR-020 (Hard): Factuurnummers doorlopend en gap-loos
 
 > Factuurnummers per bedrijf, per jaar: sequentieel zonder gaten.
 
@@ -199,7 +204,7 @@ SELECT MAX(number_seq) FROM invoices WHERE company_id=X AND year=2026
 → next = MAX+1
 ```
 
-**Immutabiliteit (BR-301-Hard):** Factuurnummer eenmaal toegekend = NOOIT wijzigen. Correctie = creditfactuur.
+**Immutabiliteit (BR-020-Hard):** Factuurnummer eenmaal toegekend = NOOIT wijzigen. Correctie = creditfactuur.
 
 ---
 
@@ -280,9 +285,9 @@ AND (not reminder_sent_at[i] OR date_now - reminder_sent_at[i] > 1 dag)
 
 ---
 
-## 7. Klant/Object-Lifecycleregels (BR-500 t/m BR-520)
+## 7. Klant/Object-Lifecycleregels
 
-### BR-500 (Hard): Klant verwijderen met facturen verboden
+### BR-040 (Hard): Klant verwijderen met facturen verboden
 
 > Klant met `invoices` of `open_jobs` kan NIET verwijderd.
 
@@ -294,7 +299,7 @@ AND (not reminder_sent_at[i] OR date_now - reminder_sent_at[i] > 1 dag)
 
 ---
 
-### BR-501 (Hard): Pauzering annuleert toekomstige beurten
+### BR-030 (Hard): Pauzering annuleert toekomstige beurten
 
 > Dienstafspraak pauzeren (status → `paused`, `paused_until` = datum) → alle toekomstige NIET-VERGRENDELDE beurten van deze afspraak → `geannuleerd`.
 
@@ -451,3 +456,4 @@ AND (not reminder_sent_at[i] OR date_now - reminder_sent_at[i] > 1 dag)
 | Datum | Versie | Wijziging |
 |---|---|---|
 | 2026-07-06 | 1.0 | Volledig uitgewerkt: statusmachine, frequentie-regels, planning-logica, facturatie, communicatie, AI-transparantie, edge cases |
+| 2026-07-07 | 1.1 | Consistentiefix: canonieke PRD §15-nummers hersteld (BR-001 ideale datum, BR-020 nummering/immutabiliteit, BR-030 pauzering, BR-040 klant verwijderen) i.p.v. afwijkende nummering; BR-010 en BR-015 expliciet toegevoegd; alle verwijzende documenten meegetrokken |

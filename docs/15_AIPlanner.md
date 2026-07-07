@@ -4,7 +4,7 @@
 **Versie:** 2.0
 **Bron van waarheid:** `00_PRD.md` § 8 (De AI Planner) — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
-**Relaties:** 14_RoutingEngine.md (dag-laag/routes), 10_BusinessRules.md (BR-100/101/200–205/700), 21_Notificaties.md (herplan-meldingen), 19_WhatsApp.md (klantberichten), 11_DatabaseConcept.md (jobs/routes).
+**Relaties:** 14_RoutingEngine.md (dag-laag/routes), 10_BusinessRules.md (BR-001/101/200–205/700), 21_Notificaties.md (herplan-meldingen), 19_WhatsApp.md (klantberichten), 11_DatabaseConcept.md (jobs/routes).
 
 ---
 
@@ -20,7 +20,7 @@ Dit document beschrijft het **kernalgoritme** van RouteFlow: hoe genereert de AI
 **Doel:** vertaal dienstafspraken naar *ideale datums* en cluster geografisch per week.
 
 **Stappen:**
-1. Voor elke actieve `service_agreement`: bereken ideale datum `last_completed + interval` (BR-100); respecteer `exclude_dates`, `paused_until`.
+1. Voor elke actieve `service_agreement`: bereken ideale datum `last_completed + interval` (BR-001); respecteer `exclude_dates`, `paused_until`.
 2. Toets flexibiliteitsvenster (±N werkdagen, BR-101).
 3. Groepeer per week; geografische clustering (§ 3) trekt buurt-genoten naar dezelfde week.
 
@@ -46,7 +46,7 @@ Zie § 7 voor triggers, logica en diff-UX.
 
 ## 2. Ideale-datumberekening & vensters
 
-- **BR-100:** ideale datum = datum laatste `uitgevoerd` + interval (niet de geplande datum). Voorbeeld: "elke 6 weken", laatst voltooid 1/7 → ideaal 12/8.
+- **BR-001:** ideale datum = datum laatste `uitgevoerd` + interval (niet de geplande datum). Voorbeeld: "elke 6 weken", laatst voltooid 1/7 → ideaal 12/8.
 - **BR-101 (soft):** voorstel mag ±3 werkdagen afwijken (default, per afspraak instelbaar). Buiten venster → soft-warning "Afwijking +2 dagen"; planner accepteert of negeert.
 - **Eerste beurt** (nog geen `uitgevoerd`): ideale datum = ingangsdatum dienstafspraak + interval, of direct plannen bij eenmalig.
 - **Maandpatronen** (BR-103): "elk kwartaal" = 1e voorkeursdag van de Q-maand.

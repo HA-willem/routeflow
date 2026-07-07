@@ -37,7 +37,7 @@ Dit document bevat de **toetsbare acceptatiecriteria (AC)** per functionele requ
 - **AC-004.3** — Gegeven flexibiliteitsvenster leeg, wanneer ik opsla, dan wordt default ±3 werkdagen toegepast.
 
 ### FR-005 — Pauzeren/hervatten
-- **AC-005.1** — Gegeven een actieve afspraak, wanneer ik pauzeer tot datum X, dan worden alle toekomstige niet-vergrendelde beurten geannuleerd (BR-030/501).
+- **AC-005.1** — Gegeven een actieve afspraak, wanneer ik pauzeer tot datum X, dan worden alle toekomstige niet-vergrendelde beurten geannuleerd (BR-030).
 - **AC-005.2** — Gegeven een gepauzeerde afspraak, wanneer ik hervat, dan wordt de volgende beurt opnieuw gegenereerd vanaf stopdatum + interval.
 
 ### FR-008 — Zoeken (⌘K)
@@ -51,7 +51,7 @@ Dit document bevat de **toetsbare acceptatiecriteria (AC)** per functionele requ
 
 ### FR-020 — Automatische beurt-generatie
 - **AC-020.1** — Gegeven actieve dienstafspraken, wanneer generatie draait, dan bestaan er voorgestelde beurten voor de komende 12 weken met status `voorgesteld`.
-- **AC-020.2** — Ideale datum = laatste `uitgevoerd` + interval (BR-100), niet de geplande datum.
+- **AC-020.2** — Ideale datum = laatste `uitgevoerd` + interval (BR-001), niet de geplande datum.
 
 ### FR-022 — Drag-and-drop
 - **AC-022.1** — Wanneer ik een beurt naar een andere dag sleep, dan herberekenen beide routes binnen 2s en schuiven de tijden zichtbaar.
@@ -93,7 +93,7 @@ Dit document bevat de **toetsbare acceptatiecriteria (AC)** per functionele requ
 ### FR-060/061 — Conceptfactuur & BTW
 - **AC-060.1** — Gegeven een beurt `uitgevoerd`, dan bestaat een conceptfactuur (of regel op verzamelfactuur) volgens klant-instelling.
 - **AC-061.1** — BTW wordt correct per dienst berekend (21/9/0/verlegd); bedragen excl./BTW/incl. kloppen.
-- **AC-061.2** — Factuurnummers zijn doorlopend en gap-loos per bedrijf per jaar (BR-300).
+- **AC-061.2** — Factuurnummers zijn doorlopend en gap-loos per bedrijf per jaar (BR-020).
 
 ### FR-062/063 — PDF & betaling
 - **AC-062.1** — De PDF bevat alle Belastingdienst-verplichte velden en de huisstijl (logo/kleur).
@@ -104,7 +104,7 @@ Dit document bevat de **toetsbare acceptatiecriteria (AC)** per functionele requ
 - **AC-067.2** — Een webhook met ongeldige signature wordt afgewezen; duplicaten zijn idempotent.
 
 ### FR-068 — Creditfactuur
-- **AC-068.1** — Gegeven een gefinaliseerde factuur, wanneer ik crediteer, dan ontstaat een gekoppelde creditfactuur en blijft het origineel ongewijzigd (BR-301).
+- **AC-068.1** — Gegeven een gefinaliseerde factuur, wanneer ik crediteer, dan ontstaat een gekoppelde creditfactuur en blijft het origineel ongewijzigd (BR-020).
 
 ---
 

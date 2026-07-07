@@ -82,7 +82,7 @@ Dit document beschrijft het **security- en privacybeleid**: multi-tenant isolati
 | Recht | Implementatie |
 |---|---|
 | Inzage/export | Machineleesbare export per bedrijf/klant (NFR-403) |
-| Verwijdering | Anonimiseren/archiveren i.p.v. hard delete waar facturen bestaan (BR-040/500, NFR-404) |
+| Verwijdering | Anonimiseren/archiveren i.p.v. hard delete waar facturen bestaan (BR-040, NFR-404) |
 | Rectificatie | Bewerkbare klant-/objectgegevens |
 | Bezwaar/opt-out | Per kanaal (BR-601), gelogd (NFR-406) |
 

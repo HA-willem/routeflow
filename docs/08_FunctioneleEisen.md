@@ -446,7 +446,7 @@ Betaalherinnering gegenereerd op instelbare intervallen na factuurdatum.
 2. Scheduler job (cron): per dag, check open facturen ouder dan [intervallen]; stuur herinnering
 3. Reminder-bericht: "Nog niet betaald? Betaal nu: [link]" (per kanaal e-mail/WhatsApp)
 4. Audit-log: "Herinnering #1 op 14/7, Herinnering #2 op 21/7"
-5. Na laatste herinnering: status `overdue` of `escalation` (status machine FR-010)
+5. Na laatste herinnering: status `overdue` of `escalation` (zie BR-402, statusmachine 10_BusinessRules.md)
 
 ---
 

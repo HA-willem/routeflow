@@ -110,7 +110,7 @@ Zie 16_Facturatie.md voor de volledige flow. Kern per type:
 
 | # | Case | Gedrag |
 |---|---|---|
-| PA-01 | Prijswijziging tijdens lopende afspraak | Nieuwe prijs geldt vanaf wijzigingsdatum; reeds gefactureerde beurten ongewijzigd (immutable, BR-301) |
+| PA-01 | Prijswijziging tijdens lopende afspraak | Nieuwe prijs geldt vanaf wijzigingsdatum; reeds gefactureerde beurten ongewijzigd (immutable, BR-020) |
 | PA-02 | Abonnement + extra losse dienst | Losse dienst als apart product/dienstafspraak → aparte regel, niet in abonnement verrekend |
 | PA-03 | Gepauzeerde dienstafspraak (abonnement) | Facturatie pauzeert mee tijdens `paused`; instelbaar of periode wordt doorbelast of niet (default: niet) |
 | PA-04 | Twee diensten zelfde object, gecombineerde beurt (BR-801) | Elk zijn eigen prijsafspraak → twee factuurregels, één reistijd |

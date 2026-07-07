@@ -18,7 +18,7 @@ Dit document beschrijft de **teststrategie**: welke testniveaus, welke dekking, 
 
 | Niveau | Dekking | Tooling (indicatief) | Waar |
 |---|---|---|---|
-| **Unit** | Domeinlogica: frequentie-/datumberekening (BR-100), BTW, factuurnummering, scorefunctie | Vitest/Jest | Functies, pure services |
+| **Unit** | Domeinlogica: frequentie-/datumberekening (BR-001), BTW, factuurnummering, scorefunctie | Vitest/Jest | Functies, pure services |
 | **Integratie** | API-endpoints, DB-queries, **RLS-policies**, webhooks | Test-DB (Supabase local), supertest | Edge Functions, PostgREST |
 | **E2E** | Kritieke flows end-to-end | Playwright | Browser + PWA |
 | **Niet-functioneel** | Performance, toegankelijkheid, security | Lighthouse, axe, load-tool | CI + periodiek |
@@ -51,12 +51,12 @@ Elke harde BR heeft ≥ 1 test, incl. negatieve gevallen:
 
 | BR | Test |
 |---|---|
-| BR-100 | Ideale datum = laatste `uitgevoerd` + interval (niet geplande datum) |
+| BR-001 | Ideale datum = laatste `uitgevoerd` + interval (niet geplande datum) |
 | BR-200 | Vergrendelde beurt wordt door optimalisatie/herplan niet verplaatst |
 | BR-202 | Route > 8,5u wordt geweigerd/gewaarschuwd |
-| BR-300/301 | Factuurnummers gap-loos; gefinaliseerde factuur immutable |
+| BR-020 | Factuurnummers gap-loos; gefinaliseerde factuur immutable |
 | BR-403 | Dubbele betaling → overschot-afhandeling |
-| BR-500 | Klant met facturen kan niet hard verwijderd worden |
+| BR-040 | Klant met facturen kan niet hard verwijderd worden |
 | BR-600/601 | Geen WhatsApp zonder opt-in; opt-out gerespecteerd |
 | BR-801 | Twee diensten zelfde object/week → gecombineerde stop, twee factuurregels |
 

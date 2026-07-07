@@ -63,7 +63,7 @@ Voorbeeld glazenwasser-template:
 
 ### 1.4 Lifecycle & edge cases
 
-- **Archiveren i.p.v. verwijderen:** een dienst met historische beurten/facturen kan niet hard verwijderd worden (analoog BR-500). Archiveren (`archived_at`) verbergt 'm voor nieuwe dienstafspraken; bestaande blijven intact.
+- **Archiveren i.p.v. verwijderen:** een dienst met historische beurten/facturen kan niet hard verwijderd worden (analoog BR-040). Archiveren (`archived_at`) verbergt 'm voor nieuwe dienstafspraken; bestaande blijven intact.
 - **Prijswijziging:** wijzigt `standard_price_cents` niet met terugwerkende kracht. Bestaande dienstafspraken houden hun eigen prijsafspraak (18); alleen nieuwe afspraken erven de nieuwe standaard.
 - **Duurwijziging:** beïnvloedt alleen nog te genereren beurten, niet reeds geplande (die hebben hun eigen `estimated_duration_minutes`).
 
@@ -89,7 +89,7 @@ Een **Product** is een niet-planbare post die als factuurregel kan worden toegev
 ### 2.2 Validaties & foutmeldingen
 
 - `unit_price_cents` ≥ 0; `name` verplicht.
-- Verwijderen product dat op een gefinaliseerde factuur staat: niet toegestaan (factuur immutable, BR-301) — de factuurregel is een momentopname en blijft bestaan.
+- Verwijderen product dat op een gefinaliseerde factuur staat: niet toegestaan (factuur immutable, BR-020) — de factuurregel is een momentopname en blijft bestaan.
 
 ---
 

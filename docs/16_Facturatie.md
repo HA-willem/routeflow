@@ -41,14 +41,14 @@ Beurt completed → Conceptfactuur (status draft)
 
 ---
 
-## 3. Nummering (BR-300)
+## 3. Nummering (BR-020)
 
 **Format:** `{BedrijfCode}-{Jaar}-{Seq}`
 **Voorbeeld:** `ABC-2026-00001`, `ABC-2026-00002`
 
 **Gaploze reeks:** DB-constraint afdwingend.
 
-**Immutabiliteit (BR-301):** Eenmaal nummerd = NOOIT wijzigen. Correcties via creditfactuur.
+**Immutabiliteit (BR-020):** Eenmaal nummerd = NOOIT wijzigen. Correcties via creditfactuur.
 
 ---
 
@@ -176,7 +176,7 @@ IF status='paid' → invoices.payment_status = 'paid'
 
 ## Relaties met andere documenten
 
-- **10_BusinessRules.md**: BR-300 t/m BR-403 (facturatie/betalings-regels)
+- **10_BusinessRules.md**: BR-020 t/m BR-403 (facturatie/betalings-regels)
 - **12_Entiteiten.md**: `invoices`, `invoice_lines`, `payments`
 - **19_WhatsApp.md**: WhatsApp-template-handling
 

@@ -57,7 +57,7 @@ Legenda: **C** create · **R** read · **U** update · **D** delete · **—** g
 
 **Voetnoten:**
 1. Medewerker ziet dienst-/afspraaknaam en instructies, **geen prijzen**.
-2. Verwijderen klant verboden bij bestaande facturen → archiveren/anonimiseren (BR-500/040).
+2. Verwijderen klant verboden bij bestaande facturen → archiveren/anonimiseren (BR-040).
 3. Medewerker ziet alleen klanten/objecten die aan **zijn eigen route van vandaag** hangen: naam, adres, toegangsinstructies. Geen contactvoorkeuren, geen betaaltermijn.
 4. Medewerker ziet alleen **eigen** beurten (RLS op `route.employee_id`).
 5. Medewerker mag status muteren binnen de PWA-flow: `gepland → onderweg → uitgevoerd/niet_thuis` (FR-042/043), plus notitie/foto. Geen datum/prijs/toewijzing wijzigen.

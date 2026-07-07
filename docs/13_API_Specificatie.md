@@ -51,7 +51,7 @@ Per resource genereert PostgREST standaard endpoints. Voorbeeld voor `customers`
 | GET | `/customers?id=eq.<uuid>` | Detail | Planner+ |
 | POST | `/customers` | Aanmaken (FR-001) | Planner+ |
 | PATCH | `/customers?id=eq.<uuid>` | Wijzigen | Planner+ |
-| DELETE | `/customers?id=eq.<uuid>` | Verboden bij facturen → 409 (BR-500) | Admin |
+| DELETE | `/customers?id=eq.<uuid>` | Verboden bij facturen → 409 (BR-040) | Admin |
 
 Analoog voor: `objects`, `services`, `service_agreements`, `jobs`, `routes`, `employees`, `availability`, `invoices`, `invoice_lines`, `payments`, `notifications`, `messages`.
 
@@ -83,7 +83,7 @@ Server-side operaties die domeinlogica of externe providers raken. Alle POST, JS
 | `POST /functions/v1/route-move-job` | `{ job_id, target_route_id, position }` | Verplaatst beurt + herberekent | FR-022 |
 | `POST /functions/v1/replan` | `{ trigger, employee_id?, date? }` | Reactief herplannen; geeft diff-voorstel terug | FR-024 |
 | `POST /functions/v1/invoice-finalize` | `{ invoice_id }` | Nummer toekennen, PDF, verzenden | FR-060/064 |
-| `POST /functions/v1/invoice-credit` | `{ invoice_id, lines }` | Creditfactuur (BR-301) | FR-068 |
+| `POST /functions/v1/invoice-credit` | `{ invoice_id, lines }` | Creditfactuur (BR-020) | FR-068 |
 | `POST /functions/v1/notify-send` | `{ type, recipient_id, channel? }` | Verstuurt bericht via adapter (e-mail/WhatsApp) | FR-080 |
 | `POST /functions/v1/geocode` | `{ postal_code, house_number }` | Geocoding via routing-adapter | FR-002 |
 

@@ -74,7 +74,7 @@ Detail: 36_Security.md.
 | NFR-401 | Datalocatie | EU (Supabase EU-region) | Config-audit | Must | MVP |
 | NFR-402 | Verwerkersovereenkomsten | Met alle subverwerkers (Supabase, Vercel, Mollie, Mapbox, 360dialog) | DPA-register | Must | V1 |
 | NFR-403 | Recht op inzage/export | Dataexport per bedrijf/klant (machineleesbaar) | Functionele test | Must | V1 |
-| NFR-404 | Recht op verwijdering | Anonimiseren/archiveren i.p.v. hard delete waar facturen bestaan (BR-040/500) | Functionele test | Must | V1 |
+| NFR-404 | Recht op verwijdering | Anonimiseren/archiveren i.p.v. hard delete waar facturen bestaan (BR-040) | Functionele test | Must | V1 |
 | NFR-405 | Retentiebeleid | Gedefinieerd per datatype; berichtlogs beperkt | Beleidsdocument (36_Security.md) | Should | V1 |
 | NFR-406 | Opt-in-registratie | Per klant/kanaal gelogd (BR-600) | Audit-trail | Must | V1 |
 
