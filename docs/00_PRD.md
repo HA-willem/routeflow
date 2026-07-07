@@ -503,9 +503,9 @@ Selectie; volledige set met nummering BR-xxx in 10_BusinessRules.md:
 | A-03 | Tijdzone: Europe/Amsterdam, opslag UTC | Vastgesteld |
 | A-04 | Payment provider: Mollie | Vastgesteld, adapter-patroon |
 | A-05 | PWA i.p.v. native apps t/m V1 | Vastgesteld |
-| A-06 | Routing-provider | **Open — beslis in 14_RoutingEngine.md** |
+| A-06 | Routing-provider: **Mapbox** (geocoding + Matrix + Directions) voor MVP/V1, achter routing-adapter; **OSRM self-hosted** als schaal-/fallback-optie later | Vastgesteld (2026-07-07), adapter-patroon; uitwerking 14_RoutingEngine.md |
 | A-07 | BTW-default 21%, per dienst instelbaar, fiscale verantwoordelijkheid bij gebruiker | Vastgesteld |
-| A-08 | WhatsApp BSP-keuze | **Open — beslis in 19_WhatsApp.md** |
+| A-08 | WhatsApp BSP: **360dialog** (flat fee, EU/GDPR-hosting, directe Meta Cloud API = lage lock-in) voor V1, achter messaging-adapter; Twilio als alternatief bij kanaal-consolidatie | Vastgesteld (2026-07-07), adapter-patroon; uitwerking 19_WhatsApp.md |
 | A-09 | Boekhoudkoppelingen pas V2 | Vastgesteld |
 
 ## 20. Verwijzingen naar deeldocumenten
