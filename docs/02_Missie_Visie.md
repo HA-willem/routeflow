@@ -1,7 +1,7 @@
 # 02 — Missie & Visie
 
 **Status:** DONE
-**Versie:** 1.0
+**Versie:** 2.0
 **Bron van waarheid:** `00_PRD.md` § 3 (Productvisie & Positionering) — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 
@@ -82,10 +82,58 @@ Dit document articuleert de **missie, visie, kernwaarden en merkbelofte** van Ro
 
 ---
 
+## 5. Toon & taal van het merk
+
+De merkstem is de consistente persoonlijkheid achter elke tekst — van knoplabels tot foutmeldingen tot marketing. Ze operationaliseert het design-DNA (PRD § 1: premium, rustig) en "Nederlands eerst" (PRD § 3.2 / 01 § 4.6).
+
+### 5.1 Merkpersoonlijkheid
+
+RouteFlow klinkt als een **capabele, rustige collega die het overzicht heeft** — niet als een corporate ERP-handleiding en niet als een schreeuwerige start-up.
+
+| Wel | Niet |
+|---|---|
+| Rustig, zelfverzekerd | Schreeuwerig, hypey ("Revolutionair!!!") |
+| Helder en concreet | Jargon, ambtelijk |
+| Behulpzaam, mensgericht | Betuttelend of neerbuigend |
+| Kort | Omslachtig |
+| Warm-professioneel | Klef of overdreven grappig |
+
+### 5.2 Aanspreekvorm & taal
+
+- **Nederlands eerst**, informeel **"je/jij"** — past bij de ZZP-/klein-bedrijf-doelgroep (03, 05). Consistent in de hele UI via i18n-keys (24 § 6).
+- Actief en werkwoord-gedreven: knoppen zijn acties ("Plannen", "Versturen", "Archiveren"), nooit "OK".
+- NL-notatie voor getal/valuta/datum (€ 1.250,00 · 14-07-2026).
+- Domeintermen exact volgens PRD § 6 (Bedrijf, Klant, Object, Dienstafspraak, Beurt, Route, Dienst) — nooit synoniemen door elkaar.
+
+### 5.3 Toon per context
+
+| Context | Toon | Voorbeeld |
+|---|---|---|
+| Succes | Kort, bevestigend, gunnend | "Klaar! 6 beurten afgerond." |
+| Fout | Menselijk: oorzaak + oplossing + actie (24 § 5) | "Dit adres kunnen we niet vinden. Zet de locatie handmatig op de kaart." |
+| Lege staat | Uitnodigend, verkoopt de volgende stap (24 § 4) | "Nog geen klanten. Voeg je eerste klant toe — daarna plant RouteFlow automatisch." |
+| Klantbericht | Beleefd, namens het bedrijf, aanpasbaar per template (19/FR-081) | "Hallo {{voornaam}}, morgen komen wij langs voor {{dienst}}." |
+| Waarschuwing | Rustig, feitelijk, met keuze | "Deze beurt past niet op woensdag. Kies een andere dag." |
+
+### 5.4 Merknaam & schrijfwijze
+
+- Productnaam: **RouteFlow** (één woord, hoofdletters R en F). Nooit "Routeflow" of "Route Flow".
+- Klantberichten spreken namens het **Bedrijf** (de RouteFlow-klant), niet namens "RouteFlow" — de eindklant kent RouteFlow niet noodzakelijk. Templates zijn per bedrijf aanpasbaar (FR-081).
+
+### 5.5 Consistentie & governance
+
+- Alle UI-copy via i18n-keys; geen hardcoded strings (24 § 6, A-01).
+- Bij twijfel over toon: toets aan § 5.1-tabel ("wel/niet").
+- Copy-wijzigingen die de merkstem raken → korte review, net als design (24 § 8).
+
+---
+
 ## Relaties met andere documenten
 
-- **00_PRD.md**: § 3 (product-visie, niet organisatie-visie)
-- **01_Productvisie.md**: product-specifieke principes
+- **00_PRD.md**: § 1 (design-DNA), § 3 (product-visie), § 6 (domeintermen)
+- **01_Productvisie.md**: product-specifieke principes (o.a. 4.6 Nederlands eerst, 4.7 premium in detail)
+- **24_UI_UX.md**: § 5 (foutmeldingen), § 6 (toon & copy) — operationalisering van deze merkstem
+- **19_WhatsApp.md**: klant-berichttemplates
 
 ---
 
@@ -93,4 +141,5 @@ Dit document articuleert de **missie, visie, kernwaarden en merkbelofte** van Ro
 
 | Datum | Versie | Wijziging |
 |---|---|---|
-| 2026-07-06 | 1.0 | Volledig: missie, visie, kernwaarden, merkbelofte per stakeholder |
+| 2026-07-06 | 1.0 | Missie, visie, kernwaarden, merkbelofte per stakeholder |
+| 2026-07-07 | 2.0 | Ontbrekende sectie 5 "Toon & taal van het merk" toegevoegd (merkpersoonlijkheid, aanspreekvorm, toon per context, naamschrijfwijze, governance); relaties uitgebreid |
