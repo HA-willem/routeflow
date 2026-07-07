@@ -24,6 +24,7 @@ Dit document mappt **Nederlandse domeintermen** (PRD §6) naar **database-tabele
 | Dienst | services | Service | Type werk (bijv. "Glasbewassing buiten") |
 | Dienstafspraak | service_agreements | ServiceAgreement | Contract: dienst @ object, met frequentie & prijs |
 | Prijsafspraak | pricings | Pricing | Bedrag-regel voor dienstafspraak |
+| Product | products | Product | Losse factuurpost (niet planbaar), 17_Producten.md § 2 |
 | Beurt | jobs | Job | Één concrete uitvoering van dienstafspraak |
 | Route | routes | Route | Dag-schedule medewerker; bevat meerdere beurten |
 | Medewerker | employees | Employee | Personeelslid dat routes uitvoert |
@@ -36,6 +37,23 @@ Dit document mappt **Nederlandse domeintermen** (PRD §6) naar **database-tabele
 | Herinnering | reminders | Reminder | Betalings-reminder (e-mail/WhatsApp) |
 | Notificatie | notifications | Notification | Systeem-bericht (intern/extern) |
 | Bericht | messages | Message | WhatsApp/e-mail-log |
+
+### 1.1 Status-mapping NL ↔ EN (Beurt)
+
+De statusmachine (10_BusinessRules.md § 2) gebruikt Nederlandse labels; de database-`ENUM` `jobs.status` gebruikt Engelse code-identifiers (MASTER_PROMPT § 2: Engelse code-identifiers toegestaan, mits mapping gedocumenteerd). Deze mapping is bindend:
+
+| NL (statusmachine, UI) | EN (`jobs.status` enum) |
+|---|---|
+| voorgesteld | `proposed` |
+| gepland | `planned` |
+| onderweg | `en_route` |
+| uitgevoerd | `completed` |
+| gefactureerd | `invoiced` |
+| niet_thuis | `not_home` |
+| geannuleerd | `cancelled` |
+| herplan (wachtrij) | `rescheduling` |
+
+> Opmerking: `gefactureerd` ↔ `invoiced` is onderdeel van de enum al wordt de facturatiestatus zelf op `invoices.status` bijgehouden; op de beurt markeert het dat de beurt in een definitieve factuur is verwerkt (BR-010).
 
 ---
 
@@ -326,7 +344,7 @@ Dit document mappt **Nederlandse domeintermen** (PRD §6) naar **database-tabele
 | `service_agreement_id` | UUID | ✓ | FK → service_agreements |
 | `route_id` | UUID | ✗ | FK → routes (null = proposed) |
 | `scheduled_date` | DATE | ✓ | |
-| `status` | ENUM (proposed,planned,en_route,completed,not_home,cancelled,rescheduling) | ✓ | BR-050 machine |
+| `status` | ENUM (proposed,planned,en_route,completed,invoiced,not_home,cancelled,rescheduling) | ✓ | BR-050 machine |
 | `started_at` | TIMESTAMP | ✗ | Medewerker startte |
 | `completed_at` | TIMESTAMP | ✗ | Medewerker klaar |
 | `locked` | BOOLEAN | ✓ | default FALSE |
@@ -390,7 +408,7 @@ Dit document mappt **Nederlandse domeintermen** (PRD §6) naar **database-tabele
 
 ### Validaties
 
-- `total_work_time_minutes + total_drive_time_minutes ≤ 510` (8.5 uur) — soft warning
+- `total_work_time_minutes + total_drive_time_minutes ≤ 510` (8,5 uur) — soft warning
 
 ---
 

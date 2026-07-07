@@ -157,9 +157,9 @@ Ideale datum = 1e donderdag van Q-maand.
 
 ### BR-202 (Hard): Maximale werkdaglengte
 
-> Medewerker mag max 8.5 uur per dag (incl. reistijd) werken.
+> Medewerker mag max 8,5 uur per dag (incl. reistijd) werken.
 
-**Trigger:** Planning-algoritme weigert beurt toe te voegen if totaal-duur > 8.5u.
+**Trigger:** Planning-algoritme weigert beurt toe te voegen if totaal-duur > 8,5u.
 
 **UI:** Capaciteits-waarschuwing (FR-027).
 

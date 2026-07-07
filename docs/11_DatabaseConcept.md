@@ -270,7 +270,7 @@ erDiagram
 | `service_agreement_id` | UUID | ✓ | FK |
 | `route_id` | UUID | ✗ | FK → `routes` (null als status=proposed) |
 | `scheduled_date` | DATE | ✓ | Plannde datum |
-| `status` | ENUM (proposed,planned,en_route,completed,not_home,cancelled,rescheduling) | ✓ | BR-050 machine |
+| `status` | ENUM (proposed,planned,en_route,completed,invoiced,not_home,cancelled,rescheduling) | ✓ | BR-050 machine |
 | `started_at` | TIMESTAMP | ✗ | Wanneer medewerker started |
 | `completed_at` | TIMESTAMP | ✗ | Wanneer medewerker finished |
 | `locked` | BOOLEAN | ✓ | default FALSE |
@@ -443,6 +443,53 @@ erDiagram
 **Constraints:**
 - PK: `id`
 - FK: `company_id`
+
+---
+
+### 3.8 Prijzen, producten & routing-cache
+
+#### `pricings` (Prijsafspraak — 18_Prijsafspraken.md)
+| Kolom | Type | Vereist | Opmerkingen |
+|---|---|---|---|
+| `id` | UUID | ✓ | PK |
+| `company_id` | UUID | ✓ | FK, RLS |
+| `type` | ENUM(per_job, hourly, subscription, punch_card) | ✓ | Prijstype |
+| `amount_cents` | INT | ✗ | per_job: bedrag; subscription: maandbedrag |
+| `hourly_rate_cents` | INT | ✗ | alleen `hourly` |
+| `included_jobs_per_period` | INT | ✗ | alleen `subscription` |
+| `overage_amount_cents` | INT | ✗ | alleen `subscription` |
+| `billing_period` | ENUM(per_job, weekly, monthly, quarterly) | ✓ | verzamelmoment |
+| `billing_timing` | ENUM(advance, arrears) | ✗ | vooraf/achteraf (subscription) |
+| `punch_card_total` / `punch_card_remaining` | INT | ✗ | alleen `punch_card` (V2) |
+| `vat_rate` | DECIMAL(3,1) | ✓ | erft van dienst, overschrijfbaar |
+
+Referentie: `service_agreements.pricing_id` → `pricings.id` (§ 3.3).
+
+#### `products` (losse factuurpost — 17_Producten.md § 2)
+| Kolom | Type | Vereist | Opmerkingen |
+|---|---|---|---|
+| `id` | UUID | ✓ | PK |
+| `company_id` | UUID | ✓ | FK, RLS |
+| `name` | VARCHAR(255) | ✓ | "Voorrijkosten", "Materiaal" |
+| `unit_price_cents` | INT | ✓ | Excl. BTW |
+| `unit` | VARCHAR(20) | ✓ | "stuk", "meter", "keer" |
+| `vat_rate` | DECIMAL(3,1) | ✓ | BTW-tarief |
+| `archived_at` | TIMESTAMP | ✗ | Soft-delete |
+
+Niet planbaar; wordt als `invoice_line` toegevoegd (16_Facturatie.md).
+
+#### `distance_cache` (routing-cache — 14_RoutingEngine.md § 3)
+| Kolom | Type | Vereist | Opmerkingen |
+|---|---|---|---|
+| `from_object_id` | UUID | ✓ | PK-deel (of pseudo-id voor bedrijfsadres) |
+| `to_object_id` | UUID | ✓ | PK-deel |
+| `distance_meters` | INT | ✓ | |
+| `drive_time_seconds` | INT | ✓ | |
+| `profile` | ENUM(driving) | ✓ | ruimte voor toekomstige profielen |
+| `provider` | VARCHAR(20) | ✓ | `mapbox` / `osrm` — cache is provider-specifiek |
+| `cached_at` | TIMESTAMP | ✓ | TTL-anker (30 dagen) |
+
+**Constraints:** PK (`from_object_id`, `to_object_id`, `provider`); geen `company_id` nodig (object-id's zijn tenant-gebonden via `objects`). Invalidatie bij adreswijziging (14 § 3.4).
 
 ---
 

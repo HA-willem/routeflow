@@ -187,7 +187,7 @@ Voor een gegeven dag: systeem bepaalt rijvolgorde beurten per medewerker om reis
 1. Planning-view week: kolommen per medewerker; rijen = uren. Beurten ingetoond met adres + duur
 2. Geoptimaliseerde rijvolgorde: voertuigroute berekend via afstandsmatrix (Google Routes API / OpenRoute Service)
 3. Start-/eindtijden per beurt: gegenereerd uit duur + reistijd
-4. Waarschuwing: "Route overschrijdt max 8.5u werkdag; 2 beurten kunnen niet geplaatst"
+4. Waarschuwing: "Route overschrijdt max 8,5u werkdag; 2 beurten kunnen niet geplaatst"
 
 ---
 
@@ -265,7 +265,7 @@ Beurten kunnen "vergrendeld" worden (klant zei "dinsdag 10:00"); deze verplaatse
 Planning toont waarschuwing bij overboking medewerker-uur.
 
 **Acceptatiecriteria:**
-1. Planning-week: per dag, per medewerker: geplande uren vs. max 8.5u
+1. Planning-week: per dag, per medewerker: geplande uren vs. max 8,5u
 2. Red-indicatie: "Overboeking: 2.5 uur op woensdag"
 3. Click → suggestie: "Kies 3 kandidaat-beurten om te verplaatsen"
 
