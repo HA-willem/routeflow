@@ -136,7 +136,7 @@ erDiagram
 | `id` | UUID | ✓ | PK, Supabase Auth ID |
 | `company_id` | UUID | ✓ | FK → `companies.id` |
 | `email` | VARCHAR(255) | ✓ | Unique per company |
-| `role` | ENUM(owner, admin, planner, support) | ✓ | Autorisatie |
+| `role` | ENUM(owner, admin, planner, administration, employee) | ✓ | Autorisatie — zie toelichting |
 | `full_name` | VARCHAR(255) | ✓ | Display name |
 | `created_at` | TIMESTAMP | ✓ | UTC |
 | `updated_at` | TIMESTAMP | ✓ | UTC |
@@ -148,6 +148,8 @@ erDiagram
 - FK: `company_id` → `companies`
 - UNIQUE: (`company_id`, `email`)
 - RLS: gebruiker ziet only own `company_id`
+
+> **Toelichting `role`-enum (Sprint 1-fix 2026-07-08):** deze kolom stond hier eerder als `ENUM(owner, admin, planner, support)` — inconsistent met de canonieke rollenlijst in `23_Gebruikersrollen.md` § 1 (Eigenaar, Admin, Planner, **Administratie**, **Medewerker**), dat zichzelf expliciet aanwijst als "de functionele bron voor de RLS-policies". De oude enum miste `employee` (Medewerker) volledig en gebruikte `support` waar 23 een volwaardige `administratie`-rol met facturatie-CRUD beschrijft (geen "read-only"-rol). De enum is hier gecorrigeerd naar de vijf rollen uit 23 § 1: `owner` (Eigenaar), `admin` (Admin), `planner` (Planner), `administration` (Administratie), `employee` (Medewerker). `22_Authenticatie.md` § 7 noemde "Support: read-only + communication" waar 23 een Administratie-rol beschrijft mét facturatie-CRUD (geen read-only-rol); dat label is in dezelfde commit gecorrigeerd naar "Administratie".
 
 ---
 
@@ -723,3 +725,4 @@ CREATE TABLE audit_log (
 |---|---|---|
 | 2026-07-06 | 1.0 | Volledig uitgewerkt: ERD (Mermaid), alle 17 tabellen, constraints, RLS-strategie, indexering, soft-delete, migratie-aanpak |
 | 2026-07-08 | 1.1 | Production Readiness Review-fixes: `company_id` + RLS-policy toegevoegd aan `invoice_lines` en `payments` (ontbrak, in strijd met NFR-301 "100% RLS"); nieuwe tabel `invoice_number_counters` voor concurrency-veilige factuurnummering (BR-020); § 3.9 toegevoegd met volledige schema's voor `reminders`, `messages`, `job_photos`, `weerdata_cache`, `notification_templates` (eerder alleen elders genoemd, nooit hier gespecificeerd); expliciete deferral-notitie voor `teams` (bewust geen tabel vóór BL-025); bijbehorende indexen toegevoegd |
+| 2026-07-08 | 1.2 | Sprint 1-fix: `users.role`-enum gecorrigeerd van `(owner, admin, planner, support)` naar `(owner, admin, planner, administration, employee)` — uitgelijnd op de canonieke rollenlijst in 23_Gebruikersrollen.md § 1 (miste voorheen de Medewerker-rol volledig). 22_Authenticatie.md § 7 in dezelfde commit meegecorrigeerd. |

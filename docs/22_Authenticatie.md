@@ -129,14 +129,14 @@ CREATE POLICY "users see own company" ON customers
 
 ## 7. Autorisatie (Rollen & Permissies)
 
-**Rollen:**
-- Owner: all permissions + billing
+**Rollen** (canoniek: 23_Gebruikersrollen.md § 1, inclusief volledige rechtenmatrix):
+- Owner (Eigenaar): all permissions + RouteFlow-abonnement/billing
 - Admin: all except billing
-- Planner: planning, routing, communicatie
-- Support: read-only + communication
-- Employee: medewerker (PWA only)
+- Planner: planning, routing, klantbeheer (geen facturatie-mutaties)
+- Administration (Administratie): facturatie en debiteuren, incl. create/update op facturen — géén planning-mutaties
+- Employee (Medewerker): eigen routes uitvoeren (PWA only), beperkte klantinfo, geen financiële data
 
-**Implementatie:** `users.role` enum; API-checks per endpoint.
+**Implementatie:** `users.role` enum (`owner, admin, planner, administration, employee` — 11_DatabaseConcept.md § 3.1); API-checks per endpoint (13_API_Specificatie.md).
 
 ---
 
@@ -184,3 +184,4 @@ TTL: 7 dagen. Undo: admin kan invite verwijderen vóór accept.
 | Datum | Versie | Wijziging |
 |---|---|---|
 | 2026-07-06 | 1.0 | Volledig: Supabase Auth-methoden, JWT, 2FA, multi-company, RLS-koppeling, invites, foutmeldingen |
+| 2026-07-08 | 1.1 | Sprint 1-fix: § 7 rollenlijst uitgelijnd op 23_Gebruikersrollen.md (canoniek) — "Support: read-only + communication" was inconsistent met de Administratie-rol (die wél facturatie-CRUD heeft); `users.role`-enum expliciet benoemd (11_DatabaseConcept.md § 3.1) |
