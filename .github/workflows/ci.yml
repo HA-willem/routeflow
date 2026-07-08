@@ -28,6 +28,12 @@ jobs:
       - run: npm run format:check
       - run: npm run lint
       - run: npm run typecheck
+      - name: Dependency-scan (NFR-302, 41_CodingStandards.md § 16)
+        # audit-level=critical: er is een bekende moderate advisory in Next.js'
+        # eigen gebundelde postcss-dependency waarvan de "fix" Next.js zou
+        # downgraden naar een oude major-versie (zie Sprint 1-rapport). Bewust
+        # niet geforceerd; critical blokkeert nog wel altijd.
+        run: npm audit --audit-level=critical
       - name: Build (met placeholder-envs, geen live Supabase nodig voor een build)
         run: npm run build
         env:
