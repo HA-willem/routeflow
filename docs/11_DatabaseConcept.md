@@ -381,6 +381,7 @@ erDiagram
 | Kolom | Type | Vereist | Opmerkingen |
 |---|---|---|---|
 | `id` | UUID | ✓ | PK |
+| `company_id` | UUID | ✓ | FK, RLS (gedenormaliseerd vanaf `invoices.company_id` t.b.v. directe RLS-enforcement en indexering — zie toelichting onder) |
 | `invoice_id` | UUID | ✓ | FK |
 | `job_id` | UUID | ✗ | FK → `jobs` (null = manual line) |
 | `service_id` | UUID | ✗ | FK → `services` (for reference) |
@@ -394,7 +395,8 @@ erDiagram
 
 **Constraints:**
 - PK: `id`
-- FK: `invoice_id`, `job_id`, `service_id`
+- FK: `company_id`, `invoice_id`, `job_id`, `service_id`
+- RLS: `company_id = current_company_id()`
 
 ---
 
@@ -402,6 +404,7 @@ erDiagram
 | Kolom | Type | Vereist | Opmerkingen |
 |---|---|---|---|
 | `id` | UUID | ✓ | PK |
+| `company_id` | UUID | ✓ | FK, RLS (gedenormaliseerd vanaf `invoices.company_id`, zie toelichting onder) |
 | `invoice_id` | UUID | ✓ | FK |
 | `payment_method` | ENUM(ideal, sepa, manual) | ✓ | |
 | `amount_cents` | INT | ✓ | |
@@ -414,7 +417,25 @@ erDiagram
 
 **Constraints:**
 - PK: `id`
-- FK: `invoice_id`
+- FK: `company_id`, `invoice_id`
+- RLS: `company_id = current_company_id()`
+
+> **Toelichting RLS op `invoice_lines`/`payments` (PRR-fix 2026-07-08):** deze twee tabellen hadden oorspronkelijk geen `company_id` en geen gedocumenteerde RLS-policy — een gat t.o.v. NFR-301 ("100% via RLS op `company_id`; geen cross-tenant lek"), en juist op de gevoeligste (financiële) tabellen. Een RLS-policy die via een subquery op `invoices.company_id` loopt is functioneel mogelijk maar duurder en makkelijker te vergeten te testen; de gedenormaliseerde `company_id`-kolom (bij invoegen gekopieerd vanaf de bijbehorende `invoice`, nooit los muteerbaar) maakt de policy net zo direct en indexeerbaar als op elke andere tabel, en dwingt de negatieve RLS-test (31_Testplan.md § 4) op dezelfde manier af.
+
+---
+
+#### `invoice_number_counters` (concurrency-veilige factuurnummering — BR-020)
+| Kolom | Type | Vereist | Opmerkingen |
+|---|---|---|---|
+| `company_id` | UUID | ✓ | FK, RLS; PK-deel |
+| `year` | INT | ✓ | PK-deel |
+| `last_seq` | INT | ✓ | default 0; opgehoogd binnen dezelfde transactie als de factuurfinalisering |
+| `updated_at` | TIMESTAMP | ✓ | UTC |
+
+**Constraints:**
+- PK: (`company_id`, `year`)
+- RLS: `company_id = current_company_id()`
+- Toegang: uitsluitend via `invoice-finalize` (Edge Function, service-rol) met `SELECT ... FOR UPDATE` op de rij (10_BusinessRules.md § 5, BR-020) — nooit rechtstreeks via de data-API.
 
 ---
 
@@ -489,7 +510,94 @@ Niet planbaar; wordt als `invoice_line` toegevoegd (16_Facturatie.md).
 | `provider` | VARCHAR(20) | ✓ | `mapbox` / `osrm` — cache is provider-specifiek |
 | `cached_at` | TIMESTAMP | ✓ | TTL-anker (30 dagen) |
 
-**Constraints:** PK (`from_object_id`, `to_object_id`, `provider`); geen `company_id` nodig (object-id's zijn tenant-gebonden via `objects`). Invalidatie bij adreswijziging (14 § 3.4).
+**Constraints:** PK (`from_object_id`, `to_object_id`, `provider`); geen `company_id` nodig (object-id's zijn tenant-gebonden via `objects`). Invalidatie bij adreswijziging (14 § 3.4). **Toegang uitsluitend via Edge Functions (service-rol)** — nooit via de PostgREST data-API rechtstreeks aan de client geëxposeerd; dit is de reden dat een RLS-policy hier bewust ontbreekt (analoog aan `weerdata_cache` hieronder).
+
+---
+
+### 3.9 Communicatie, foto's & weer (aanvullende tabellen — PRR-fix 2026-07-08)
+
+> **Toelichting:** deze tabellen werden in 40_Implementatieplan.md (Sprint 6–9) en elders (12_Entiteiten.md, 19_WhatsApp.md, 21_Notificaties.md) al verondersteld te bestaan, maar hadden nog geen volledige schema-specificatie — een gat t.o.v. de eigen Definition of Done van dit document ("een reviewer zonder voorkennis kan bouwen", MASTER_PROMPT § 6e). Hieronder aangevuld.
+
+#### `reminders` (Herinnering — 16_Facturatie.md § 7, BR-401/402)
+| Kolom | Type | Vereist | Opmerkingen |
+|---|---|---|---|
+| `id` | UUID | ✓ | PK |
+| `company_id` | UUID | ✓ | FK, RLS |
+| `invoice_id` | UUID | ✓ | FK → `invoices` |
+| `reminder_number` | INT | ✓ | 1e, 2e, 3e herinnering (volgt `config.reminder_days`) |
+| `scheduled_for` | DATE | ✓ | Berekend uit `invoice_date + reminder_days[n]` |
+| `channel` | ENUM(email, whatsapp) | ✓ | |
+| `status` | ENUM(pending, sent, failed) | ✓ | default pending |
+| `sent_at` | TIMESTAMP | ✗ | |
+| `created_at` | TIMESTAMP | ✓ | UTC |
+
+**Constraints:** PK `id`; FK `company_id`, `invoice_id`; UNIQUE(`invoice_id`, `reminder_number`); RLS `company_id = current_company_id()`.
+
+#### `messages` (Bericht — providerniveau send/delivery-log, 19_WhatsApp.md § 2)
+Let op het onderscheid met `notifications` (§ 3.7): **`notifications`** is het domein-event ("dit moest verstuurd worden, aan wie, waarom, wat is de business-status"); **`messages`** is de providerlaag ("welke concrete verzendpoging(en) zijn er geweest, met welk resultaat"). Eén notificatie kan meerdere message-rijen hebben (bijv. retries).
+
+| Kolom | Type | Vereist | Opmerkingen |
+|---|---|---|---|
+| `id` | UUID | ✓ | PK |
+| `company_id` | UUID | ✓ | FK, RLS |
+| `notification_id` | UUID | ✗ | FK → `notifications` (koppeling naar het domein-event) |
+| `channel` | ENUM(whatsapp, email) | ✓ | |
+| `direction` | ENUM(outbound, inbound) | ✓ | inbound t.b.v. tweeweg-WhatsApp (FR-083, V2) |
+| `recipient` | VARCHAR(255) | ✓ | E.164-nummer of e-mailadres |
+| `provider_message_id` | VARCHAR(255) | ✗ | Idempotentie-sleutel (13_API_Specificatie.md § 5) |
+| `template_name` | VARCHAR(255) | ✗ | Alleen WhatsApp-templates |
+| `body` | TEXT | ✗ | Verzonden/ontvangen inhoud |
+| `status` | ENUM(queued, sent, delivered, failed, read) | ✓ | |
+| `error_code` | VARCHAR(100) | ✗ | Gemapt op interne foutklasse (19 § 8) |
+| `created_at` | TIMESTAMP | ✓ | UTC |
+
+**Constraints:** PK `id`; FK `company_id`, `notification_id`; UNIQUE(`provider_message_id`) WHERE NOT NULL (idempotentie); RLS `company_id = current_company_id()`.
+
+#### `job_photos` (foto's per beurt — FR-044)
+| Kolom | Type | Vereist | Opmerkingen |
+|---|---|---|---|
+| `id` | UUID | ✓ | PK |
+| `company_id` | UUID | ✓ | FK, RLS |
+| `job_id` | UUID | ✓ | FK → `jobs` |
+| `storage_path` | VARCHAR(500) | ✓ | Supabase Storage-pad (`job_photos/{company_id}/{job_id}/...`) |
+| `type` | ENUM(before, after) | ✓ | |
+| `taken_at` | TIMESTAMP | ✓ | |
+| `created_at` | TIMESTAMP | ✓ | UTC |
+
+**Constraints:** PK `id`; FK `company_id`, `job_id`; RLS `company_id = current_company_id()`; Storage-bucket-policy spiegelt dezelfde tenant-scope.
+
+#### `weerdata_cache` (weer-forecast-cache — 15_AIPlanner.md § 6.1)
+| Kolom | Type | Vereist | Opmerkingen |
+|---|---|---|---|
+| `id` | UUID | ✓ | PK |
+| `area_key` | VARCHAR(50) | ✓ | Geografische cache-sleutel (bijv. postcode-cluster) |
+| `forecast_date` | DATE | ✓ | |
+| `precipitation_probability` | DECIMAL(5,2) | ✗ | % |
+| `precipitation_mm_per_hour` | DECIMAL(5,2) | ✗ | |
+| `min_temp_celsius` | DECIMAL(4,1) | ✗ | |
+| `wind_bft` | INT | ✗ | |
+| `provider` | VARCHAR(20) | ✓ | bijv. `open-meteo` |
+| `cached_at` | TIMESTAMP | ✓ | TTL-anker |
+
+**Constraints:** PK `id`; UNIQUE(`area_key`, `forecast_date`, `provider`). **Geen `company_id`** — weerdata is niet tenant-specifiek (analoog aan `distance_cache`); toegang uitsluitend via Edge Functions.
+
+#### `notification_templates` (berichttemplates — FR-081, 19_WhatsApp.md § 4)
+| Kolom | Type | Vereist | Opmerkingen |
+|---|---|---|---|
+| `id` | UUID | ✓ | PK |
+| `company_id` | UUID | ✓ | FK, RLS |
+| `type` | ENUM(aankondiging, onderweg, niet_thuis, factuur, herinnering, betaalbevestiging) | ✓ | |
+| `channel` | ENUM(email, whatsapp) | ✓ | |
+| `body` | TEXT | ✓ | Met `{{variabelen}}` (BR-602) |
+| `meta_status` | ENUM(draft, pending, approved, rejected, paused) | ✗ | Alleen WhatsApp (19 § 4.2) |
+| `meta_template_name` | VARCHAR(255) | ✗ | Alleen WhatsApp, na Meta-goedkeuring |
+| `created_at` | TIMESTAMP | ✓ | UTC |
+| `updated_at` | TIMESTAMP | ✓ | UTC |
+
+**Constraints:** PK `id`; FK `company_id`; UNIQUE(`company_id`, `type`, `channel`); RLS `company_id = current_company_id()`.
+
+#### `teams` — bewust nog géén tabel (buiten scope MVP/V1)
+De ERD (§ 2) en 12_Entiteiten.md § 1 tonen `teams` als conceptuele relatie omdat het domeinmodel er rekening mee houdt, maar **`teams` wordt pas als volledige tabel gespecificeerd wanneer BL-025 (34_Backlog.md) wordt ingepland**. Tot die tijd is `employees` de enige planbare eenheid (geen teamplanning in MVP/V1). Geen migratie in 40_Implementatieplan.md verwijst naar `teams` — dit is bewust, niet vergeten.
 
 ---
 
@@ -521,6 +629,12 @@ CREATE INDEX idx_invoices_company_status ON invoices(company_id, payment_status,
 CREATE INDEX idx_objects_location ON objects USING GIST(location);
 CREATE INDEX idx_availability_emp_date ON availability(company_id, employee_id, date);
 CREATE INDEX idx_notifications_recipient ON notifications(recipient_type, recipient_id);
+CREATE INDEX idx_invoice_lines_company_invoice ON invoice_lines(company_id, invoice_id);
+CREATE INDEX idx_payments_company_invoice ON payments(company_id, invoice_id);
+CREATE INDEX idx_reminders_company_invoice ON reminders(company_id, invoice_id);
+CREATE INDEX idx_messages_company_notification ON messages(company_id, notification_id);
+CREATE INDEX idx_job_photos_company_job ON job_photos(company_id, job_id);
+CREATE INDEX idx_weerdata_cache_area_date ON weerdata_cache(area_key, forecast_date, provider);
 ```
 
 ---
@@ -608,3 +722,4 @@ CREATE TABLE audit_log (
 | Datum | Versie | Wijziging |
 |---|---|---|
 | 2026-07-06 | 1.0 | Volledig uitgewerkt: ERD (Mermaid), alle 17 tabellen, constraints, RLS-strategie, indexering, soft-delete, migratie-aanpak |
+| 2026-07-08 | 1.1 | Production Readiness Review-fixes: `company_id` + RLS-policy toegevoegd aan `invoice_lines` en `payments` (ontbrak, in strijd met NFR-301 "100% RLS"); nieuwe tabel `invoice_number_counters` voor concurrency-veilige factuurnummering (BR-020); § 3.9 toegevoegd met volledige schema's voor `reminders`, `messages`, `job_photos`, `weerdata_cache`, `notification_templates` (eerder alleen elders genoemd, nooit hier gespecificeerd); expliciete deferral-notitie voor `teams` (bewust geen tabel vóór BL-025); bijbehorende indexen toegevoegd |
