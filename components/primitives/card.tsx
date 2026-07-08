@@ -29,11 +29,15 @@ function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 // Semantische heading i.p.v. de shadcn-standaard <div> (41_CodingStandards.md § 4,
-// toegankelijkheid is geen aparte stap): <h3> is veilig als paginatitel (auth-
-// kaarten) én als sub-titel wanneer meerdere Cards later op één pagina staan.
-function CardTitle({ className, ...props }: React.ComponentProps<'h3'>) {
+// toegankelijkheid is geen aparte stap). <h1>: elke huidige pagina die Card
+// gebruikt (login/registreren/wachtwoord-vergeten/onboarding) heeft géén ander
+// heading-element, dus dit is de enige/primaire paginatitel — geen h3 die de
+// documentoutline een niveau zou laten overslaan. Zodra een pagina met meerdere
+// Cards (bv. een dashboard met KPI-kaarten) landt, moet CardTitle een `level`-
+// prop krijgen; dat is een bewuste latere aanpassing, geen aanname nu.
+function CardTitle({ className, ...props }: React.ComponentProps<'h1'>) {
   return (
-    <h3 data-slot="card-title" className={cn('leading-none font-semibold', className)} {...props} />
+    <h1 data-slot="card-title" className={cn('leading-none font-semibold', className)} {...props} />
   );
 }
 
