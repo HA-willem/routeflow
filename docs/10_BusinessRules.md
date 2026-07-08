@@ -367,13 +367,15 @@ AND (not reminder_sent_at[i] OR date_now - reminder_sent_at[i] > 1 dag)
 
 ### BR-701 (Soft): Scoring-transparantie
 
-> Planner kan scoring-gewichten aanpassen (slider "Reistijd ↔ Frequentie-trouw") en voorstel zien wijzigen.
+> Planner kan scoring-gewichten aanpassen (sliders) en het voorstel direct zien wijzigen.
 
-**Gewichten:**
-- Afwijking ideale datum: 0–100% (default 60%)
-- Reistijd totaal: 0–100% (default 50%)
-- Geografische clustering: 0–100% (default 30%)
-- Werkdruk-balans: 0–100% (default 20%)
+**Gewichten (canoniek — identiek aan 15_AIPlanner.md § 4; geen tweede bron van waarheid):**
+- Afwijking ideale datum: default 40% (minimaliseren)
+- Totale reistijd: default 30% (minimaliseren)
+- Geografische clustering: default 20% (maximaliseren)
+- Werkdrukbalans tussen medewerkers: default 10% (balanceren)
+
+Deze vier gewichten zijn relatief aan elkaar en worden bij wijziging door het systeem genormaliseerd tot 100% (sliders tonen een onderlinge verhouding, geen onafhankelijke 0–100%-waarden). Weerrisico en stabiliteit-bij-herplannen wegen apart mee in de reactieve laag (15_AIPlanner.md § 6–7) en maken geen deel uit van deze vier hoofdgewichten.
 
 ---
 
@@ -457,3 +459,5 @@ AND (not reminder_sent_at[i] OR date_now - reminder_sent_at[i] > 1 dag)
 |---|---|---|
 | 2026-07-06 | 1.0 | Volledig uitgewerkt: statusmachine, frequentie-regels, planning-logica, facturatie, communicatie, AI-transparantie, edge cases |
 | 2026-07-07 | 1.1 | Consistentiefix: canonieke PRD §15-nummers hersteld (BR-001 ideale datum, BR-020 nummering/immutabiliteit, BR-030 pauzering, BR-040 klant verwijderen) i.p.v. afwijkende nummering; BR-010 en BR-015 expliciet toegevoegd; alle verwijzende documenten meegetrokken |
+| 2026-07-08 | 1.2 | Production Readiness Review-fix: BR-701-gewichten uitgelijnd op 15_AIPlanner.md § 4 (was intern inconsistent met een tweede, afwijkend gewichtenstel dat niet optelde tot 100%) |
+| 2026-07-08 | 1.3 | Production Readiness Review-fix: BR-020 uitgebreid met concurrency-veilige tellerimplementatie (rij-lock op `invoice_number_counters`) i.p.v. een race-condition-gevoelige `MAX+1`-query, om de wettelijke gap-loze-nummering-eis daadwerkelijk af te dwingen |

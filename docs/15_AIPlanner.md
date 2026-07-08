@@ -76,6 +76,8 @@ Elke kandidaat-planning krijgt een score 0–100 (100 = optimaal). Gewichten per
 
 De dag-laag geeft de reistijd-/clustergewichten door aan de routing-engine (14 § 5.3). Sliderwijziging → live herberekening van het voorstel.
 
+Deze tabel is de **enige bron van waarheid** voor de default-gewichten (10_BusinessRules.md BR-701 verwijst hierheen in plaats van eigen getallen te dupliceren, om toekomstige inconsistentie te voorkomen).
+
 ---
 
 ## 5. Harde regels (nooit schenden, PRD § 8.4)
@@ -208,3 +210,4 @@ De AI Planner kan verbeteren door te leren van wat de planner **handmatig corrig
 |---|---|---|
 | 2026-07-06 | 1.0 | Drie lagen, ideale-datum, clustering, scoring, weer, herplannen, transparantie |
 | 2026-07-07 | 2.0 | Verdieping: weer-beslislogica met drempels per type, herplan-diff-UX + stabiliteitsgewicht, automatiseringsniveaus toegelicht, sectie 10 "Leren van correcties" (V2) toegevoegd, sectie 11 "Edge cases & foutafhandeling" (8 cases) toegevoegd; relaties uitgebreid |
+| 2026-07-08 | 2.1 | Production Readiness Review-fix: § 4 expliciet aangewezen als enige bron van waarheid voor de scoring-gewichten (was inconsistent met BR-701 in 10_BusinessRules.md, dat een ander, niet-op-100%-som-uitkomend gewichtenstel vermeldde) |
