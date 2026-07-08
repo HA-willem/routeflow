@@ -198,11 +198,25 @@ Ideale datum = 1e donderdag van Q-maand.
 **Format:** {BedrijfsCode}-{Jaar}-{Seq}
 **Voorbeeld:** ABC-2026-00001, ABC-2026-00002 (geen ABC-2026-00003 slaan over).
 
-**Implementatie:**
+**Implementatie (concurrency-veilig, verplicht):** een `SELECT MAX(number_seq)+1`-query **zonder locking** is niet gap-loos-veilig: twee gelijktijdige finaliseringen (bijv. bulk-finaliseren, 40_Implementatieplan.md Sprint 5) kunnen hetzelfde MAX lezen en hetzelfde volgnummer berekenen — een race condition die de wettelijk verplichte gaploze reeks breekt. Verplicht patroon: een per-bedrijf-per-jaar tellerrij (`invoice_number_counters`, 11_DatabaseConcept.md § 3.6) die met een rij-lock wordt opgehoogd **binnen dezelfde transactie** als de finalisering:
+
 ```sql
-SELECT MAX(number_seq) FROM invoices WHERE company_id=X AND year=2026
-→ next = MAX+1
+-- tabel: invoice_number_counters (company_id, year, last_seq) — PK (company_id, year)
+BEGIN;
+  INSERT INTO invoice_number_counters (company_id, year, last_seq)
+    VALUES (:company_id, :year, 0)
+    ON CONFLICT (company_id, year) DO NOTHING;
+  SELECT last_seq FROM invoice_number_counters
+    WHERE company_id = :company_id AND year = :year
+    FOR UPDATE;                                   -- rij-lock, blokkeert gelijktijdige finalisering
+  UPDATE invoice_number_counters
+    SET last_seq = last_seq + 1
+    WHERE company_id = :company_id AND year = :year
+    RETURNING last_seq;                           -- dit is het toe te kennen volgnummer
+COMMIT;
 ```
+
+Het teruggegeven volgnummer wordt in dezelfde transactie op de factuur vastgelegd. Dit voorkomt zowel duplicaten als gaten onder gelijktijdige `invoice-finalize`-aanroepen (13_API_Specificatie.md § 4) — een losstaande `UNIQUE`-constraint op `invoice_number` voorkomt wél duplicaten maar **niet** de race an sich (de transactie die verliest rolt terug/wacht, in plaats van gewoon een ander nummer te proberen).
 
 **Immutabiliteit (BR-020-Hard):** Factuurnummer eenmaal toegekend = NOOIT wijzigen. Correctie = creditfactuur.
 

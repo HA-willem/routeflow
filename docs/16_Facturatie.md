@@ -46,7 +46,7 @@ Beurt completed → Conceptfactuur (status draft)
 **Format:** `{BedrijfCode}-{Jaar}-{Seq}`
 **Voorbeeld:** `ABC-2026-00001`, `ABC-2026-00002`
 
-**Gaploze reeks:** DB-constraint afdwingend.
+**Gaploze reeks:** afgedwongen via een concurrency-veilige, rij-vergrendelde teller per bedrijf/jaar (`invoice_number_counters`) — niet via een simpele `MAX+1`-query, die onder gelijktijdige finalisering een race condition zou geven. Volledige implementatie: BR-020 (10_BusinessRules.md § 5).
 
 **Immutabiliteit (BR-020):** Eenmaal nummerd = NOOIT wijzigen. Correcties via creditfactuur.
 
@@ -187,3 +187,4 @@ IF status='paid' → invoices.payment_status = 'paid'
 | Datum | Versie | Wijziging |
 |---|---|---|
 | 2026-07-06 | 1.0 | Volledig: factuurflow, typen, nummering, BTW, PDF, verzending, herinneringen, Mollie, correcties |
+| 2026-07-08 | 1.1 | Production Readiness Review-fix: § 3 (nummering) verwijst nu naar de concurrency-veilige tellerimplementatie (BR-020) i.p.v. de onjuiste/onvolledige bewering "DB-constraint afdwingend" |
