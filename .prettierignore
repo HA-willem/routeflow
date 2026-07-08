@@ -1,0 +1,15 @@
+.next/
+node_modules/
+supabase/.branches/
+supabase/.temp/
+*.min.js
+playwright-report/
+test-results/
+
+# Documentatie (docs/00-41, ADR's) is handgeschreven proza uit de documentatiefase
+# en valt buiten de codeformatter (41_CodingStandards.md § 15 gaat over code).
+docs/**/*.md
+*.md
+
+# Gegenereerd bestand — nooit handmatig herformatteren (41_CodingStandards.md § 8).
+types/database.types.ts
