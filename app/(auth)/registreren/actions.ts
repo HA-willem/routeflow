@@ -2,7 +2,7 @@
 
 import { mapAuthError } from '@/lib/auth/error-messages';
 import { siteUrl } from '@/lib/env';
-import { actionError, actionSuccess, type ActionResult } from '@/lib/errors';
+import { actionError, actionSuccess, type ActionResult, validationActionError } from '@/lib/errors';
 import { createClient } from '@/lib/supabase/server';
 import { registerSchema } from '@/lib/validation/auth';
 
@@ -13,10 +13,7 @@ interface RegisterResult {
 export async function register(input: unknown): Promise<ActionResult<RegisterResult>> {
   const parsed = registerSchema.safeParse(input);
   if (!parsed.success) {
-    return actionError({
-      code: 'validation_error',
-      message: parsed.error.issues[0]?.message ?? 'Controleer de ingevulde gegevens.',
-    });
+    return validationActionError(parsed.error, 'Controleer de ingevulde gegevens.');
   }
 
   const supabase = await createClient();

@@ -1,6 +1,8 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { anonClient, signUpAndConfirm, uniqueTestEmail } from './helpers';
+import { POSTGRES_ERROR_CODE } from '@/lib/supabase/postgres-error-codes';
+
+import { anonClient, signUpAndConfirm, uniqueTestEmail, type TestSupabaseClient } from './helpers';
 
 /**
  * Integratietests tegen een lokale Supabase-instantie (`npx supabase start`).
@@ -60,7 +62,7 @@ describe('onboard_company() + RLS-baseline', () => {
       owner_full_name: 'Test',
     });
     expect(error).not.toBeNull();
-    expect(error?.code).toBe('23505');
+    expect(error?.code).toBe(POSTGRES_ERROR_CODE.UNIQUE_VIOLATION);
   });
 
   it('genereert een unieke slug bij een naamsbotsing', async () => {
@@ -85,8 +87,8 @@ describe('onboard_company() + RLS-baseline', () => {
 
   describe('tenant-isolatie (NFR-301)', () => {
     let companyAId: string;
-    let clientA: Awaited<ReturnType<typeof signUpAndConfirm>>;
-    let clientB: Awaited<ReturnType<typeof signUpAndConfirm>>;
+    let clientA: TestSupabaseClient;
+    let clientB: TestSupabaseClient;
 
     beforeAll(async () => {
       clientA = await signUpAndConfirm(uniqueTestEmail('tenant-a'));

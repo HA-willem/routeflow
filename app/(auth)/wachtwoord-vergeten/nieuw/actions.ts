@@ -3,17 +3,14 @@
 import { redirect } from 'next/navigation';
 
 import { mapAuthError } from '@/lib/auth/error-messages';
-import { actionError, type ActionResult } from '@/lib/errors';
+import { type ActionResult, actionError, validationActionError } from '@/lib/errors';
 import { createClient } from '@/lib/supabase/server';
 import { resetPasswordSchema } from '@/lib/validation/auth';
 
 export async function updatePassword(input: unknown): Promise<ActionResult<null>> {
   const parsed = resetPasswordSchema.safeParse(input);
   if (!parsed.success) {
-    return actionError({
-      code: 'validation_error',
-      message: parsed.error.issues[0]?.message ?? 'Controleer de ingevulde gegevens.',
-    });
+    return validationActionError(parsed.error, 'Controleer de ingevulde gegevens.');
   }
 
   const supabase = await createClient();

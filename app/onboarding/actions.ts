@@ -2,8 +2,9 @@
 
 import { redirect } from 'next/navigation';
 
-import { actionError, type ActionResult } from '@/lib/errors';
+import { actionError, type ActionResult, validationActionError } from '@/lib/errors';
 import { logger } from '@/lib/logging/logger';
+import { POSTGRES_ERROR_CODE } from '@/lib/supabase/postgres-error-codes';
 import { createClient } from '@/lib/supabase/server';
 import { onboardingSchema } from '@/lib/validation/auth';
 
@@ -16,10 +17,7 @@ import { onboardingSchema } from '@/lib/validation/auth';
 export async function onboardCompany(input: unknown): Promise<ActionResult<null>> {
   const parsed = onboardingSchema.safeParse(input);
   if (!parsed.success) {
-    return actionError({
-      code: 'validation_error',
-      message: parsed.error.issues[0]?.message ?? 'Vul je bedrijfsnaam in.',
-    });
+    return validationActionError(parsed.error, 'Vul je bedrijfsnaam in.');
   }
 
   const supabase = await createClient();
@@ -47,7 +45,7 @@ export async function onboardCompany(input: unknown): Promise<ActionResult<null>
   });
 
   if (error) {
-    if (error.code === '23505') {
+    if (error.code === POSTGRES_ERROR_CODE.UNIQUE_VIOLATION) {
       redirect('/');
     }
     logger.error('onboard_company RPC failed', { code: error.code, userId: user.id });
