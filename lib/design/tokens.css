@@ -1,0 +1,131 @@
+/*
+ * Design tokens — bron van waarheid: docs/25_DesignSystem.md
+ * Componenten verwijzen uitsluitend naar deze tokens, nooit naar rauwe
+ * hex-kleuren of pixelwaarden (25 § 9, governance; 41_CodingStandards.md § 4).
+ */
+
+@theme {
+  /* § 1.1 — kleur (lichte modus als basiswaarde) */
+  --color-bg: #ffffff;
+  --color-surface: #f7f8fa;
+  --color-border: #e5e7eb;
+  --color-text: #111827;
+  --color-text-muted: #5f6368;
+  --color-primary: #1a73e8;
+  --color-primary-contrast: #ffffff;
+  --color-success: #34a853;
+  --color-warning: #f59e0b;
+  --color-danger: #ea4335;
+  --color-info: #0ea5e9;
+
+  /* § 2 — typografie */
+  --font-sans: var(--font-inter), -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.25rem;
+
+  /* § 3 — spacing-schaal (uitsluitend deze stappen) */
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+
+  /* § 4 — radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* § 6 — motion */
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 250ms;
+  --ease-routeflow-out: cubic-bezier(0, 0, 0.2, 1);
+
+  /*
+   * shadcn/ui-alias-laag: de gegenereerde primitieven (components/primitives, via
+   * `shadcn add`) verwachten deze semantische tokennamen. Ze zijn uitsluitend
+   * aliassen naar de canonieke 25_DesignSystem.md-tokens hierboven — er wordt
+   * bewust GEEN nieuwe kleur geïntroduceerd (25 § 9, governance). Omdat CSS-variabelen
+   * bij gebruik worden opgelost (niet bij declaratie), volgen deze aliassen
+   * automatisch de donkere-modus-override hieronder mee.
+   */
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text);
+  --color-card: var(--color-surface);
+  --color-card-foreground: var(--color-text);
+  --color-popover: var(--color-surface);
+  --color-popover-foreground: var(--color-text);
+  --color-primary-foreground: var(--color-primary-contrast);
+  --color-secondary: var(--color-surface);
+  --color-secondary-foreground: var(--color-text);
+  --color-muted: var(--color-surface);
+  --color-muted-foreground: var(--color-text-muted);
+  --color-accent: var(--color-surface);
+  --color-accent-foreground: var(--color-text);
+  --color-destructive: var(--color-danger);
+  --color-destructive-foreground: var(--color-primary-contrast);
+  --color-input: var(--color-border);
+  --color-ring: var(--color-primary);
+}
+
+/* § 7 — donkere modus, systeemvoorkeur-volgend */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0e1116;
+    --color-surface: #161b22;
+    --color-border: #2a2f37;
+    --color-text: #e6edf3;
+    --color-text-muted: #9ba4b0;
+    --color-primary: #4c8df6;
+    --color-primary-contrast: #0e1116;
+    --color-success: #3fbf67;
+    --color-warning: #fbbf24;
+    --color-danger: #f87171;
+    --color-info: #38bdf8;
+  }
+}
+
+/* § 7 — handmatige override (V1-toggle, hier al ondersteund op tokenniveau) */
+:root[data-theme='dark'] {
+  --color-bg: #0e1116;
+  --color-surface: #161b22;
+  --color-border: #2a2f37;
+  --color-text: #e6edf3;
+  --color-text-muted: #9ba4b0;
+  --color-primary: #4c8df6;
+  --color-primary-contrast: #0e1116;
+  --color-success: #3fbf67;
+  --color-warning: #fbbf24;
+  --color-danger: #f87171;
+  --color-info: #38bdf8;
+}
+
+:root[data-theme='light'] {
+  --color-bg: #ffffff;
+  --color-surface: #f7f8fa;
+  --color-border: #e5e7eb;
+  --color-text: #111827;
+  --color-text-muted: #5f6368;
+  --color-primary: #1a73e8;
+  --color-primary-contrast: #ffffff;
+  --color-success: #34a853;
+  --color-warning: #f59e0b;
+  --color-danger: #ea4335;
+  --color-info: #0ea5e9;
+}
