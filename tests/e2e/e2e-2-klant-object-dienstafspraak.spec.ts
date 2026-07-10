@@ -72,7 +72,7 @@ test('klant + object + dienst + dienstafspraak aanmaken (FR-001…004/020)', asy
   await expect(page.getByRole('heading', { name: 'Kerkstraat 42' })).toBeVisible();
   await page.getByRole('tab', { name: 'Dienstafspraken' }).click();
   await expect(page.getByText(serviceName)).toBeVisible();
-  await expect(page.getByText('Wekelijks')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Wekelijks', exact: true })).toBeVisible();
   await expect(page.getByText('Actief')).toBeVisible();
 
   // FR-020: createServiceAgreement roept planning-generate synchroon aan, dus
