@@ -55,13 +55,18 @@ export const serviceAgreementSchema = z
 
 export type ServiceAgreementInput = z.infer<typeof serviceAgreementSchema>;
 
-/** FR-005: pauzeerdatum mag niet in het verleden liggen. */
+/**
+ * FR-005: pauzeerdatum mag niet in het verleden liggen. Vergelijkt als kale
+ * ISO-datumstrings (niet via `Date`-parsing) omdat `new Date('YYYY-MM-DD')`
+ * als UTC-middernacht parseert terwijl `new Date().toDateString()` lokale
+ * middernacht geeft — in tijdzones ten westen van UTC (bv. Amerika) laat dat
+ * "vandaag" onterecht als verleden tijd tellen. ISO-datumstrings vergelijken
+ * lexicografisch correct chronologisch.
+ */
 export const pauseServiceAgreementSchema = z.object({
-  pausedUntil: z
-    .string()
-    .refine((value) => new Date(value) >= new Date(new Date().toDateString()), {
-      message: 'De pauzeerdatum mag niet in het verleden liggen.',
-    }),
+  pausedUntil: z.string().refine((value) => value >= new Date().toISOString().slice(0, 10), {
+    message: 'De pauzeerdatum mag niet in het verleden liggen.',
+  }),
 });
 
 /** BR-102/FR-004: alleen weekly/biweekly/custom hebben een vaste dag-interval. */
