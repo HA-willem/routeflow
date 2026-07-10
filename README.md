@@ -9,11 +9,12 @@ Premium SaaS voor Nederlandse servicebedrijven met terugkerende werkzaamheden (s
 - ✅ **Sprint 1 voltooid** — fundament, tenancy & auth (40_Implementatieplan.md)
 - ✅ **Sprint 2 voltooid** — klanten, objecten, diensten & geocoding (`v0.2.0`)
 - ✅ **Sprint 3 voltooid** — dienstafspraken, prijzen & automatische beurt-generatie
-- ✅ **Deployment voltooid** — Vercel live, Supabase Cloud gekoppeld (migraties 001–010)
+- ✅ **Deployment voltooid** — Vercel live, Supabase Cloud gekoppeld (migraties 001–008)
+- ⚠️ Migraties 009–010 (`jobs`, service-agreement horizon) staan lokaal klaar maar zijn nog niet naar Supabase Cloud gepusht — zie Deployment hieronder.
 
 ## Deployment
 - **Productie:** [routeflow-delta.vercel.app](https://routeflow-delta.vercel.app) (Vercel)
-- **Database:** Supabase Cloud project "Routeflow" (eu-west-1), RLS-multitenancy, migraties 001–008 toegepast
+- **Database:** Supabase Cloud project "Routeflow" (eu-west-1), RLS-multitenancy, migraties 001–008 toegepast (geverifieerd via `npx supabase migration list`; 009–010 staan nog open)
 - Lokale ontwikkeling gebruikt de Supabase CLI (`npx supabase start`) tegen een losse lokale instantie — zie `41_CodingStandards.md` § 8/9.
 
 ## Werkwijze (met Claude Code)
