@@ -3,12 +3,11 @@ import { expect, test } from '@playwright/test';
 import { findConfirmationLink } from '../shared/mailpit';
 
 /**
- * Dekt het Sprint 2-deel van E2E-2 (31_Testplan.md § 2): klant + object +
- * dienstafspraak aanmaken. Het "beurt automatisch gegenereerd"-deel van E2E-2
- * kan pas vanaf Sprint 3 (jobs-tabel/horizon-laag, expliciet buiten Sprint
- * 2-scope) getest worden.
+ * Dekt E2E-2 volledig (31_Testplan.md § 2): klant + object + dienstafspraak
+ * aanmaken, met als sluitstuk (Sprint 3, FR-020) de automatisch gegenereerde
+ * eerste beurt via de planning-generate Edge Function.
  */
-test('klant + object + dienst + dienstafspraak aanmaken (FR-001…004)', async ({ page }) => {
+test('klant + object + dienst + dienstafspraak aanmaken (FR-001…004/020)', async ({ page }) => {
   const uniqueSuffix = crypto.randomUUID().slice(0, 8);
   const email = `e2e2-${uniqueSuffix}@routeflow.test`;
   const fullName = 'Frans de Haan';
@@ -75,4 +74,10 @@ test('klant + object + dienst + dienstafspraak aanmaken (FR-001…004)', async (
   await expect(page.getByText(serviceName)).toBeVisible();
   await expect(page.getByText('Wekelijks')).toBeVisible();
   await expect(page.getByText('Actief')).toBeVisible();
+
+  // FR-020: createServiceAgreement roept planning-generate synchroon aan, dus
+  // de eerste voorgestelde beurt staat er meteen (WhyExplanation-kolom "Volgende
+  // beurt") — noch "Nog niet gegenereerd", noch "—" (dat laatste is voor
+  // niet-actieve afspraken).
+  await expect(page.getByText('Nog niet gegenereerd')).not.toBeVisible();
 });
