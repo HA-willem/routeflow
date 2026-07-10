@@ -16,18 +16,32 @@ export default async function InstellingenPage() {
   return (
     <div>
       <PageHeader title="Instellingen" />
-      <Link href="/instellingen/diensten" className="block max-w-sm">
-        <Card>
-          <CardContent>
-            <CardTitle level="h2" className="text-base">
-              Diensten
-            </CardTitle>
-            <p className="text-text-muted mt-1 text-sm">
-              Beheer het aanbod diensten van je bedrijf (naam, duur, prijs, BTW).
-            </p>
-          </CardContent>
-        </Card>
-      </Link>
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <Link href="/instellingen/diensten" className="block max-w-sm flex-1">
+          <Card>
+            <CardContent>
+              <CardTitle level="h2" className="text-base">
+                Diensten
+              </CardTitle>
+              <p className="text-text-muted mt-1 text-sm">
+                Beheer het aanbod diensten van je bedrijf (naam, duur, prijs, BTW).
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/instellingen/medewerkers" className="block max-w-sm flex-1">
+          <Card>
+            <CardContent>
+              <CardTitle level="h2" className="text-base">
+                Medewerkers
+              </CardTitle>
+              <p className="text-text-muted mt-1 text-sm">
+                Beheer je medewerkers, nodig om routes aan toe te wijzen.
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
     </div>
   );
 }
