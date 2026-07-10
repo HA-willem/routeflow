@@ -209,6 +209,154 @@ export type Database = {
           },
         ]
       }
+      pricings: {
+        Row: {
+          amount_cents: number | null
+          billing_period: Database["public"]["Enums"]["billing_period"]
+          billing_timing: Database["public"]["Enums"]["billing_timing"] | null
+          company_id: string
+          created_at: string
+          hourly_rate_cents: number | null
+          id: string
+          included_jobs_per_period: number | null
+          overage_amount_cents: number | null
+          punch_card_remaining: number | null
+          punch_card_total: number | null
+          type: Database["public"]["Enums"]["pricing_type"]
+          updated_at: string
+          vat_rate: number
+        }
+        Insert: {
+          amount_cents?: number | null
+          billing_period?: Database["public"]["Enums"]["billing_period"]
+          billing_timing?: Database["public"]["Enums"]["billing_timing"] | null
+          company_id: string
+          created_at?: string
+          hourly_rate_cents?: number | null
+          id?: string
+          included_jobs_per_period?: number | null
+          overage_amount_cents?: number | null
+          punch_card_remaining?: number | null
+          punch_card_total?: number | null
+          type: Database["public"]["Enums"]["pricing_type"]
+          updated_at?: string
+          vat_rate: number
+        }
+        Update: {
+          amount_cents?: number | null
+          billing_period?: Database["public"]["Enums"]["billing_period"]
+          billing_timing?: Database["public"]["Enums"]["billing_timing"] | null
+          company_id?: string
+          created_at?: string
+          hourly_rate_cents?: number | null
+          id?: string
+          included_jobs_per_period?: number | null
+          overage_amount_cents?: number | null
+          punch_card_remaining?: number | null
+          punch_card_total?: number | null
+          type?: Database["public"]["Enums"]["pricing_type"]
+          updated_at?: string
+          vat_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_agreements: {
+        Row: {
+          call_ahead_required: boolean
+          company_id: string
+          created_at: string
+          ended_at: string | null
+          exclude_dates: string[] | null
+          flexibility_window_days: number
+          frequency_interval_days: number | null
+          frequency_type: Database["public"]["Enums"]["frequency_type"]
+          id: string
+          object_id: string
+          paused_until: string | null
+          preferred_day: number | null
+          preferred_daypart: Database["public"]["Enums"]["daypart"] | null
+          pricing_id: string
+          service_id: string
+          status: Database["public"]["Enums"]["service_agreement_status"]
+          updated_at: string
+        }
+        Insert: {
+          call_ahead_required?: boolean
+          company_id: string
+          created_at?: string
+          ended_at?: string | null
+          exclude_dates?: string[] | null
+          flexibility_window_days?: number
+          frequency_interval_days?: number | null
+          frequency_type: Database["public"]["Enums"]["frequency_type"]
+          id?: string
+          object_id: string
+          paused_until?: string | null
+          preferred_day?: number | null
+          preferred_daypart?: Database["public"]["Enums"]["daypart"] | null
+          pricing_id: string
+          service_id: string
+          status?: Database["public"]["Enums"]["service_agreement_status"]
+          updated_at?: string
+        }
+        Update: {
+          call_ahead_required?: boolean
+          company_id?: string
+          created_at?: string
+          ended_at?: string | null
+          exclude_dates?: string[] | null
+          flexibility_window_days?: number
+          frequency_interval_days?: number | null
+          frequency_type?: Database["public"]["Enums"]["frequency_type"]
+          id?: string
+          object_id?: string
+          paused_until?: string | null
+          preferred_day?: number | null
+          preferred_daypart?: Database["public"]["Enums"]["daypart"] | null
+          pricing_id?: string
+          service_id?: string
+          status?: Database["public"]["Enums"]["service_agreement_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_agreements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_agreements_object_id_fkey"
+            columns: ["object_id"]
+            isOneToOne: false
+            referencedRelation: "objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_agreements_pricing_id_fkey"
+            columns: ["pricing_id"]
+            isOneToOne: false
+            referencedRelation: "pricings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_agreements_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           archived_at: string | null
@@ -1308,10 +1456,23 @@ export type Database = {
       }
     }
     Enums: {
+      billing_period: "per_job" | "weekly" | "monthly" | "quarterly"
       billing_preference: "email" | "whatsapp" | "post"
+      billing_timing: "advance" | "arrears"
       customer_type: "person" | "business"
+      daypart: "morning" | "afternoon"
+      frequency_type:
+        | "weekly"
+        | "biweekly"
+        | "monthly"
+        | "quarterly"
+        | "yearly"
+        | "once"
+        | "custom"
       object_location_status: "geocoded" | "manual" | "failed"
       object_type: "residence" | "commercial" | "complex" | "other"
+      pricing_type: "per_job" | "hourly" | "subscription" | "punch_card"
+      service_agreement_status: "active" | "paused" | "ended"
       subscription_tier: "starter" | "pro" | "enterprise"
       user_role: "owner" | "admin" | "planner" | "administration" | "employee"
       weather_sensitivity_type: "rain" | "frost" | "wind"
@@ -1453,10 +1614,24 @@ export const Constants = {
   },
   public: {
     Enums: {
+      billing_period: ["per_job", "weekly", "monthly", "quarterly"],
       billing_preference: ["email", "whatsapp", "post"],
+      billing_timing: ["advance", "arrears"],
       customer_type: ["person", "business"],
+      daypart: ["morning", "afternoon"],
+      frequency_type: [
+        "weekly",
+        "biweekly",
+        "monthly",
+        "quarterly",
+        "yearly",
+        "once",
+        "custom",
+      ],
       object_location_status: ["geocoded", "manual", "failed"],
       object_type: ["residence", "commercial", "complex", "other"],
+      pricing_type: ["per_job", "hourly", "subscription", "punch_card"],
+      service_agreement_status: ["active", "paused", "ended"],
       subscription_tier: ["starter", "pro", "enterprise"],
       user_role: ["owner", "admin", "planner", "administration", "employee"],
       weather_sensitivity_type: ["rain", "frost", "wind"],

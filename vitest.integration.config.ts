@@ -21,5 +21,13 @@ export default defineConfig({
     include: ['tests/integration/**/*.test.ts'],
     testTimeout: 20000,
     hookTimeout: 20000,
+    // Alle testbestanden delen één lokale Supabase-instantie (auth/GoTrue,
+    // Postgres); met meerdere bestanden draait Vitest ze standaard parallel over
+    // workers, wat tientallen gelijktijdige signUp()-calls naar dezelfde
+    // container stuurt. Sprint 2 voegde het vierde/vijfde testbestand toe
+    // waarbij dit lokaal daadwerkelijk AuthRetryableFetchError opleverde
+    // (auth-container overbelast) — sequentieel is voor gedeelde externe state
+    // sowieso robuuster dan parallel, ongeacht de omgeving.
+    fileParallelism: false,
   },
 });
