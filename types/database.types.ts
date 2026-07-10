@@ -140,6 +140,78 @@ export type Database = {
           },
         ]
       }
+      jobs: {
+        Row: {
+          actual_duration_minutes: number | null
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          estimated_duration_minutes: number
+          id: string
+          locked: boolean
+          locked_reason: string | null
+          locked_until: string | null
+          notes: string | null
+          route_id: string | null
+          scheduled_date: string
+          service_agreement_id: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["job_status"]
+          updated_at: string
+        }
+        Insert: {
+          actual_duration_minutes?: number | null
+          company_id: string
+          completed_at?: string | null
+          created_at?: string
+          estimated_duration_minutes: number
+          id?: string
+          locked?: boolean
+          locked_reason?: string | null
+          locked_until?: string | null
+          notes?: string | null
+          route_id?: string | null
+          scheduled_date: string
+          service_agreement_id: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+          updated_at?: string
+        }
+        Update: {
+          actual_duration_minutes?: number | null
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          estimated_duration_minutes?: number
+          id?: string
+          locked?: boolean
+          locked_reason?: string | null
+          locked_until?: string | null
+          notes?: string | null
+          route_id?: string | null
+          scheduled_date?: string
+          service_agreement_id?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_service_agreement_id_fkey"
+            columns: ["service_agreement_id"]
+            isOneToOne: false
+            referencedRelation: "service_agreements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       objects: {
         Row: {
           access_notes: string | null
@@ -279,6 +351,8 @@ export type Database = {
           frequency_interval_days: number | null
           frequency_type: Database["public"]["Enums"]["frequency_type"]
           id: string
+          last_completed_job_id: string | null
+          next_ideal_date: string | null
           object_id: string
           paused_until: string | null
           preferred_day: number | null
@@ -298,6 +372,8 @@ export type Database = {
           frequency_interval_days?: number | null
           frequency_type: Database["public"]["Enums"]["frequency_type"]
           id?: string
+          last_completed_job_id?: string | null
+          next_ideal_date?: string | null
           object_id: string
           paused_until?: string | null
           preferred_day?: number | null
@@ -317,6 +393,8 @@ export type Database = {
           frequency_interval_days?: number | null
           frequency_type?: Database["public"]["Enums"]["frequency_type"]
           id?: string
+          last_completed_job_id?: string | null
+          next_ideal_date?: string | null
           object_id?: string
           paused_until?: string | null
           preferred_day?: number | null
@@ -332,6 +410,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_agreements_last_completed_job_id_fkey"
+            columns: ["last_completed_job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
             referencedColumns: ["id"]
           },
           {
@@ -1469,6 +1554,15 @@ export type Database = {
         | "yearly"
         | "once"
         | "custom"
+      job_status:
+        | "proposed"
+        | "planned"
+        | "en_route"
+        | "completed"
+        | "invoiced"
+        | "not_home"
+        | "cancelled"
+        | "rescheduling"
       object_location_status: "geocoded" | "manual" | "failed"
       object_type: "residence" | "commercial" | "complex" | "other"
       pricing_type: "per_job" | "hourly" | "subscription" | "punch_card"
@@ -1627,6 +1721,16 @@ export const Constants = {
         "yearly",
         "once",
         "custom",
+      ],
+      job_status: [
+        "proposed",
+        "planned",
+        "en_route",
+        "completed",
+        "invoiced",
+        "not_home",
+        "cancelled",
+        "rescheduling",
       ],
       object_location_status: ["geocoded", "manual", "failed"],
       object_type: ["residence", "commercial", "complex", "other"],
