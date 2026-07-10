@@ -202,10 +202,17 @@ Deno.serve(async (req) => {
       continue;
     }
 
-    await supabase
+    const { error: nextIdealDateError } = await supabase
       .from('service_agreements')
       .update({ next_ideal_date: dates[0] })
       .eq('id', agreement.id);
+
+    if (nextIdealDateError) {
+      log('error', 'planning-generate: next_ideal_date-update mislukt', {
+        code: nextIdealDateError.code,
+        serviceAgreementId: agreement.id,
+      });
+    }
 
     generatedJobs.push({ service_agreement_id: agreement.id, dates });
   }
