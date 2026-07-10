@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from '@/components/primitives/select';
 import { Textarea } from '@/components/primitives/textarea';
+import { resolveRedirectPath } from '@/lib/utils';
 import { customerSchema, type CustomerInput } from '@/lib/validation/customer';
 
 interface CustomerFormProps {
@@ -36,7 +37,8 @@ interface CustomerFormProps {
     { success: true; data: { id: string } | null } | { success: false; error: { message: string } }
   >;
   submitLabel: string;
-  redirectTo: (id: string | null) => string;
+  /** Plain pad, evt. met een `:id`-placeholder (zie lib/utils.ts resolveRedirectPath). */
+  redirectTo: string;
 }
 
 const DEFAULT_VALUES: CustomerInput = {
@@ -83,7 +85,7 @@ export function CustomerForm({
         return;
       }
       toast.success('Klant opgeslagen');
-      router.push(redirectTo(result.data?.id ?? null));
+      router.push(resolveRedirectPath(redirectTo, result.data?.id ?? null));
     });
   }
 

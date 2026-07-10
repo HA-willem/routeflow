@@ -19,7 +19,7 @@ export default async function NieuweKlantPage() {
       <CustomerForm
         submitLabel="Klant aanmaken"
         onSubmit={createCustomer}
-        redirectTo={(id) => `/klanten/${id}`}
+        redirectTo="/klanten/:id"
       />
     </div>
   );

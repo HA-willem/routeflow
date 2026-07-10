@@ -56,7 +56,7 @@ export default async function DienstBewerkenPage({ params }: { params: Promise<{
           colorHex: service.color_hex ?? undefined,
         }}
         onSubmit={updateService.bind(null, service.id)}
-        redirectTo={() => '/instellingen/diensten'}
+        redirectTo="/instellingen/diensten"
       />
     </div>
   );

@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from '@/components/primitives/select';
 import { Textarea } from '@/components/primitives/textarea';
+import { resolveRedirectPath } from '@/lib/utils';
 import { serviceSchema, type ServiceInput } from '@/lib/validation/service';
 
 interface ServiceFormProps {
@@ -36,7 +37,8 @@ interface ServiceFormProps {
     { success: true; data: { id: string } | null } | { success: false; error: { message: string } }
   >;
   submitLabel: string;
-  redirectTo: (id: string | null) => string;
+  /** Plain pad, evt. met een `:id`-placeholder (zie lib/utils.ts resolveRedirectPath). */
+  redirectTo: string;
 }
 
 const DEFAULT_VALUES: ServiceInput = {
@@ -82,7 +84,7 @@ export function ServiceForm({
         return;
       }
       toast.success('Dienst opgeslagen');
-      router.push(redirectTo(result.data?.id ?? null));
+      router.push(resolveRedirectPath(redirectTo, result.data?.id ?? null));
     });
   }
 

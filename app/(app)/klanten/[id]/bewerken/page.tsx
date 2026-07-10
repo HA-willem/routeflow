@@ -48,7 +48,7 @@ export default async function KlantBewerkenPage({ params }: { params: Promise<{ 
           notes: customer.notes ?? undefined,
         }}
         onSubmit={updateCustomer.bind(null, customer.id)}
-        redirectTo={() => `/klanten/${customer.id}`}
+        redirectTo={`/klanten/${customer.id}`}
       />
     </div>
   );

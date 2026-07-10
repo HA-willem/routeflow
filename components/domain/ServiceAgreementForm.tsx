@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/primitives/select';
+import { resolveRedirectPath } from '@/lib/utils';
 import {
   serviceAgreementSchema,
   type ServiceAgreementInput,
@@ -44,7 +45,8 @@ interface ServiceAgreementFormProps {
     { success: true; data: { id: string } | null } | { success: false; error: { message: string } }
   >;
   submitLabel: string;
-  redirectTo: (id: string | null) => string;
+  /** Plain pad, evt. met een `:id`-placeholder (zie lib/utils.ts resolveRedirectPath). */
+  redirectTo: string;
 }
 
 const DEFAULT_VALUES: ServiceAgreementInput = {
@@ -112,7 +114,7 @@ export function ServiceAgreementForm({
         return;
       }
       toast.success('Dienstafspraak opgeslagen');
-      router.push(redirectTo(result.data?.id ?? null));
+      router.push(resolveRedirectPath(redirectTo, result.data?.id ?? null));
     });
   }
 

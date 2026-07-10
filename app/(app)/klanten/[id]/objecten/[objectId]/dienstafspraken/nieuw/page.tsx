@@ -48,7 +48,7 @@ export default async function NieuweDienstafspraakPage({
         services={services ?? []}
         submitLabel="Afspraak aanmaken"
         onSubmit={createServiceAgreement.bind(null, customerId, objectId)}
-        redirectTo={() => `/klanten/${customerId}/objecten/${objectId}`}
+        redirectTo={`/klanten/${customerId}/objecten/${objectId}`}
       />
     </div>
   );

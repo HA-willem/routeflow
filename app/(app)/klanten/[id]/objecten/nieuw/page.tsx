@@ -34,7 +34,7 @@ export default async function NieuwObjectPage({ params }: { params: Promise<{ id
       <ObjectForm
         submitLabel="Object aanmaken"
         onSubmit={createObject.bind(null, customerId)}
-        redirectTo={(objectId) => `/klanten/${customerId}/objecten/${objectId}`}
+        redirectTo={`/klanten/${customerId}/objecten/:id`}
       />
     </div>
   );

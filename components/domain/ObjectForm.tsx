@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/primitives/select';
 import { Textarea } from '@/components/primitives/textarea';
+import { resolveRedirectPath } from '@/lib/utils';
 import { objectSchema, type ObjectInput } from '@/lib/validation/object';
 
 interface ObjectFormProps {
@@ -34,7 +35,8 @@ interface ObjectFormProps {
     { success: true; data: { id: string } | null } | { success: false; error: { message: string } }
   >;
   submitLabel: string;
-  redirectTo: (id: string | null) => string;
+  /** Plain pad, evt. met een `:id`-placeholder (zie lib/utils.ts resolveRedirectPath). */
+  redirectTo: string;
 }
 
 const DEFAULT_VALUES: ObjectInput = {
@@ -72,7 +74,7 @@ export function ObjectForm({ defaultValues, onSubmit, submitLabel, redirectTo }:
         return;
       }
       toast.success('Object opgeslagen');
-      router.push(redirectTo(result.data?.id ?? null));
+      router.push(resolveRedirectPath(redirectTo, result.data?.id ?? null));
     });
   }
 

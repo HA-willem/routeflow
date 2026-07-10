@@ -55,9 +55,9 @@ export default async function DienstafspraakBewerkenPage({
         action={
           <ServiceAgreementStatusActions
             status={agreement.status}
-            onPause={(input) => pauseServiceAgreement(customerId, objectId, agreement.id, input)}
-            onResume={() => resumeServiceAgreement(customerId, objectId, agreement.id)}
-            onEnd={() => endServiceAgreement(customerId, objectId, agreement.id)}
+            onPause={pauseServiceAgreement.bind(null, customerId, objectId, agreement.id)}
+            onResume={resumeServiceAgreement.bind(null, customerId, objectId, agreement.id)}
+            onEnd={endServiceAgreement.bind(null, customerId, objectId, agreement.id)}
           />
         }
       />
@@ -79,7 +79,7 @@ export default async function DienstafspraakBewerkenPage({
           vatRate: Number(pricing.vat_rate),
         }}
         onSubmit={updateServiceAgreement.bind(null, customerId, objectId, agreement.id, pricing.id)}
-        redirectTo={() => `/klanten/${customerId}/objecten/${objectId}`}
+        redirectTo={`/klanten/${customerId}/objecten/${objectId}`}
       />
     </div>
   );

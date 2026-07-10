@@ -19,7 +19,7 @@ export default async function NieuweDienstPage() {
       <ServiceForm
         submitLabel="Dienst aanmaken"
         onSubmit={createService}
-        redirectTo={() => '/instellingen/diensten'}
+        redirectTo="/instellingen/diensten"
       />
     </div>
   );

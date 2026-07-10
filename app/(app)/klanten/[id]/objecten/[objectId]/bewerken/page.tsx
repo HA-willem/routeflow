@@ -48,7 +48,7 @@ export default async function ObjectBewerkenPage({
           accessNotes: object.access_notes ?? undefined,
         }}
         onSubmit={updateObject.bind(null, customerId, object.id)}
-        redirectTo={() => `/klanten/${customerId}/objecten/${object.id}`}
+        redirectTo={`/klanten/${customerId}/objecten/${object.id}`}
       />
     </div>
   );
