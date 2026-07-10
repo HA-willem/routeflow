@@ -10,8 +10,8 @@ Premium SaaS voor Nederlandse servicebedrijven met terugkerende werkzaamheden (s
 - ✅ **Sprint 2 voltooid** — klanten, objecten, diensten & geocoding (`v0.2.0`)
 - ✅ **Sprint 3 voltooid** — dienstafspraken, prijzen & automatische beurt-generatie
 - ✅ **Deployment voltooid** — Vercel live, Supabase Cloud gekoppeld (migraties 001–010)
-- ⚠️ **Bekend productieprobleem:** registratie en login op productie geven momenteel een generieke authenticatiefout (zie `docs/DEPLOYMENT_REPORT_2026-07-10.md`) — vermoedelijk een Supabase Auth/env-configuratieprobleem in Vercel, losstaand van de migraties. Nog niet opgelost.
-- ⚠️ De `planning-generate` Edge Function is nog niet naar Supabase Cloud gedeployed (staat alleen lokaal).
+- ✅ **Productie-auth werkend** — registratie/bevestigingsmail/login/onboarding/logout/opnieuw-inloggen zijn end-to-end geverifieerd op productie, na correctie van de Vercel `NEXT_PUBLIC_SUPABASE_ANON_KEY` en de Supabase Auth Site URL/Redirect URLs (zie `docs/PRODUCTION_READINESS_REPORT_2026-07-10.md`). **GO FOR PUBLIC BETA**, met de aantekening dat custom SMTP nog ingesteld moet worden vóór trafiek op schaal.
+- ⚠️ De `planning-generate` Edge Function is nog niet naar Supabase Cloud gedeployed (staat alleen lokaal) — "eerste planning-generatie" werkt daardoor nog niet voor nieuwe klanten in productie.
 
 ## Deployment
 - **Productie:** [routeflow-delta.vercel.app](https://routeflow-delta.vercel.app) (Vercel)
