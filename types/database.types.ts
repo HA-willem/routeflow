@@ -140,6 +140,75 @@ export type Database = {
           },
         ]
       }
+      objects: {
+        Row: {
+          access_notes: string | null
+          address_line1: string
+          address_line2: string | null
+          archived_at: string | null
+          city: string
+          company_id: string
+          country_code: string
+          created_at: string
+          customer_id: string
+          id: string
+          location: unknown
+          location_status: Database["public"]["Enums"]["object_location_status"]
+          postal_code: string
+          type: Database["public"]["Enums"]["object_type"]
+          updated_at: string
+        }
+        Insert: {
+          access_notes?: string | null
+          address_line1: string
+          address_line2?: string | null
+          archived_at?: string | null
+          city: string
+          company_id: string
+          country_code?: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          location?: unknown
+          location_status?: Database["public"]["Enums"]["object_location_status"]
+          postal_code: string
+          type: Database["public"]["Enums"]["object_type"]
+          updated_at?: string
+        }
+        Update: {
+          access_notes?: string | null
+          address_line1?: string
+          address_line2?: string | null
+          archived_at?: string | null
+          city?: string
+          company_id?: string
+          country_code?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          location?: unknown
+          location_status?: Database["public"]["Enums"]["object_location_status"]
+          postal_code?: string
+          type?: Database["public"]["Enums"]["object_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objects_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objects_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spatial_ref_sys: {
         Row: {
           auth_name: string | null
@@ -1176,6 +1245,8 @@ export type Database = {
     Enums: {
       billing_preference: "email" | "whatsapp" | "post"
       customer_type: "person" | "business"
+      object_location_status: "geocoded" | "manual" | "failed"
+      object_type: "residence" | "commercial" | "complex" | "other"
       subscription_tier: "starter" | "pro" | "enterprise"
       user_role: "owner" | "admin" | "planner" | "administration" | "employee"
     }
@@ -1318,6 +1389,8 @@ export const Constants = {
     Enums: {
       billing_preference: ["email", "whatsapp", "post"],
       customer_type: ["person", "business"],
+      object_location_status: ["geocoded", "manual", "failed"],
+      object_type: ["residence", "commercial", "complex", "other"],
       subscription_tier: ["starter", "pro", "enterprise"],
       user_role: ["owner", "admin", "planner", "administration", "employee"],
     },
