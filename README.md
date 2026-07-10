@@ -9,12 +9,13 @@ Premium SaaS voor Nederlandse servicebedrijven met terugkerende werkzaamheden (s
 - ✅ **Sprint 1 voltooid** — fundament, tenancy & auth (40_Implementatieplan.md)
 - ✅ **Sprint 2 voltooid** — klanten, objecten, diensten & geocoding (`v0.2.0`)
 - ✅ **Sprint 3 voltooid** — dienstafspraken, prijzen & automatische beurt-generatie
-- ✅ **Deployment voltooid** — Vercel live, Supabase Cloud gekoppeld (migraties 001–008)
-- ⚠️ Migraties 009–010 (`jobs`, service-agreement horizon) staan lokaal klaar maar zijn nog niet naar Supabase Cloud gepusht — zie Deployment hieronder.
+- ✅ **Deployment voltooid** — Vercel live, Supabase Cloud gekoppeld (migraties 001–010)
+- ⚠️ **Bekend productieprobleem:** registratie en login op productie geven momenteel een generieke authenticatiefout (zie `docs/DEPLOYMENT_REPORT_2026-07-10.md`) — vermoedelijk een Supabase Auth/env-configuratieprobleem in Vercel, losstaand van de migraties. Nog niet opgelost.
+- ⚠️ De `planning-generate` Edge Function is nog niet naar Supabase Cloud gedeployed (staat alleen lokaal).
 
 ## Deployment
 - **Productie:** [routeflow-delta.vercel.app](https://routeflow-delta.vercel.app) (Vercel)
-- **Database:** Supabase Cloud project "Routeflow" (eu-west-1), RLS-multitenancy, migraties 001–008 toegepast (geverifieerd via `npx supabase migration list`; 009–010 staan nog open)
+- **Database:** Supabase Cloud project "Routeflow" (eu-west-1), RLS-multitenancy, migraties 001–010 toegepast (geverifieerd via `npx supabase migration list`)
 - Lokale ontwikkeling gebruikt de Supabase CLI (`npx supabase start`) tegen een losse lokale instantie — zie `41_CodingStandards.md` § 8/9.
 
 ## Werkwijze (met Claude Code)
