@@ -1,13 +1,16 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { z } from 'zod';
 
 import { requireOnboardedUser } from '@/lib/auth/session';
 import { actionError, actionSuccess, type ActionResult, validationActionError } from '@/lib/errors';
 import { logger } from '@/lib/logging/logger';
 import { createClient } from '@/lib/supabase/server';
-import { frequencyIntervalDays, serviceAgreementSchema } from '@/lib/validation/service-agreement';
+import {
+  frequencyIntervalDays,
+  pauseServiceAgreementSchema,
+  serviceAgreementSchema,
+} from '@/lib/validation/service-agreement';
 
 /** FR-020: horizon-laag genereert 12 weken vooruit (40_Implementatieplan.md Sprint 3). */
 const HORIZON_WEEKS = 12;
@@ -216,14 +219,6 @@ export async function updateServiceAgreement(
   return actionSuccess(null);
 }
 
-const pauseSchema = z.object({
-  pausedUntil: z
-    .string()
-    .refine((value) => new Date(value) >= new Date(new Date().toDateString()), {
-      message: 'De pauzeerdatum mag niet in het verleden liggen.',
-    }),
-});
-
 /** FR-005: pauzeren. */
 export async function pauseServiceAgreement(
   customerId: string,
@@ -231,7 +226,7 @@ export async function pauseServiceAgreement(
   agreementId: string,
   input: unknown,
 ): Promise<ActionResult<null>> {
-  const parsed = pauseSchema.safeParse(input);
+  const parsed = pauseServiceAgreementSchema.safeParse(input);
   if (!parsed.success) {
     return validationActionError(parsed.error, 'Kies een geldige pauzeerdatum.');
   }

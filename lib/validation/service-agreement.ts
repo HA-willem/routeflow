@@ -55,6 +55,15 @@ export const serviceAgreementSchema = z
 
 export type ServiceAgreementInput = z.infer<typeof serviceAgreementSchema>;
 
+/** FR-005: pauzeerdatum mag niet in het verleden liggen. */
+export const pauseServiceAgreementSchema = z.object({
+  pausedUntil: z
+    .string()
+    .refine((value) => new Date(value) >= new Date(new Date().toDateString()), {
+      message: 'De pauzeerdatum mag niet in het verleden liggen.',
+    }),
+});
+
 /** BR-102/FR-004: alleen weekly/biweekly/custom hebben een vaste dag-interval. */
 export function frequencyIntervalDays(
   frequencyType: ServiceAgreementInput['frequencyType'],

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { frequencyIntervalDays, serviceAgreementSchema } from './service-agreement';
+import {
+  frequencyIntervalDays,
+  pauseServiceAgreementSchema,
+  serviceAgreementSchema,
+} from './service-agreement';
 
 const valid = {
   serviceId: 'uuid-service-1',
@@ -101,5 +105,26 @@ describe('frequencyIntervalDays (BR-102/BR-103)', () => {
 
   it('geeft null voor once (BR-102: geen opvolgingsbeurt)', () => {
     expect(frequencyIntervalDays('once', undefined)).toBeNull();
+  });
+});
+
+describe('pauseServiceAgreementSchema (FR-005)', () => {
+  it('accepteert vandaag als pauzeerdatum', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    expect(pauseServiceAgreementSchema.safeParse({ pausedUntil: today }).success).toBe(true);
+  });
+
+  it('accepteert een datum in de toekomst', () => {
+    const future = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    expect(pauseServiceAgreementSchema.safeParse({ pausedUntil: future }).success).toBe(true);
+  });
+
+  it('weigert een datum in het verleden', () => {
+    const past = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const result = pauseServiceAgreementSchema.safeParse({ pausedUntil: past });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.path).toEqual(['pausedUntil']);
+    }
   });
 });
