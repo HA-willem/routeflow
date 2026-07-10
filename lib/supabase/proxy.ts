@@ -37,9 +37,26 @@ export async function updateSession(request: NextRequest): Promise<ProxySession>
     },
   });
 
-  const {
+  let {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Sprint 4-ontwikkelgemak (tijdelijk, expliciet opt-in, nooit in Vercel-env's
+  // gezet): met DEV_BYPASS_AUTH=true logt een niet-ingelogde bezoeker
+  // automatisch in als het geconfigureerde lokale testaccount, zodat /login
+  // niet steeds opnieuw doorlopen hoeft te worden tijdens UI-iteratie. Alleen
+  // actief wanneer alle drie DEV_BYPASS_*-vars gezet zijn; de echte auth/RLS
+  // blijven ongewijzigd — dit is puur een gemaksbypass van de proxy-redirect,
+  // geen wijziging aan de beveiligingsgrens zelf. Verwijderen zodra de
+  // login-flow weer actief onderwerp van ontwikkeling is.
+  if (!user && process.env.DEV_BYPASS_AUTH === 'true') {
+    const email = process.env.DEV_BYPASS_EMAIL;
+    const password = process.env.DEV_BYPASS_PASSWORD;
+    if (email && password) {
+      const { data: signInData } = await supabase.auth.signInWithPassword({ email, password });
+      user = signInData.user;
+    }
+  }
 
   if (!user) {
     return { response, isAuthenticated: false, isOnboarded: false };
