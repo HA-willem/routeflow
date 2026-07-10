@@ -507,6 +507,7 @@ Selectie; volledige set met nummering BR-xxx in 10_BusinessRules.md:
 | A-07 | BTW-default 21%, per dienst instelbaar, fiscale verantwoordelijkheid bij gebruiker | Vastgesteld |
 | A-08 | WhatsApp BSP: **360dialog** (flat fee, EU/GDPR-hosting, directe Meta Cloud API = lage lock-in) voor V1, achter messaging-adapter; Twilio als alternatief bij kanaal-consolidatie | Vastgesteld (2026-07-07), adapter-patroon; uitwerking 19_WhatsApp.md |
 | A-09 | Boekhoudkoppelingen pas V2 | Vastgesteld |
+| A-10 | Sprint 2 (Klanten/Objecten/Diensten/Dienstafspraken): `objects.location` (PostGIS-geometry) wordt **nullable** i.p.v. de NOT NULL uit 11_DatabaseConcept.md § 3.2. Reden: Sprint 2 bouwt bewust geen kaart-UI en geen Mapbox-geocoding-adapter (die landen in een latere sprint samen met Planning/Routes) — objecten worden dit sprint alleen adres-only aangemaakt (postcode/huisnummer/straat/plaats), zonder lat/lng. `location_status` default `manual`. Expand/contract (41_CodingStandards.md § 9): kolom blijft nullable tot de geocoding-adapter er is, dan pas eventueel NOT NULL. | Vastgesteld (2026-07-08), Sprint 2-kickoff |
 
 ## 20. Verwijzingen naar deeldocumenten
 

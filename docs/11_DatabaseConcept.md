@@ -192,11 +192,11 @@ erDiagram
 | `customer_id` | UUID | ✓ | FK → `customers` |
 | `address_line1` | VARCHAR(255) | ✓ | Postcode + huisnummer |
 | `address_line2` | VARCHAR(255) | ✗ | Apt/unit |
-| `postal_code` | VARCHAR(10) | ✓ | NL: 4 letters + 2 digits |
+| `postal_code` | VARCHAR(10) | ✓ | NL: 4 cijfers + 2 letters, bijv. "1234 AB" (12_Entiteiten.md § 4) |
 | `city` | VARCHAR(100) | ✓ | Plaats |
 | `country_code` | VARCHAR(2) | ✓ | default NL |
-| `location` | geometry(Point,4326) | ✓ | PostGIS lat/lng |
-| `location_status` | ENUM(geocoded, manual, failed) | ✓ | Geocoding status |
+| `location` | geometry(Point,4326) | ✗ (Sprint 2, zie PRD § 19 A-10) | PostGIS lat/lng; nullable zolang de Mapbox-geocoding-adapter nog niet gebouwd is |
+| `location_status` | ENUM(geocoded, manual, failed) | ✓ | Geocoding status; default `manual` in Sprint 2 |
 | `type` | ENUM(residence, commercial, complex, other) | ✓ | |
 | `access_notes` | TEXT | ✗ | "3x bellen", etc. |
 | `created_at` | TIMESTAMP | ✓ | UTC |
@@ -726,3 +726,4 @@ CREATE TABLE audit_log (
 | 2026-07-06 | 1.0 | Volledig uitgewerkt: ERD (Mermaid), alle 17 tabellen, constraints, RLS-strategie, indexering, soft-delete, migratie-aanpak |
 | 2026-07-08 | 1.1 | Production Readiness Review-fixes: `company_id` + RLS-policy toegevoegd aan `invoice_lines` en `payments` (ontbrak, in strijd met NFR-301 "100% RLS"); nieuwe tabel `invoice_number_counters` voor concurrency-veilige factuurnummering (BR-020); § 3.9 toegevoegd met volledige schema's voor `reminders`, `messages`, `job_photos`, `weerdata_cache`, `notification_templates` (eerder alleen elders genoemd, nooit hier gespecificeerd); expliciete deferral-notitie voor `teams` (bewust geen tabel vóór BL-025); bijbehorende indexen toegevoegd |
 | 2026-07-08 | 1.2 | Sprint 1-fix: `users.role`-enum gecorrigeerd van `(owner, admin, planner, support)` naar `(owner, admin, planner, administration, employee)` — uitgelijnd op de canonieke rollenlijst in 23_Gebruikersrollen.md § 1 (miste voorheen de Medewerker-rol volledig). 22_Authenticatie.md § 7 in dezelfde commit meegecorrigeerd. |
+| 2026-07-08 | 1.3 | Sprint 2-kickoff (PRD § 19 A-10): `objects.location` nullable gemaakt (was NOT NULL) — Sprint 2 bouwt bewust geen kaart-UI/Mapbox-geocoding-adapter; objecten worden adres-only aangemaakt. `location_status` default `manual`. |

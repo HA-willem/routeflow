@@ -65,7 +65,7 @@ User voert adres in als **postcode + huisnummer** (NL-specifiek); systeem vulde 
 5. User klikt "handmatig invoeren": toont straat/plaats-velden; lat/lng = null tot user op kaart klikt
 
 **Validatie:**
-- Postcode-format: 4 letters + 2 cijfers (regex: `^[A-Z]{2}\d{2}\s?[A-Z]{2}$`)
+- Postcode-format: 4 cijfers + 2 letters (regex: `^[1-9][0-9]{3}\s?[A-Z]{2}$`; NL-postcodes beginnen nooit met een 0)
 - Huisnummer: 1–5 cijfers, optioneel suffix (23a, 23-1, etc.)
 
 ---
@@ -604,3 +604,4 @@ Home-pagina toont snelle KPI's en actie-hints.
 | Datum | Versie | Wijziging |
 |---|---|---|
 | 2026-07-06 | 1.0 | Volledig uitgewerkt: alle FR-001 t/m FR-102, acceptatiecriteria, validaties, edge cases |
+| 2026-07-10 | 1.1 | Sprint 2-fix: FR-002-postcoderegex gecorrigeerd van `^[A-Z]{2}\d{2}\s?[A-Z]{2}$` (2 letters+2 cijfers+2 letters — matcht niet met de eigen voorbeeldwaarden "1234 AB" elders in het docset) naar `^[1-9][0-9]{3}\s?[A-Z]{2}$` (4 cijfers + 2 letters, correcte NL-postcode-vorm). 12_Entiteiten.md § 4 in dezelfde commit meegecorrigeerd. |

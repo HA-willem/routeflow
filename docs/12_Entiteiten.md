@@ -194,7 +194,7 @@ De statusmachine (10_BusinessRules.md § 2) gebruikt Nederlandse labels; de data
 
 ### Validaties
 
-- `postal_code`: regex `^[A-Z]{2}\d{2}\s?[A-Z]{2}$`
+- `postal_code`: regex `^[1-9][0-9]{3}\s?[A-Z]{2}$` (4 cijfers + 2 letters, bijv. "1234 AB"; NL-postcodes beginnen nooit met een 0)
 - `location_status='failed'` ⟹ planner moet handmatig locatie zetten
 - `address_line1 + postal_code`: moet uniek per klant (geen dubbele adressen)
 
@@ -529,3 +529,4 @@ De statusmachine (10_BusinessRules.md § 2) gebruikt Nederlandse labels; de data
 | Datum | Versie | Wijziging |
 |---|---|---|
 | 2026-07-06 | 1.0 | Volledig: 12 entiteiten, attributen, validaties, voorbeeldwaarden, NL-EN mapping |
+| 2026-07-10 | 1.1 | Sprint 2-fix: § 4 (Object) postcode-regex gecorrigeerd naar `^[1-9][0-9]{3}\s?[A-Z]{2}$` (was inconsistent met de eigen voorbeeldwaarde "1234 AB" en met 08_FunctioneleEisen.md FR-002, in dezelfde commit meegecorrigeerd). |
