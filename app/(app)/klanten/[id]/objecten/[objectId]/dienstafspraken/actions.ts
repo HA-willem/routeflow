@@ -9,6 +9,39 @@ import { logger } from '@/lib/logging/logger';
 import { createClient } from '@/lib/supabase/server';
 import { frequencyIntervalDays, serviceAgreementSchema } from '@/lib/validation/service-agreement';
 
+/** FR-020: horizon-laag genereert 12 weken vooruit (40_Implementatieplan.md Sprint 3). */
+const HORIZON_WEEKS = 12;
+
+/**
+ * FR-004 AC3 / FR-005: roept de planning-generate Edge Function aan (ADR-008 —
+ * planning genereren hoort nooit in de Server Action zelf, 41_CodingStandards.md
+ * § 7) om de eerste/eerstvolgende beurten voor deze afspraak te genereren.
+ *
+ * Bewust best-effort: als dit mislukt (bv. Edge Function tijdelijk onbereikbaar)
+ * blijft de zojuist aangemaakte/hervatte dienstafspraak toch geldig — de
+ * planner kan de beurten later alsnog laten genereren. Fout wordt gelogd, niet
+ * stilzwijgend genegeerd (41_CodingStandards.md § 10).
+ */
+async function triggerPlanningGenerate(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  serviceAgreementId: string,
+): Promise<void> {
+  const { error } = await supabase.functions.invoke('planning-generate', {
+    body: {
+      from_date: new Date().toISOString().slice(0, 10),
+      weeks: HORIZON_WEEKS,
+      service_agreement_id: serviceAgreementId,
+    },
+  });
+
+  if (error) {
+    logger.error('triggerPlanningGenerate: planning-generate aanroep mislukt', {
+      serviceAgreementId,
+      message: error.message,
+    });
+  }
+}
+
 /**
  * Dienstafspraken-CRUD (FR-004/FR-005). Een Dienstafspraak + zijn Prijsafspraak
  * zijn 1:1 (18_Prijsafspraken.md § 2) en worden hier als twee gewone,
@@ -102,6 +135,10 @@ export async function createServiceAgreement(
     });
   }
 
+  // FR-004 AC3: "eerste beurt automatisch gegenereerd" — nieuwe afspraken
+  // starten als 'active' (DB-default), dus de horizon-laag mag direct draaien.
+  await triggerPlanningGenerate(supabase, agreement.id);
+
   revalidatePath(pathFor(customerId, objectId));
   return actionSuccess({ id: agreement.id });
 }
@@ -187,12 +224,7 @@ const pauseSchema = z.object({
     }),
 });
 
-/**
- * FR-005: pauzeren. BR-030 (annuleren van toekomstige niet-vergrendelde
- * beurten) is hier NIET geïmplementeerd — er bestaan nog geen `jobs` deze
- * sprint (Planning is expliciet buiten scope); dit volgt zodra de jobs-tabel
- * er is (Sprint 3).
- */
+/** FR-005: pauzeren. */
 export async function pauseServiceAgreement(
   customerId: string,
   objectId: string,
@@ -220,6 +252,29 @@ export async function pauseServiceAgreement(
     });
   }
 
+  // BR-030: alle toekomstige NIET-vergrendelde beurten van deze afspraak
+  // worden geannuleerd; vergrendelde beurten laat de planner handmatig
+  // behandelen (BR-030 "Vergrendelde beurten"). Al afgeronde/gefactureerde/
+  // geannuleerde beurten blijven ongemoeid — alleen de nog-openstaande statussen
+  // tellen als "toekomstig te plannen werk".
+  const { error: cancelError } = await supabase
+    .from('jobs')
+    .update({ status: 'cancelled' })
+    .eq('service_agreement_id', agreementId)
+    .eq('locked', false)
+    .gte('scheduled_date', new Date().toISOString().slice(0, 10))
+    .in('status', ['proposed', 'planned', 'en_route', 'rescheduling']);
+
+  if (cancelError) {
+    // De afspraak is al gepauzeerd (belangrijkste deel van FR-005 geslaagd);
+    // dit loggen i.p.v. de hele actie te laten falen — de planner ziet de
+    // niet-geannuleerde beurten dan nog in de lijst en kan handmatig ingrijpen.
+    logger.error('pauseServiceAgreement: BR-030-annulering van beurten mislukt', {
+      code: cancelError.code,
+      agreementId,
+    });
+  }
+
   revalidatePath(pathFor(customerId, objectId));
   return actionSuccess(null);
 }
@@ -244,6 +299,10 @@ export async function resumeServiceAgreement(
       message: 'De dienstafspraak kon niet worden hervat. Probeer het opnieuw.',
     });
   }
+
+  // FR-005: "hervatten... volgende beurt wordt gegenereerd" — BR-030 annuleerde
+  // de toekomstige beurten bij pauzeren, dus de horizon-laag moet opnieuw draaien.
+  await triggerPlanningGenerate(supabase, agreementId);
 
   revalidatePath(pathFor(customerId, objectId));
   return actionSuccess(null);
