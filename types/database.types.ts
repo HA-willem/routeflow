@@ -209,6 +209,71 @@ export type Database = {
           },
         ]
       }
+      services: {
+        Row: {
+          archived_at: string | null
+          color_hex: string | null
+          company_id: string
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_weather_sensitive: boolean
+          name: string
+          standard_duration_minutes: number
+          standard_price_cents: number
+          updated_at: string
+          vat_rate: number
+          weather_sensitivity_type:
+            | Database["public"]["Enums"]["weather_sensitivity_type"]
+            | null
+        }
+        Insert: {
+          archived_at?: string | null
+          color_hex?: string | null
+          company_id: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_weather_sensitive?: boolean
+          name: string
+          standard_duration_minutes: number
+          standard_price_cents: number
+          updated_at?: string
+          vat_rate?: number
+          weather_sensitivity_type?:
+            | Database["public"]["Enums"]["weather_sensitivity_type"]
+            | null
+        }
+        Update: {
+          archived_at?: string | null
+          color_hex?: string | null
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_weather_sensitive?: boolean
+          name?: string
+          standard_duration_minutes?: number
+          standard_price_cents?: number
+          updated_at?: string
+          vat_rate?: number
+          weather_sensitivity_type?:
+            | Database["public"]["Enums"]["weather_sensitivity_type"]
+            | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spatial_ref_sys: {
         Row: {
           auth_name: string | null
@@ -1249,6 +1314,7 @@ export type Database = {
       object_type: "residence" | "commercial" | "complex" | "other"
       subscription_tier: "starter" | "pro" | "enterprise"
       user_role: "owner" | "admin" | "planner" | "administration" | "employee"
+      weather_sensitivity_type: "rain" | "frost" | "wind"
     }
     CompositeTypes: {
       geometry_dump: {
@@ -1393,6 +1459,7 @@ export const Constants = {
       object_type: ["residence", "commercial", "complex", "other"],
       subscription_tier: ["starter", "pro", "enterprise"],
       user_role: ["owner", "admin", "planner", "administration", "employee"],
+      weather_sensitivity_type: ["rain", "frost", "wind"],
     },
   },
 } as const

@@ -29,15 +29,22 @@ function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 // Semantische heading i.p.v. de shadcn-standaard <div> (41_CodingStandards.md § 4,
-// toegankelijkheid is geen aparte stap). <h1>: elke huidige pagina die Card
-// gebruikt (login/registreren/wachtwoord-vergeten/onboarding) heeft géén ander
-// heading-element, dus dit is de enige/primaire paginatitel — geen h3 die de
-// documentoutline een niveau zou laten overslaan. Zodra een pagina met meerdere
-// Cards (bv. een dashboard met KPI-kaarten) landt, moet CardTitle een `level`-
-// prop krijgen; dat is een bewuste latere aanpassing, geen aanname nu.
-function CardTitle({ className, ...props }: React.ComponentProps<'h1'>) {
+// toegankelijkheid is geen aparte stap). Default <h1> voor paginas met één Card
+// zonder ander heading-element (login/registreren/wachtwoord-vergeten/onboarding).
+// Op een pagina die al een PageHeader (eigen h1) toont — bv. instellingen-hub met
+// meerdere Cards — geef `level="h2"` mee zodat de documentoutline geen tweede h1
+// krijgt.
+function CardTitle({
+  className,
+  level: Level = 'h1',
+  ...props
+}: React.ComponentProps<'h1'> & { level?: 'h1' | 'h2' | 'h3' }) {
   return (
-    <h1 data-slot="card-title" className={cn('leading-none font-semibold', className)} {...props} />
+    <Level
+      data-slot="card-title"
+      className={cn('leading-none font-semibold', className)}
+      {...props}
+    />
   );
 }
 
