@@ -6,6 +6,7 @@ import { DataTable } from '@/components/composed/DataTable';
 import { PageHeader } from '@/components/composed/PageHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/composed/Tabs';
 import { StatusBadge } from '@/components/domain/StatusBadge';
+import { WhyExplanation } from '@/components/domain/WhyExplanation';
 import { Button } from '@/components/primitives/button';
 import { Card, CardContent } from '@/components/primitives/card';
 import { requireOnboardedUser } from '@/lib/auth/session';
@@ -73,6 +74,27 @@ export default async function ObjectDetailPage({
     .select('*, services(name), pricings(*)')
     .eq('object_id', object.id)
     .order('created_at', { ascending: true });
+
+  // FR-020/BR-700: `next_ideal_date` is de cache die de planning-generate
+  // Edge Function bijwerkt (010_service_agreements_horizon.sql). Dit is de
+  // basisvariant van WhyExplanation — de volledige berekening met scores komt
+  // in Sprint 7 (15_AIPlanner.md § 4).
+  function nextJobSummary(row: NonNullable<typeof agreements>[number]) {
+    if (row.status !== 'active') {
+      return { summary: '—', reason: 'Afspraak is niet actief.' };
+    }
+    if (!row.next_ideal_date) {
+      return { summary: 'Nog niet gegenereerd', reason: 'Wacht op de horizon-laag (FR-020).' };
+    }
+    return {
+      summary: new Date(row.next_ideal_date).toLocaleDateString('nl-NL', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }),
+      reason: `Berekend uit frequentie (${FREQUENCY_LABEL[row.frequency_type]}), BR-001.`,
+    };
+  }
 
   return (
     <div>
@@ -170,6 +192,13 @@ export default async function ObjectDetailPage({
                     tone={STATUS_BADGE[row.status].tone}
                   />
                 ),
+              },
+              {
+                header: 'Volgende beurt',
+                cell: (row) => {
+                  const { summary, reason } = nextJobSummary(row);
+                  return <WhyExplanation summary={summary} reason={reason} />;
+                },
               },
             ]}
           />
