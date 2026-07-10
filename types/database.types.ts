@@ -1,5 +1,3 @@
-// Gegenereerd bestand — NIET handmatig bewerken (41_CodingStandards.md § 8).
-// Regenereren: npx supabase gen types typescript --local > types/database.types.ts
 export type Json =
   | string
   | number
@@ -36,6 +34,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      availability: {
+        Row: {
+          company_id: string
+          created_at: string
+          date: string
+          employee_id: string
+          id: string
+          reason: string | null
+          status: Database["public"]["Enums"]["availability_status"]
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          date: string
+          employee_id: string
+          id?: string
+          reason?: string | null
+          status: Database["public"]["Enums"]["availability_status"]
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          date?: string
+          employee_id?: string
+          id?: string
+          reason?: string | null
+          status?: Database["public"]["Enums"]["availability_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "availability_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           archived_at: string | null
@@ -140,12 +183,99 @@ export type Database = {
           },
         ]
       }
+      distance_cache: {
+        Row: {
+          cached_at: string
+          distance_meters: number
+          drive_time_seconds: number
+          from_object_id: string
+          profile: string
+          provider: string
+          to_object_id: string
+        }
+        Insert: {
+          cached_at?: string
+          distance_meters: number
+          drive_time_seconds: number
+          from_object_id: string
+          profile?: string
+          provider: string
+          to_object_id: string
+        }
+        Update: {
+          cached_at?: string
+          distance_meters?: number
+          drive_time_seconds?: number
+          from_object_id?: string
+          profile?: string
+          provider?: string
+          to_object_id?: string
+        }
+        Relationships: []
+      }
+      employees: {
+        Row: {
+          archived_at: string | null
+          company_id: string
+          created_at: string
+          first_name: string
+          id: string
+          is_active: boolean
+          last_name: string
+          phone: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          company_id: string
+          created_at?: string
+          first_name: string
+          id?: string
+          is_active?: boolean
+          last_name: string
+          phone: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          archived_at?: string | null
+          company_id?: string
+          created_at?: string
+          first_name?: string
+          id?: string
+          is_active?: boolean
+          last_name?: string
+          phone?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           actual_duration_minutes: number | null
+          arrival_time: string | null
           company_id: string
           completed_at: string | null
           created_at: string
+          distance_from_prev_m: number | null
+          drive_time_from_prev_sec: number | null
           estimated_duration_minutes: number
           id: string
           locked: boolean
@@ -154,16 +284,22 @@ export type Database = {
           notes: string | null
           route_id: string | null
           scheduled_date: string
+          sequence: number | null
           service_agreement_id: string
+          service_end: string | null
+          service_start: string | null
           started_at: string | null
           status: Database["public"]["Enums"]["job_status"]
           updated_at: string
         }
         Insert: {
           actual_duration_minutes?: number | null
+          arrival_time?: string | null
           company_id: string
           completed_at?: string | null
           created_at?: string
+          distance_from_prev_m?: number | null
+          drive_time_from_prev_sec?: number | null
           estimated_duration_minutes: number
           id?: string
           locked?: boolean
@@ -172,16 +308,22 @@ export type Database = {
           notes?: string | null
           route_id?: string | null
           scheduled_date: string
+          sequence?: number | null
           service_agreement_id: string
+          service_end?: string | null
+          service_start?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["job_status"]
           updated_at?: string
         }
         Update: {
           actual_duration_minutes?: number | null
+          arrival_time?: string | null
           company_id?: string
           completed_at?: string | null
           created_at?: string
+          distance_from_prev_m?: number | null
+          drive_time_from_prev_sec?: number | null
           estimated_duration_minutes?: number
           id?: string
           locked?: boolean
@@ -190,7 +332,10 @@ export type Database = {
           notes?: string | null
           route_id?: string | null
           scheduled_date?: string
+          sequence?: number | null
           service_agreement_id?: string
+          service_end?: string | null
+          service_start?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["job_status"]
           updated_at?: string
@@ -201,6 +346,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
             referencedColumns: ["id"]
           },
           {
@@ -336,6 +488,63 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      routes: {
+        Row: {
+          company_id: string
+          created_at: string
+          employee_id: string
+          id: string
+          optimization_score: number | null
+          route_date: string
+          sequence_version: number
+          total_distance_meters: number | null
+          total_drive_time_minutes: number | null
+          total_work_time_minutes: number | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          employee_id: string
+          id?: string
+          optimization_score?: number | null
+          route_date: string
+          sequence_version?: number
+          total_distance_meters?: number | null
+          total_drive_time_minutes?: number | null
+          total_work_time_minutes?: number | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          employee_id?: string
+          id?: string
+          optimization_score?: number | null
+          route_date?: string
+          sequence_version?: number
+          total_distance_meters?: number | null
+          total_drive_time_minutes?: number | null
+          total_work_time_minutes?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routes_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -1541,6 +1750,7 @@ export type Database = {
       }
     }
     Enums: {
+      availability_status: "available" | "sick" | "leave"
       billing_period: "per_job" | "weekly" | "monthly" | "quarterly"
       billing_preference: "email" | "whatsapp" | "post"
       billing_timing: "advance" | "arrears"
@@ -1708,6 +1918,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      availability_status: ["available", "sick", "leave"],
       billing_period: ["per_job", "weekly", "monthly", "quarterly"],
       billing_preference: ["email", "whatsapp", "post"],
       billing_timing: ["advance", "arrears"],
