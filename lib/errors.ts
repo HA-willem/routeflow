@@ -1,3 +1,4 @@
+import type { PostgrestError } from '@supabase/supabase-js';
 import type { ZodError } from 'zod';
 
 /**
@@ -34,4 +35,21 @@ export function validationActionError(
     code: 'validation_error',
     message: error.issues[0]?.message ?? fallbackMessage,
   });
+}
+
+/**
+ * Zet een mislukte insert/update van PostgREST om naar het uniforme foutmodel.
+ * Elke Server Action deed dit voorheen zelf met dezelfde `error?.code === '23505'`
+ * (unique violation, Postgres errcode) check — hier gedeeld getrokken
+ * (41_CodingStandards.md § 7: "server-side herhaald").
+ */
+export function mapPostgresError(
+  error: PostgrestError | null,
+  uniqueViolation: { code: string; message: string },
+  fallback: { code: string; message: string },
+): { success: false; error: AppError } {
+  if (error?.code === '23505') {
+    return actionError(uniqueViolation);
+  }
+  return actionError({ code: error?.code || fallback.code, message: fallback.message });
 }

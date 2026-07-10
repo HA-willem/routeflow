@@ -4,7 +4,13 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { requireOnboardedUser } from '@/lib/auth/session';
-import { actionError, actionSuccess, type ActionResult, validationActionError } from '@/lib/errors';
+import {
+  actionError,
+  actionSuccess,
+  type ActionResult,
+  mapPostgresError,
+  validationActionError,
+} from '@/lib/errors';
 import { logger } from '@/lib/logging/logger';
 import { createClient } from '@/lib/supabase/server';
 import { objectSchema } from '@/lib/validation/object';
@@ -42,17 +48,17 @@ export async function createObject(
     .single();
 
   if (error || !data) {
-    if (error?.code === '23505') {
-      return actionError({
-        code: 'object_address_taken',
-        message: 'Dit adres is al toegevoegd bij deze klant.',
-      });
+    if (error?.code !== '23505') {
+      logger.error('createObject failed', { code: error?.code, customerId });
     }
-    logger.error('createObject failed', { code: error?.code, customerId });
-    return actionError({
-      code: error?.code || 'create_object_failed',
-      message: 'Het object kon niet worden aangemaakt. Probeer het opnieuw.',
-    });
+    return mapPostgresError(
+      error,
+      { code: 'object_address_taken', message: 'Dit adres is al toegevoegd bij deze klant.' },
+      {
+        code: 'create_object_failed',
+        message: 'Het object kon niet worden aangemaakt. Probeer het opnieuw.',
+      },
+    );
   }
 
   revalidatePath(`/klanten/${customerId}`);
@@ -86,17 +92,17 @@ export async function updateObject(
     .eq('id', objectId);
 
   if (error) {
-    if (error.code === '23505') {
-      return actionError({
-        code: 'object_address_taken',
-        message: 'Dit adres is al toegevoegd bij deze klant.',
-      });
+    if (error.code !== '23505') {
+      logger.error('updateObject failed', { code: error.code, objectId });
     }
-    logger.error('updateObject failed', { code: error.code, objectId });
-    return actionError({
-      code: error.code || 'update_object_failed',
-      message: 'Het object kon niet worden bijgewerkt. Probeer het opnieuw.',
-    });
+    return mapPostgresError(
+      error,
+      { code: 'object_address_taken', message: 'Dit adres is al toegevoegd bij deze klant.' },
+      {
+        code: 'update_object_failed',
+        message: 'Het object kon niet worden bijgewerkt. Probeer het opnieuw.',
+      },
+    );
   }
 
   revalidatePath(`/klanten/${customerId}`);

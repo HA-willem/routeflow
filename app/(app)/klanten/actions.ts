@@ -4,7 +4,13 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { requireOnboardedUser } from '@/lib/auth/session';
-import { actionError, actionSuccess, type ActionResult, validationActionError } from '@/lib/errors';
+import {
+  actionError,
+  actionSuccess,
+  type ActionResult,
+  mapPostgresError,
+  validationActionError,
+} from '@/lib/errors';
 import { logger } from '@/lib/logging/logger';
 import { createClient } from '@/lib/supabase/server';
 import { customerSchema } from '@/lib/validation/customer';
@@ -45,17 +51,17 @@ export async function createCustomer(input: unknown): Promise<ActionResult<{ id:
     .single();
 
   if (error || !data) {
-    if (error?.code === '23505') {
-      return actionError({
-        code: 'customer_email_taken',
-        message: 'Deze e-mail is al in gebruik.',
-      });
+    if (error?.code !== '23505') {
+      logger.error('createCustomer failed', { code: error?.code, companyId: profile.company_id });
     }
-    logger.error('createCustomer failed', { code: error?.code, companyId: profile.company_id });
-    return actionError({
-      code: error?.code || 'create_customer_failed',
-      message: 'De klant kon niet worden aangemaakt. Probeer het opnieuw.',
-    });
+    return mapPostgresError(
+      error,
+      { code: 'customer_email_taken', message: 'Deze e-mail is al in gebruik.' },
+      {
+        code: 'create_customer_failed',
+        message: 'De klant kon niet worden aangemaakt. Probeer het opnieuw.',
+      },
+    );
   }
 
   revalidatePath('/klanten');
@@ -93,17 +99,17 @@ export async function updateCustomer(
     .eq('id', customerId);
 
   if (error) {
-    if (error.code === '23505') {
-      return actionError({
-        code: 'customer_email_taken',
-        message: 'Deze e-mail is al in gebruik.',
-      });
+    if (error.code !== '23505') {
+      logger.error('updateCustomer failed', { code: error.code, customerId });
     }
-    logger.error('updateCustomer failed', { code: error.code, customerId });
-    return actionError({
-      code: error.code || 'update_customer_failed',
-      message: 'De klant kon niet worden bijgewerkt. Probeer het opnieuw.',
-    });
+    return mapPostgresError(
+      error,
+      { code: 'customer_email_taken', message: 'Deze e-mail is al in gebruik.' },
+      {
+        code: 'update_customer_failed',
+        message: 'De klant kon niet worden bijgewerkt. Probeer het opnieuw.',
+      },
+    );
   }
 
   revalidatePath('/klanten');
