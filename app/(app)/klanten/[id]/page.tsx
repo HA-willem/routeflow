@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/composed/
 import { Button } from '@/components/primitives/button';
 import { Card, CardContent } from '@/components/primitives/card';
 import { requireOnboardedUser } from '@/lib/auth/session';
+import { BILLING_PREFERENCE_LABEL, CUSTOMER_TYPE_LABEL, OBJECT_TYPE_LABEL } from '@/lib/labels';
 import { createClient } from '@/lib/supabase/server';
 
 import { archiveCustomer } from '../actions';
@@ -16,24 +17,6 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Klant — RouteFlow',
-};
-
-const CUSTOMER_TYPE_LABEL: Record<'person' | 'business', string> = {
-  person: 'Particulier',
-  business: 'Zakelijk',
-};
-
-const BILLING_PREFERENCE_LABEL: Record<'email' | 'whatsapp' | 'post', string> = {
-  email: 'E-mail',
-  whatsapp: 'WhatsApp',
-  post: 'Post',
-};
-
-const OBJECT_TYPE_LABEL: Record<'residence' | 'commercial' | 'complex' | 'other', string> = {
-  residence: 'Woning',
-  commercial: 'Bedrijfspand',
-  complex: 'Appartementencomplex',
-  other: 'Overig',
 };
 
 export default async function KlantDetailPage({ params }: { params: Promise<{ id: string }> }) {

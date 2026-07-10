@@ -10,6 +10,7 @@ import { WhyExplanation } from '@/components/domain/WhyExplanation';
 import { Button } from '@/components/primitives/button';
 import { Card, CardContent } from '@/components/primitives/card';
 import { requireOnboardedUser } from '@/lib/auth/session';
+import { FREQUENCY_LABEL, OBJECT_TYPE_LABEL } from '@/lib/labels';
 import { createClient } from '@/lib/supabase/server';
 
 import { archiveObject } from '../actions';
@@ -18,26 +19,6 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Object — RouteFlow',
-};
-
-const OBJECT_TYPE_LABEL: Record<'residence' | 'commercial' | 'complex' | 'other', string> = {
-  residence: 'Woning',
-  commercial: 'Bedrijfspand',
-  complex: 'Appartementencomplex',
-  other: 'Overig',
-};
-
-const FREQUENCY_LABEL: Record<
-  'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'yearly' | 'once' | 'custom',
-  string
-> = {
-  weekly: 'Wekelijks',
-  biweekly: 'Elke 2 weken',
-  monthly: 'Maandelijks',
-  quarterly: 'Elk kwartaal',
-  yearly: 'Jaarlijks',
-  once: 'Eenmalig',
-  custom: 'Aangepast',
 };
 
 const STATUS_BADGE: Record<

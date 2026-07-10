@@ -4,20 +4,13 @@ import { DataTable } from '@/components/composed/DataTable';
 import { PageHeader } from '@/components/composed/PageHeader';
 import { Button } from '@/components/primitives/button';
 import { requireOnboardedUser } from '@/lib/auth/session';
+import { CUSTOMER_TYPE_LABEL } from '@/lib/labels';
 import { createClient } from '@/lib/supabase/server';
-import type { Database } from '@/types/database.types';
 
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Klanten — RouteFlow',
-};
-
-type Customer = Database['public']['Tables']['customers']['Row'];
-
-const CUSTOMER_TYPE_LABEL: Record<Customer['type'], string> = {
-  person: 'Particulier',
-  business: 'Zakelijk',
 };
 
 export default async function KlantenPage() {

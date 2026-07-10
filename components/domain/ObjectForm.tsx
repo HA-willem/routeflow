@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/primitives/select';
 import { Textarea } from '@/components/primitives/textarea';
+import { OBJECT_TYPE_LABEL } from '@/lib/labels';
 import { resolveRedirectPath } from '@/lib/utils';
 import { objectSchema, type ObjectInput } from '@/lib/validation/object';
 
@@ -47,13 +48,6 @@ const DEFAULT_VALUES: ObjectInput = {
   countryCode: 'NL',
   type: 'residence',
   accessNotes: undefined,
-};
-
-const OBJECT_TYPE_LABEL: Record<ObjectInput['type'], string> = {
-  residence: 'Woning',
-  commercial: 'Bedrijfspand',
-  complex: 'Appartementencomplex',
-  other: 'Overig',
 };
 
 /** ObjectForm — FR-002/FR-003. Adres-only (PRD § 19 A-10, geen geocoding dit sprint). */

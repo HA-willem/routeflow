@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/primitives/select';
+import { FREQUENCY_LABEL } from '@/lib/labels';
 import { resolveRedirectPath } from '@/lib/utils';
 import {
   serviceAgreementSchema,
@@ -61,16 +62,6 @@ const DEFAULT_VALUES: ServiceAgreementInput = {
   amountEuros: undefined,
   hourlyRateEuros: undefined,
   vatRate: 21,
-};
-
-const FREQUENCY_LABEL: Record<ServiceAgreementInput['frequencyType'], string> = {
-  weekly: 'Wekelijks',
-  biweekly: 'Elke 2 weken',
-  monthly: 'Maandelijks',
-  quarterly: 'Elk kwartaal',
-  yearly: 'Jaarlijks',
-  once: 'Eenmalig',
-  custom: 'Aangepast',
 };
 
 const WEEKDAY_LABEL = [
