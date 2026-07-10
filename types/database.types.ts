@@ -72,6 +72,74 @@ export type Database = {
         }
         Relationships: []
       }
+      customers: {
+        Row: {
+          archived_at: string | null
+          billing_preference: Database["public"]["Enums"]["billing_preference"]
+          company_id: string
+          created_at: string
+          email: string | null
+          email_opt_in: boolean
+          id: string
+          kvk_number: string | null
+          name: string
+          notes: string | null
+          payment_terms_days: number
+          phone: string | null
+          type: Database["public"]["Enums"]["customer_type"]
+          updated_at: string
+          vat_number: string | null
+          whatsapp_number: string | null
+          whatsapp_opt_in: boolean
+        }
+        Insert: {
+          archived_at?: string | null
+          billing_preference?: Database["public"]["Enums"]["billing_preference"]
+          company_id: string
+          created_at?: string
+          email?: string | null
+          email_opt_in?: boolean
+          id?: string
+          kvk_number?: string | null
+          name: string
+          notes?: string | null
+          payment_terms_days?: number
+          phone?: string | null
+          type: Database["public"]["Enums"]["customer_type"]
+          updated_at?: string
+          vat_number?: string | null
+          whatsapp_number?: string | null
+          whatsapp_opt_in?: boolean
+        }
+        Update: {
+          archived_at?: string | null
+          billing_preference?: Database["public"]["Enums"]["billing_preference"]
+          company_id?: string
+          created_at?: string
+          email?: string | null
+          email_opt_in?: boolean
+          id?: string
+          kvk_number?: string | null
+          name?: string
+          notes?: string | null
+          payment_terms_days?: number
+          phone?: string | null
+          type?: Database["public"]["Enums"]["customer_type"]
+          updated_at?: string
+          vat_number?: string | null
+          whatsapp_number?: string | null
+          whatsapp_opt_in?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spatial_ref_sys: {
         Row: {
           auth_name: string | null
@@ -314,6 +382,10 @@ export type Database = {
             Returns: string
           }
       current_company_id: { Args: never; Returns: string }
+      current_user_role: {
+        Args: never
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
         | {
@@ -1102,6 +1174,8 @@ export type Database = {
       }
     }
     Enums: {
+      billing_preference: "email" | "whatsapp" | "post"
+      customer_type: "person" | "business"
       subscription_tier: "starter" | "pro" | "enterprise"
       user_role: "owner" | "admin" | "planner" | "administration" | "employee"
     }
@@ -1242,6 +1316,8 @@ export const Constants = {
   },
   public: {
     Enums: {
+      billing_preference: ["email", "whatsapp", "post"],
+      customer_type: ["person", "business"],
       subscription_tier: ["starter", "pro", "enterprise"],
       user_role: ["owner", "admin", "planner", "administration", "employee"],
     },
