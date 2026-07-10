@@ -8,8 +8,8 @@ Premium SaaS voor Nederlandse servicebedrijven met terugkerende werkzaamheden (s
 - ✅ `docs/01`–`41` — documentatiefase afgerond (incl. Implementatieplan en Coding Standards)
 - ✅ **Sprint 1 voltooid** — fundament, tenancy & auth (40_Implementatieplan.md)
 - ✅ **Sprint 2 voltooid** — klanten, objecten, diensten & geocoding (`v0.2.0`)
-- 🔄 Sprint 3 — dienstafspraken, prijzen & automatische beurt-generatie (in ontwikkeling)
-- ✅ **Deployment voltooid** — Vercel live, Supabase Cloud gekoppeld (migraties 001–008)
+- ✅ **Sprint 3 voltooid** — dienstafspraken, prijzen & automatische beurt-generatie
+- ✅ **Deployment voltooid** — Vercel live, Supabase Cloud gekoppeld (migraties 001–010)
 
 ## Deployment
 - **Productie:** [routeflow-delta.vercel.app](https://routeflow-delta.vercel.app) (Vercel)
