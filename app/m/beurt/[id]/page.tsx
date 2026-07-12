@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { StatusBadge } from '@/components/domain/StatusBadge';
@@ -64,6 +65,15 @@ export default async function BeurtDetailPage({ params }: { params: Promise<{ id
       </p>
       {object?.access_notes && (
         <p className="bg-surface text-text mt-3 rounded-md p-3 text-sm">{object.access_notes}</p>
+      )}
+
+      {(job.status === 'completed' || job.status === 'invoiced') && (
+        <Link
+          href={`/m/beurt/${job.id}/werkbon`}
+          className="text-primary mt-3 inline-block text-sm underline"
+        >
+          Werkbon bekijken
+        </Link>
       )}
 
       <JobExecutionPanel
