@@ -81,7 +81,7 @@ const config = [
     },
   },
   {
-    files: ['lib/logging/**'],
+    files: ['lib/logging/**', 'scripts/**'],
     rules: {
       'no-console': 'off',
     },
