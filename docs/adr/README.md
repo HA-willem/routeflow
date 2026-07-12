@@ -20,8 +20,12 @@ Dit is het register van architectuurbeslissingen voor RouteFlow. Elke ADR legt e
 | [ADR-008](ADR-008-edge-functions.md) | Supabase Edge Functions voor server-side domeinlogica | Accepted |
 | [ADR-009](ADR-009-pwa-architecture.md) | PWA-architectuur voor de medewerker-uitvoering | Accepted |
 | [ADR-010](ADR-010-ai-planner-architecture.md) | AI Planner — drielagen-architectuur | Accepted |
+| [ADR-011](ADR-011-human-in-the-loop-ai.md) | Human-in-the-Loop AI — Agent-orchestratie & Morning Briefing | Accepted |
+| [ADR-012](ADR-012-ai-execution-pipeline.md) | AI Execution Pipeline — runtime-samenwerking tussen agents | Accepted |
 
 ## Relaties
 
 - `../33_Roadmap.md` en `../40_Implementatieplan.md` bouwen op deze beslissingen.
 - Productbeslissingen A-04 t/m A-08 (`../00_PRD.md` § 19) zijn hier architecturaal uitgewerkt (ADR-005, ADR-006).
+- ADR-011 generaliseert ADR-010 naar een meervoudige agent-architectuur; `../43_AI_Agents.md` is de operationele uitwerking per agent.
+- ADR-012 specificeert de technische runtime-mechaniek (orchestratie, execution pipeline, kosten, failure handling) waarmee ADR-011's agents daadwerkelijk uitvoeren — de *hoe*-laag onder ADR-011's *wat/waarom*.
