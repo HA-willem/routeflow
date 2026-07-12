@@ -1,10 +1,10 @@
 # 27 — Pagina-Overzicht
 
 **Status:** DONE
-**Versie:** 2.0
+**Versie:** 2.1
 **Bron van waarheid:** `00_PRD.md` § 7, § 11 — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
-**Relaties:** 30_Navigatie.md (routes/IA), 26_ComponentLibrary.md (componenten), 28_Dashboard.md, 29_MobieleApp.md, 08_FunctioneleEisen.md (FR per pagina), 23_Gebruikersrollen.md (toegang).
+**Relaties:** 30_Navigatie.md (routes/IA), 26_ComponentLibrary.md (componenten), 28_Dashboard.md, 29_MobieleApp.md, 08_FunctioneleEisen.md (FR per pagina), 23_Gebruikersrollen.md (toegang), `docs/adr/ADR-011-human-in-the-loop-ai.md` en `43_AI_Agents.md` (FR-900 Morning Briefing, § 1.1).
 
 ---
 
@@ -19,10 +19,10 @@ Splitsing volgt PRD § 11.8: **desktop = regie**, **mobiel (PWA) = uitvoering**.
 ## 1. Desktop-applicatie (planner/eigenaar/administratie)
 
 ### 1.1 Dashboard `/`
-- **Doel:** in één blik weten hoe het bedrijf ervoor staat (28_Dashboard.md).
+- **Doel:** in één blik weten hoe het bedrijf ervoor staat (28_Dashboard.md) — sinds ADR-011 formeel de **Morning Briefing** (FR-900): het door de acht AI Agents (`43_AI_Agents.md`) samengestelde dagoverzicht, klaar vóór inloggen.
 - **Primaire actie:** contextafhankelijk ("Plan deze week", "Herplan-wachtrij bekijken").
 - **Componenten:** KPICard, WeatherBanner, ReplanDiff-teaser, omzetgrafiek.
-- **FR:** FR-102. **Rollen:** Eigenaar/Admin (volledig), Planner/Administratie (beperkt, 23 voetnoot 10).
+- **FR:** FR-102, FR-900. **Rollen:** Eigenaar/Admin (volledig), Planner/Administratie (beperkt, 23 voetnoot 10).
 
 ### 1.2 Planning `/planning`
 - **Doel:** week-/dagplanning maken en corrigeren.
@@ -152,3 +152,4 @@ Elke datagedreven pagina implementeert loading/empty/error/loaded (26 § 5). Leg
 |---|---|---|
 | 2026-07-06 | 1.0 | Placeholder met 5 pagina's |
 | 2026-07-07 | 2.0 | Volledige sitemap: 12 desktop-pagina's + 3 PWA-schermen + globale overlays, elk met doel/primaire actie/componenten/FR/rollen; boomstructuur |
+| 2026-07-12 | 2.1 | § 1.1 Dashboard aangevuld met FR-900 (Morning Briefing, ADR-011) — geen wijziging aan componenten/rollen, alleen de architecturale herkomst expliciet gemaakt. |

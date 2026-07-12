@@ -1,16 +1,30 @@
 # 28 — Dashboard Design
 
 **Status:** DONE
-**Versie:** 2.0
+**Versie:** 2.2
 **Bron van waarheid:** `00_PRD.md` § 3.1 (visie), § 7 (FR-102), § 17 (KPI's) — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
-**Relaties:** 27_PaginaOverzicht.md (§ 1.1), 26_ComponentLibrary.md (KPICard/WeatherBanner), 21_Notificaties.md, 23_Gebruikersrollen.md (rol-afhankelijke inhoud).
+**Relaties:** 27_PaginaOverzicht.md (§ 1.1), 26_ComponentLibrary.md (KPICard/WeatherBanner), 21_Notificaties.md, 23_Gebruikersrollen.md (rol-afhankelijke inhoud), `docs/adr/ADR-011-human-in-the-loop-ai.md` en `43_AI_Agents.md` (FR-900 Morning Briefing — zie § 0).
+
+---
+
+## 0. Relatie met de Morning Briefing (FR-900, ADR-011)
+
+Dit dashboard **is** de Morning Briefing (FR-900, `08_FunctioneleEisen.md` § 8) — niet een los overzicht ernaast. ADR-011 § 1 legt vast dat de Morning Briefing het **primaire startscherm** van RouteFlow is: de gebruiker komt niet eerst op een KPI-schermpje of de planner terecht, maar landt hier direct, elke dag. Dit vervangt de "eigenaar opent 's ochtends RouteFlow"-belofte uit PRD § 3.1 niet, maar formaliseert hem tot het samengestelde overzicht van acht AI Agents (`43_AI_Agents.md`) in plaats van losse, statische KPI's.
+
+De bestaande layout (§ 1) blijft het structurele uitgangspunt (actiebanners, KPI's, "vandaag"-overzicht, snelle acties); ADR-011 stelt daarbovenop drie eisen die de bouwende sprint in de layout moet verwerken:
+
+1. De inhoud is **vóór het inloggen** samengesteld (dagelijkse Orchestrator-cyclus, geen laadvertraging bij openen).
+2. Elke actiebanner/elk voorstel toont **per wijziging**: wat, waarom, welke business rules, verwacht voordeel, impact — plus confidence score, bronnen en alternatieven (BR-703). Dit is meer detail dan de huidige actiebanner-schets in § 1 (die alleen een titel + CTA toont) — een uitbreiding, geen vervanging van de sectie-indeling.
+3. Elk voorstel heeft de volledige actieset uit ADR-011 § 1: alles accepteren, individueel accepteren, aanpassen (opent de planner met het voorstel als uitgangspunt), afwijzen, of direct doorklikken naar `/planning`.
+
+Dit document blijft de bron van waarheid voor de **layout**; ADR-011 is de bron van waarheid voor **welke inhoud en acties** die layout moet dragen.
 
 ---
 
 ## Doel van dit document
 
-Dit document specificeert het **dashboard** (`/`, FR-102): de landingspagina die de eigenaar 's ochtends opent. Het realiseert de kernbelofte uit PRD § 3.1: *"De eigenaar opent 's ochtends RouteFlow en ziet in één oogopslag: wie werkt vandaag waar, welke routes rijden er, wat is er gefactureerd en wat staat open."*
+Dit document specificeert het **dashboard** (`/`, FR-102, FR-900): de landingspagina die de eigenaar 's ochtends opent. Het realiseert de kernbelofte uit PRD § 3.1: *"De eigenaar opent 's ochtends RouteFlow en ziet in één oogopslag: wie werkt vandaag waar, welke routes rijden er, wat is er gefactureerd en wat staat open."*
 
 Ontwerphouding: **rust + actiegerichtheid**. Geen dichte cockpit vol grafieken, maar enkele betekenisvolle signalen met een directe volgende actie (PRD § 11.1).
 
@@ -119,3 +133,5 @@ Op mobiel is het dashboard voor eigenaren een gestapelde, scrollbare versie (KPI
 |---|---|---|
 | 2026-07-06 | 1.0 | Placeholder met 4 secties |
 | 2026-07-07 | 2.0 | Volledige uitwerking: layout-schets, 6 secties (banners/KPI's/vandaag/grafiek/acties), rol-afhankelijke inhoud, 4 staten, realtime/performance, mobiel |
+| 2026-07-12 | 2.1 | § 0 toegevoegd: formele koppeling tussen dit dashboard en FR-900 (Morning Briefing, ADR-011) — bestaande layout/secties blijven leidend, geen redesign, alleen de architecturale herkomst (acht AI Agents i.p.v. losse KPI's) expliciet gemaakt. |
+| 2026-07-12 | 2.2 | § 0 uitgebreid conform de verrijkte ADR-011 § 1: Morning Briefing expliciet als primair startscherm (niet een los overzicht), drie concrete eisen aan de layout (vóór-login-samenstelling, per-wijziging wat/waarom/regels/voordeel/impact, volledige actieset accepteren/aanpassen/afwijzen/doorklikken). Nog geen redesign van § 1 zelf — dat is werk voor de bouwende sprint. |

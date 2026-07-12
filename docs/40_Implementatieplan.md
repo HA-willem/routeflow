@@ -1,10 +1,10 @@
 # 40 — Implementatieplan (Sprint 1–10)
 
 **Status:** DONE
-**Versie:** 1.0
+**Versie:** 1.1
 **Bron van waarheid:** `00_PRD.md` (scope § 5, architectuur § 12) + 33_Roadmap.md — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`. **Let op:** dit is een *plan*; er wordt in de documentatiefase nog **niets** gebouwd (CLAUDE.md).
-**Relaties:** 08_FunctioneleEisen.md (FR), 10_BusinessRules.md (BR), 11_DatabaseConcept.md (tabellen), 12_Entiteiten.md, 13_API_Specificatie.md, 14_RoutingEngine.md, 15_AIPlanner.md, 26_ComponentLibrary.md, 31_Testplan.md, 33_Roadmap.md.
+**Relaties:** 08_FunctioneleEisen.md (FR), 10_BusinessRules.md (BR), 11_DatabaseConcept.md (tabellen), 12_Entiteiten.md, 13_API_Specificatie.md, 14_RoutingEngine.md, 15_AIPlanner.md, 26_ComponentLibrary.md, 31_Testplan.md, 33_Roadmap.md, `docs/adr/ADR-011-human-in-the-loop-ai.md` en `43_AI_Agents.md` (agent-architectuur relevant voor Sprint 7).
 
 ---
 
@@ -215,10 +215,13 @@ BetaalpaginaMobiel, herinneringsstatus op InvoicePreview, wachtrij-lijst (JobCar
 
 ## Sprint 7 — AI Planner V1: weer, herplannen, clustering, capaciteit
 
+**Architectuurcontext (ADR-011, `43_AI_Agents.md`):** deze sprint bouwt de Replanning Agent, Weather Agent en Capacity Agent (43_AI_Agents.md § 5/§ 6/§ 9) — de eerste sprint die de agent-architectuur operationeel maakt bovenop de al-bestaande drielagen-logica (15_AIPlanner.md). FR-900 (Morning Briefing) en de overige agents (Planning/Communication/Invoice/Revenue/Optimization — deels al elders gebouwd, deels latere sprints) vallen buiten deze sprint-doelen maar delen dezelfde architectuur (Orchestrator-patroon, Human-Approval-grens BR-702, confidence/explainability-outputcontract BR-703) — geen aparte infrastructuur per agent.
+
 ### Doelen
 - Reactieve laag: herplannen bij ziekte/verlof met diff-voorstel (FR-024, 15 § 7, BR-802).
 - Weerslaag met drempels (FR-023, 15 § 6).
 - Geografische clustering (FR-025, BR-204), capaciteitswaarschuwing (FR-027), "plan opnieuw" (FR-028), "waarom" (BR-700).
+- Confidence/bronnen/alternatieven-outputcontract (BR-703) op de in deze sprint gebouwde agents.
 
 ### Bestanden
 - `/lib/planning/reactive.ts` (herplan-diff), `/lib/weather/provider.ts` + `openmeteo.ts`.
@@ -357,3 +360,4 @@ S1 fundament ─▶ S2 klanten/geocoding ─▶ S3 afspraken/beurt-gen ─▶ S4
 | Datum | Versie | Wijziging |
 |---|---|---|
 | 2026-07-07 | 1.0 | Implementatieplan Sprint 1–10 opgesteld: per sprint doelen, bestanden, DB-migraties, componenten, testcases; afhankelijkheden-diagram; DoD per sprint. Gebaseerd op 33_Roadmap en de complete docset. |
+| 2026-07-12 | 1.1 | Sprint 7 aangevuld met architectuurcontext vanuit ADR-011 (Human-in-the-Loop AI, `43_AI_Agents.md`) — Sprint 7 bouwt de Replanning/Weather/Capacity Agents; geen wijziging aan bestaande sprintdoelen, alleen expliciete koppeling aan de nieuwe agent-architectuur. |

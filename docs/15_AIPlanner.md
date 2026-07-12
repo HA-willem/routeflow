@@ -1,16 +1,22 @@
 # 15 — AI Planner
 
 **Status:** DONE
-**Versie:** 2.0
+**Versie:** 2.2
 **Bron van waarheid:** `00_PRD.md` § 8 (De AI Planner) — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
-**Relaties:** 14_RoutingEngine.md (dag-laag/routes), 10_BusinessRules.md (BR-001/101/200–205/700), 21_Notificaties.md (herplan-meldingen), 19_WhatsApp.md (klantberichten), 11_DatabaseConcept.md (jobs/routes).
+**Relaties:** 14_RoutingEngine.md (dag-laag/routes), 10_BusinessRules.md (BR-001/101/200–205/700–703), 21_Notificaties.md (herplan-meldingen), 19_WhatsApp.md (klantberichten), 11_DatabaseConcept.md (jobs/routes), `docs/adr/ADR-011-human-in-the-loop-ai.md` en `43_AI_Agents.md` (dit document blijft de gedetailleerde uitwerking van de horizon-/dag-/reactieve-laag-algoritmes; ADR-011 generaliseert de architectuur eromheen naar meerdere samenwerkende agents — geen tegenspraak, een uitbreiding).
 
 ---
 
 ## Doel van dit document
 
 Dit document beschrijft het **kernalgoritme** van RouteFlow: hoe genereert de AI Planner automatisch voorgestelde beurten, verdeelt die over dagen/medewerkers, en herplant bij verstoringen — met de mens als eindredacteur (PRD § 8.1). De AI Planner is *conceptueel*; de concrete routeberekening delegeert hij aan de routing-engine (14).
+
+---
+
+## 0. Plaats in de bredere agent-architectuur (ADR-011)
+
+De drie lagen in dit document (§ 1) zijn sinds ADR-011 (Human-in-the-Loop AI) het interne fundament van drie van de acht AI Agents uit `43_AI_Agents.md`: de horizon-laag (§ 1.1) en het toewijzingsdeel van de dag-laag (§ 1.2) vormen de **Planning Agent**, de routevolgorde-bepaling (§ 1.2 stap 3, via 14_RoutingEngine.md) is de **Optimization Agent**, en de reactieve laag (§ 1.3/§ 7) is de **Replanning Agent**. Dit document blijft de bron van waarheid voor hún algoritmische details (datumberekening, scoring, clustering, herplan-diff-logica); ADR-011/`43_AI_Agents.md` beschrijven de architectuur eromheen (Orchestrator, Morning Briefing, Human Approval, overige vijf agents) zonder deze logica te wijzigen.
 
 ---
 
@@ -211,3 +217,4 @@ De AI Planner kan verbeteren door te leren van wat de planner **handmatig corrig
 | 2026-07-06 | 1.0 | Drie lagen, ideale-datum, clustering, scoring, weer, herplannen, transparantie |
 | 2026-07-07 | 2.0 | Verdieping: weer-beslislogica met drempels per type, herplan-diff-UX + stabiliteitsgewicht, automatiseringsniveaus toegelicht, sectie 10 "Leren van correcties" (V2) toegevoegd, sectie 11 "Edge cases & foutafhandeling" (8 cases) toegevoegd; relaties uitgebreid |
 | 2026-07-08 | 2.1 | Production Readiness Review-fix: § 4 expliciet aangewezen als enige bron van waarheid voor de scoring-gewichten (was inconsistent met BR-701 in 10_BusinessRules.md, dat een ander, niet-op-100%-som-uitkomend gewichtenstel vermeldde) |
+| 2026-07-12 | 2.2 | § 0 toegevoegd: plaatsbepaling t.o.v. ADR-011 (Human-in-the-Loop AI) en `43_AI_Agents.md` — dit document blijft leidend voor de algoritmische details van Planning/Optimization/Replanning-agent-logica, geen inhoudelijke wijziging aan de bestaande secties. |

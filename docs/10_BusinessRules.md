@@ -403,6 +403,48 @@ Deze vier gewichten zijn relatief aan elkaar en worden bij wijziging door het sy
 
 ---
 
+### BR-702 (Hard): Human Approval — geen enkele AI Agent voert deze acties zelfstandig uit
+
+> Facturen versturen, betalingen uitvoeren, prijsafspraken wijzigen, klanten verwijderen, medewerkers verwijderen, of een definitieve planning overschrijven vereist altijd expliciete menselijke goedkeuring — nooit een automatische AI Agent-actie, ook niet op het "Volautomatisch"-automatiseringsniveau (15_AIPlanner.md § 8).
+
+**Reden:** deze zes acties zijn stuk voor stuk moeilijk of onmogelijk terug te draaien (een verstuurde factuur, een uitgevoerde betaling, een verwijderde klant) of raken direct de commerciële relatie met de klant (prijsafspraken) — precies de categorie waar PRD § 8.5's "mens als eindredacteur"-principe hard moet zijn, niet zacht/instelbaar.
+
+**Implementatie:** ADR-011 (Human-in-the-Loop AI), `43_AI_Agents.md` § 12. Geen enkele agent-Edge-Function heeft schrijftoegang tot facturen-verzendstatus, betalingsuitvoering, prijsafspraken, of hard-delete van klanten/medewerkers — die schrijfpaden bestaan uitsluitend als door-de-gebruiker-geïnitieerde Server Actions/RPC's (analoog aan hoe `onboard_company()` het enige schrijfpad is naar `companies`/`users`, 002_companies_users.sql).
+
+**Uitzondering:** een bedrijf kan een *reeds bestaand*, expliciet geconfigureerd automatiseringsniveau activeren voor routine-taken die **niet** in de lijst hierboven staan (bv. automatische "morgen"-berichten, FR-080) — dat is een bestaande, begrensde uitzondering (15_AIPlanner.md § 8 "Volautomatisch"), geen verzwakking van BR-702 zelf. Geen configuratie kan BR-702's zes genoemde acties automatiseren.
+
+---
+
+### BR-703 (Hard): AI Explainability — confidence, bronnen en alternatieven verplicht
+
+> Elke AI Agent-beslissing (voorstel, waarschuwing, conceptactie) bevat een confidence score (0–100), de gebruikte databronnen, de toegepaste business rules, en de overwogen-maar-niet-gekozen alternatieven — niet alleen de "waarom"-uitleg van BR-700.
+
+**Reden:** BR-700 legt vast *dat* er een reden getoond wordt bij de gekozen uitkomst; BR-703 breidt dit uit met *hoe zeker* het systeem is en *wat er nog meer overwogen is* — nodig zodra meerdere agents (43_AI_Agents.md) onafhankelijk voorstellen genereren die soms conflicteren (ADR-011 § "Conflictresolutie") en de gebruiker moet kunnen beoordelen welk voorstel te vertrouwen.
+
+**Implementatie:** verplicht outputcontract voor alle acht agents (43_AI_Agents.md § 13) — geen agent-implementatie is compleet zonder deze vier velden in zijn voorstel/waarschuwing-output. Persistent opgeslagen (niet alleen getoond en weggegooid) t.b.v. de audittrail (43_AI_Agents.md § 14).
+
+---
+
+### BR-704 (Hard): Human Control over geleerde voorkeuren (Organizational Memory)
+
+> Elke door AI Agents geleerde voorkeur (Planner/Customer/Object/Employee/Company Memory, `45_AgentMemory.md` § 2) is te allen tijde door de gebruiker te bekijken, aan te passen, uit te schakelen, te verwijderen en te resetten. Geen enkele voorkeur wordt permanent zonder deze menselijke controlemogelijkheid.
+
+**Reden:** directe uitbreiding van BR-702 (Human Approval) naar de geheugenlaag — zoals AI nooit een definitieve planningsactie zonder goedkeuring uitvoert, mag AI ook nooit stilzwijgend een blijvend gedragspatroon over een klant, object, medewerker of het bedrijf vastleggen. Zonder deze regel zou Organizational Memory een ondoorzichtige, steeds verder groeiende black box kunnen worden — precies wat ADR-010/011 al expliciet afwijzen voor de planningsalgoritmes zelf.
+
+**Implementatie:** `45_AgentMemory.md` § 6 (Human Control), § 10 (Governance — audittrail, versiebeheer, rolgebonden beheerrecht).
+
+---
+
+### BR-705 (Hard): Privacy-uitsluitingen Organizational Memory
+
+> Organizational Memory leert nooit: wachtwoorden/authenticatiegegevens, betaalgegevens, medische informatie (een ziekmelding registreert alleen "afwezig", nooit de reden), of de inhoud van privécommunicatie (WhatsApp/e-mail-berichttekst) — ongeacht confidence-niveau of hoe nuttig het patroon zou lijken.
+
+**Reden:** Organizational Memory leert uitsluitend **operationele planningspatronen** (AVG-grondslag: uitvoering overeenkomst/gerechtvaardigd belang, 36_Security.md § 7.1) — de vier uitgesloten categorieën vallen daar per definitie buiten en vereisen op zijn minst een aparte grondslag die dit systeem niet heeft.
+
+**Implementatie:** `45_AgentMemory.md` § 9.1 (uitsluitingen) en § 9.2 (bewaartermijnen, aansluitend op 36_Security.md § 7.3/NFR-405).
+
+---
+
 ## 10. Edge Cases & Uitzonderingen (BR-800+)
 
 ### BR-800: Adres niet geocodeerbaar (E-01 PRD)

@@ -1,7 +1,7 @@
 # 08 — Functionele Eisen
 
 **Status:** DONE
-**Versie:** 1.0
+**Versie:** 1.4
 **Bron van waarheid:** `00_PRD.md` § 7 — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 
@@ -589,13 +589,57 @@ Home-pagina toont snelle KPI's en actie-hints.
 
 ---
 
+## 8. FR-serie 900+: AI Agents & Morning Briefing
+
+Nieuwe serie (ADR-011, Human-in-the-Loop AI — `docs/adr/ADR-011-human-in-the-loop-ai.md`, `43_AI_Agents.md`). Genummerd vanaf 900 om duidelijk te scheiden van de bestaande, per-domein-gegroepeerde series (020–102) — dit is een cross-cutting requirement die meerdere agents/domeinen samenbrengt, geen los domein.
+
+### FR-900: Morning Briefing
+**Fase:** V1 (Sprint 7+, `40_Implementatieplan.md`) | **Prio:** Must
+
+De Morning Briefing is het **primaire startscherm** van RouteFlow (ADR-011 § 1) — bij het openen van de applicatie krijgt de gebruiker automatisch, direct, een samengesteld dagoverzicht van AI Agent-output te zien, niet een los dashboard of een leeg planningsscherm. Technisch valt dit samen met de bestaande dashboard-route (`/`, FR-102).
+
+**Acceptatiecriteria:**
+1. Overzicht toont: beschikbare medewerkers vandaag, aantal geplande routes, aantal opdrachten (incl. wachtrij-omvang), weersverwachting van vandaag + getroffen beurten, verkeerssituatie, capaciteit, omzetprognose, openstaande waarschuwingen, AI-voorstellen (elk met AI-confidence score), belangrijkste wijzigingen sinds gisteren.
+2. Overzicht is al samengesteld vóórdat de gebruiker inlogt (achtergrondproces, dagelijkse cyclus 00:00–06:00) — geen zichtbare laadvertraging voor de samenstelling zelf.
+3. Elke wijziging/elk voorstel toont expliciet: wat is gewijzigd, waarom dit is gewijzigd, welke business rules zijn toegepast, wat het verwachte voordeel is, en welke impact dit heeft op de planning — plus confidence score + gebruikte databronnen + overwogen alternatieven (BR-703).
+4. Vanuit de Briefing kan de gebruiker: alle voorstellen in één keer accepteren, voorstellen individueel accepteren, een voorstel aanpassen (opent de planner met het voorstel als uitgangspunt), een voorstel afwijzen, of direct doorklikken naar de planner (`/planning`).
+5. Lege staat (rustige dag, weinig te melden) toont nooit een kaal "niets"-scherm maar een expliciete, geruststellende samenvatting (consistent met 24_UI_UX.md § 4) — bijv. "Alles gepland, geen waarschuwingen."
+6. Geen enkele actie in de Briefing wordt zonder expliciete goedkeuring uitgevoerd (BR-702) — pas ná goedkeuring is de planning definitief en wordt de wijziging uitgevoerd; de Briefing is uitsluitend een overzicht + review-startpunt, geen uitvoeringsscherm.
+
+### FR-901: Organizational Memory (bekijken/beheren)
+**Fase:** V1 (Sprint 7+, `40_Implementatieplan.md`) | **Prio:** Should
+
+De gebruiker kan de door AI Agents geleerde voorkeuren (`45_AgentMemory.md`) per klant, object, medewerker en bedrijfsbreed bekijken en beheren — nooit een verborgen, alleen-intern-gebruikte kennislaag.
+
+**Acceptatiecriteria:**
+1. Elke geleerde voorkeur toont: inhoud, confidence-niveau (nieuw/waarschijnlijk/bevestigd/zeer sterk patroon), herkomst (expliciet/impliciet) en de volledige uitleg (waarom is dit ontstaan, welke waarnemingen liggen eraan ten grondslag) — `45_AgentMemory.md` § 4/§ 5.
+2. Gebruiker kan per voorkeur: bekijken, aanpassen, uitschakelen, verwijderen, resetten (`45_AgentMemory.md` § 6) — elke actie direct effectief, geen wachttijd.
+3. Alleen impliciete voorkeuren op "waarschijnlijk"-niveau of hoger zijn zichtbaar in het reguliere overzicht (niet elk "nieuw"-niveau ruwe signaal) — voorkomt ruis (`45_AgentMemory.md` § 3).
+4. Rolgebonden zichtbaarheid/beheerrecht volgt `23_Gebruikersrollen.md` § 2, uitgewerkt per geheugensoort in `45_AgentMemory.md` § 10.
+5. Geen voorkeur beïnvloedt ooit een harde business rule (BR-200–205) — uitsluitend de zachte, scoringsmodel-afwegingen (`45_AgentMemory.md` § 12).
+
+### FR-902: AI-feedback per voorstel
+**Fase:** V1 (Sprint 7+, `40_Implementatieplan.md`) | **Prio:** Should
+
+Elk AI-voorstel in de Morning Briefing (FR-900) heeft een feedback-actie naast accepteren/bewerken/afwijzen, die de Organizational Memory voedt (`45_AgentMemory.md` § 8).
+
+**Acceptatiecriteria:**
+1. Drie feedback-opties per voorstel: 👍 Goed voorstel, 👎 Niet handig, ✏️ Aangepast (laatste wordt automatisch geregistreerd bij de "Bewerken"-actie, geen aparte stap).
+2. 👍 verhoogt de confidence van de onderliggende voorkeur(en); 👎 verlaagt hem; herhaalde 👎 op dezelfde voorkeur degradeert het niveau, verwijdert de voorkeur niet automatisch.
+3. Feedback is altijd gekoppeld aan het specifieke voorstel én de specifieke onderliggende voorkeur(en) — nooit een contextloze, losse beoordeling.
+4. Elke feedback-gebeurtenis wordt gelogd (audittrail, `45_AgentMemory.md` § 10).
+
+---
+
 ## Relaties met andere documenten
 
-- **00_PRD.md**: § 7 (functional requirements overzicht)
+- **00_PRD.md**: § 7 (functional requirements overzicht), § 19 A-15 (ADR-011)
 - **07_UserStories.md**: user stories per FR
 - **32_Acceptatiecriteria.md**: uitgebreide acceptatie-scenario's
-- **10_BusinessRules.md**: domeinregels ondersteunend aan FR's
+- **10_BusinessRules.md**: domeinregels ondersteunend aan FR's, incl. BR-702/703
 - **31_Testplan.md**: test-cases per FR
+- **43_AI_Agents.md**, **docs/adr/ADR-011-human-in-the-loop-ai.md**: architectuur/agents achter FR-900
+- **45_AgentMemory.md**: architectuur achter FR-901/902 (Organizational Memory, feedback-loop)
 
 ---
 
@@ -605,3 +649,6 @@ Home-pagina toont snelle KPI's en actie-hints.
 |---|---|---|
 | 2026-07-06 | 1.0 | Volledig uitgewerkt: alle FR-001 t/m FR-102, acceptatiecriteria, validaties, edge cases |
 | 2026-07-10 | 1.1 | Sprint 2-fix: FR-002-postcoderegex gecorrigeerd van `^[A-Z]{2}\d{2}\s?[A-Z]{2}$` (2 letters+2 cijfers+2 letters — matcht niet met de eigen voorbeeldwaarden "1234 AB" elders in het docset) naar `^[1-9][0-9]{3}\s?[A-Z]{2}$` (4 cijfers + 2 letters, correcte NL-postcode-vorm). 12_Entiteiten.md § 4 in dezelfde commit meegecorrigeerd. |
+| 2026-07-12 | 1.2 | FR-serie 900+ toegevoegd: FR-900 (Morning Briefing), voortvloeiend uit ADR-011 (Human-in-the-Loop AI). |
+| 2026-07-12 | 1.3 | FR-900 uitgebreid: Morning Briefing expliciet vastgelegd als primair startscherm (niet los overzicht); acceptatiecriteria aangevuld met de per-wijziging wat/waarom/regels/voordeel/impact-structuur en de volledige actieset (alles/individueel accepteren, aanpassen, afwijzen, doorklikken naar planner), conform de uitgebreide ADR-011 § 1. |
+| 2026-07-12 | 1.4 | FR-901 (Organizational Memory bekijken/beheren) en FR-902 (AI-feedback per voorstel) toegevoegd aan FR-serie 900+, voortvloeiend uit `45_AgentMemory.md`. |
