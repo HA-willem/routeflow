@@ -267,6 +267,223 @@ export type Database = {
           },
         ]
       }
+      invoice_lines: {
+        Row: {
+          company_id: string
+          description: string
+          id: string
+          invoice_id: string
+          job_id: string | null
+          quantity: number
+          sequence: number
+          service_id: string | null
+          total_amount_cents: number
+          unit_price_cents: number
+          vat_amount_cents: number
+          vat_rate: number
+        }
+        Insert: {
+          company_id: string
+          description: string
+          id?: string
+          invoice_id: string
+          job_id?: string | null
+          quantity?: number
+          sequence?: number
+          service_id?: string | null
+          total_amount_cents: number
+          unit_price_cents: number
+          vat_amount_cents: number
+          vat_rate: number
+        }
+        Update: {
+          company_id?: string
+          description?: string
+          id?: string
+          invoice_id?: string
+          job_id?: string | null
+          quantity?: number
+          sequence?: number
+          service_id?: string | null
+          total_amount_cents?: number
+          unit_price_cents?: number
+          vat_amount_cents?: number
+          vat_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_lines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_lines_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_lines_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_lines_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_number_counters: {
+        Row: {
+          company_id: string
+          last_seq: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          company_id: string
+          last_seq?: number
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          company_id?: string
+          last_seq?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_number_counters_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          company_id: string
+          created_at: string
+          currency: string
+          customer_id: string
+          due_date: string
+          id: string
+          invoice_date: string
+          invoice_number: string | null
+          notes: string | null
+          paid_at: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["invoice_status"]
+          total_amount_cents: number
+          total_tax_cents: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          currency?: string
+          customer_id: string
+          due_date: string
+          id?: string
+          invoice_date?: string
+          invoice_number?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"]
+          total_amount_cents?: number
+          total_tax_cents?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          currency?: string
+          customer_id?: string
+          due_date?: string
+          id?: string
+          invoice_date?: string
+          invoice_number?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"]
+          total_amount_cents?: number
+          total_tax_cents?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_photos: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          job_id: string
+          storage_path: string
+          taken_at: string
+          type: Database["public"]["Enums"]["job_photo_type"]
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          job_id: string
+          storage_path: string
+          taken_at?: string
+          type: Database["public"]["Enums"]["job_photo_type"]
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          job_id?: string
+          storage_path?: string
+          taken_at?: string
+          type?: Database["public"]["Enums"]["job_photo_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_photos_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_photos_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           actual_duration_minutes: number | null
@@ -282,6 +499,8 @@ export type Database = {
           locked_reason: string | null
           locked_until: string | null
           notes: string | null
+          paused_at: string | null
+          paused_seconds: number
           route_id: string | null
           scheduled_date: string
           sequence: number | null
@@ -306,6 +525,8 @@ export type Database = {
           locked_reason?: string | null
           locked_until?: string | null
           notes?: string | null
+          paused_at?: string | null
+          paused_seconds?: number
           route_id?: string | null
           scheduled_date: string
           sequence?: number | null
@@ -330,6 +551,8 @@ export type Database = {
           locked_reason?: string | null
           locked_until?: string | null
           notes?: string | null
+          paused_at?: string | null
+          paused_seconds?: number
           route_id?: string | null
           scheduled_date?: string
           sequence?: number | null
@@ -957,6 +1180,10 @@ export type Database = {
             }
             Returns: string
           }
+      complete_job: {
+        Args: { p_job_id: string; p_notes?: string }
+        Returns: Json
+      }
       current_company_id: { Args: never; Returns: string }
       current_user_role: {
         Args: never
@@ -1095,6 +1322,71 @@ export type Database = {
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       gettransactionid: { Args: never; Returns: unknown }
       longtransactionsenabled: { Args: never; Returns: boolean }
+      mark_invoice_paid: {
+        Args: { p_invoice_id: string }
+        Returns: {
+          company_id: string
+          created_at: string
+          currency: string
+          customer_id: string
+          due_date: string
+          id: string
+          invoice_date: string
+          invoice_number: string | null
+          notes: string | null
+          paid_at: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["invoice_status"]
+          total_amount_cents: number
+          total_tax_cents: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "invoices"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      mark_job_not_home: {
+        Args: { p_job_id: string; p_reason?: string }
+        Returns: {
+          actual_duration_minutes: number | null
+          arrival_time: string | null
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          distance_from_prev_m: number | null
+          drive_time_from_prev_sec: number | null
+          estimated_duration_minutes: number
+          id: string
+          locked: boolean
+          locked_reason: string | null
+          locked_until: string | null
+          notes: string | null
+          paused_at: string | null
+          paused_seconds: number
+          route_id: string | null
+          scheduled_date: string
+          sequence: number | null
+          service_agreement_id: string
+          service_end: string | null
+          service_start: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["job_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "jobs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      next_invoice_number: {
+        Args: { p_company_code: string; p_year: number }
+        Returns: string
+      }
       onboard_company: {
         Args: { company_name: string; owner_full_name: string }
         Returns: {
@@ -1111,6 +1403,41 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "companies"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      pause_job: {
+        Args: { p_job_id: string }
+        Returns: {
+          actual_duration_minutes: number | null
+          arrival_time: string | null
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          distance_from_prev_m: number | null
+          drive_time_from_prev_sec: number | null
+          estimated_duration_minutes: number
+          id: string
+          locked: boolean
+          locked_reason: string | null
+          locked_until: string | null
+          notes: string | null
+          paused_at: string | null
+          paused_seconds: number
+          route_id: string | null
+          scheduled_date: string
+          sequence: number | null
+          service_agreement_id: string
+          service_end: string | null
+          service_start: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["job_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "jobs"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1155,6 +1482,41 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      resume_job: {
+        Args: { p_job_id: string }
+        Returns: {
+          actual_duration_minutes: number | null
+          arrival_time: string | null
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          distance_from_prev_m: number | null
+          drive_time_from_prev_sec: number | null
+          estimated_duration_minutes: number
+          id: string
+          locked: boolean
+          locked_reason: string | null
+          locked_until: string | null
+          notes: string | null
+          paused_at: string | null
+          paused_seconds: number
+          route_id: string | null
+          scheduled_date: string
+          sequence: number | null
+          service_agreement_id: string
+          service_end: string | null
+          service_start: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["job_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "jobs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       slugify: { Args: { input: string }; Returns: string }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
@@ -1737,6 +2099,41 @@ export type Database = {
         Args: { geom: unknown; move: number; wrap: number }
         Returns: unknown
       }
+      start_job: {
+        Args: { p_job_id: string }
+        Returns: {
+          actual_duration_minutes: number | null
+          arrival_time: string | null
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          distance_from_prev_m: number | null
+          drive_time_from_prev_sec: number | null
+          estimated_duration_minutes: number
+          id: string
+          locked: boolean
+          locked_reason: string | null
+          locked_until: string | null
+          notes: string | null
+          paused_at: string | null
+          paused_seconds: number
+          route_id: string | null
+          scheduled_date: string
+          sequence: number | null
+          service_agreement_id: string
+          service_end: string | null
+          service_start: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["job_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "jobs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       unlockrows: { Args: { "": string }; Returns: number }
       updategeometrysrid: {
         Args: {
@@ -1764,6 +2161,8 @@ export type Database = {
         | "yearly"
         | "once"
         | "custom"
+      invoice_status: "draft" | "sent" | "paid"
+      job_photo_type: "before" | "after"
       job_status:
         | "proposed"
         | "planned"
@@ -1933,6 +2332,8 @@ export const Constants = {
         "once",
         "custom",
       ],
+      invoice_status: ["draft", "sent", "paid"],
+      job_photo_type: ["before", "after"],
       job_status: [
         "proposed",
         "planned",
