@@ -6,45 +6,89 @@
 -- § 2: Facturen "—" voor Medewerker), dus dat deel moet SECURITY DEFINER,
 -- net als onboard_company() (003_rls_baseline.sql).
 
+-- Alle vier: `language plpgsql` i.p.v. `sql`, met een expliciete "geen rij
+-- geraakt"-check. Een `language sql`-functie met een non-SETOF composite
+-- return geeft bij nul geraakte rijen een rij van louter NULL-kolommen terug,
+-- geen echte SQL NULL — een client die alleen op `!data` test (zoals de
+-- Server Actions in app/m/actions.ts) zou dat ten onrechte als succes zien.
+-- RLS (017_jobs_execution.sql) blokkeert de UPDATE zelf al voor een
+-- niet-eigen/verkeerd-bedrijf beurt; dit maakt dat "0 rijen geraakt"-geval
+-- expliciet een fout i.p.v. een stille no-op-succes.
 create function public.start_job(p_job_id uuid)
 returns public.jobs
-language sql
+language plpgsql
 as $$
+declare
+  v_job public.jobs;
+begin
   update public.jobs
     set status = 'en_route', started_at = coalesce(started_at, now())
     where id = p_job_id and status = 'planned'
-    returning *;
+    returning * into v_job;
+
+  if v_job.id is null then
+    raise exception 'Beurt niet gevonden of niet in status gepland.' using errcode = 'P0002';
+  end if;
+  return v_job;
+end;
 $$;
 
 create function public.pause_job(p_job_id uuid)
 returns public.jobs
-language sql
+language plpgsql
 as $$
+declare
+  v_job public.jobs;
+begin
   update public.jobs
     set paused_at = now()
     where id = p_job_id and status = 'en_route' and paused_at is null
-    returning *;
+    returning * into v_job;
+
+  if v_job.id is null then
+    raise exception 'Beurt niet gevonden of niet onderweg/al gepauzeerd.' using errcode = 'P0002';
+  end if;
+  return v_job;
+end;
 $$;
 
 create function public.resume_job(p_job_id uuid)
 returns public.jobs
-language sql
+language plpgsql
 as $$
+declare
+  v_job public.jobs;
+begin
   update public.jobs
     set paused_seconds = paused_seconds + greatest(0, extract(epoch from (now() - paused_at))::integer),
         paused_at = null
     where id = p_job_id and status = 'en_route' and paused_at is not null
-    returning *;
+    returning * into v_job;
+
+  if v_job.id is null then
+    raise exception 'Beurt niet gevonden of niet gepauzeerd.' using errcode = 'P0002';
+  end if;
+  return v_job;
+end;
 $$;
 
 create function public.mark_job_not_home(p_job_id uuid, p_reason text default null)
 returns public.jobs
-language sql
+language plpgsql
 as $$
+declare
+  v_job public.jobs;
+begin
   update public.jobs
     set status = 'not_home', notes = coalesce(p_reason, notes)
     where id = p_job_id and status in ('planned', 'en_route')
-    returning *;
+    returning * into v_job;
+
+  if v_job.id is null then
+    raise exception 'Beurt niet gevonden of niet in een geldige status voor niet-thuis.' using errcode = 'P0002';
+  end if;
+  return v_job;
+end;
 $$;
 
 -- complete_job() — voert zelf dezelfde eigenaarschapscontrole uit als de RLS-
