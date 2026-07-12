@@ -1,10 +1,10 @@
 # 18 — Prijsafspraken
 
 **Status:** DONE
-**Versie:** 2.0
+**Versie:** 3.0
 **Bron van waarheid:** `00_PRD.md` § 9.1 (Prijsafspraak-typen), § 6.4 — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
-**Relaties:** 12_Entiteiten.md (`pricings`, `service_agreements`), 16_Facturatie.md (facturatiemoment), 17_Producten.md (diensten), 10_BusinessRules.md (BR-304).
+**Relaties:** 12_Entiteiten.md (`pricings`, `service_agreements`), 16_Facturatie.md (facturatiemoment), 17_Producten.md (diensten), 10_BusinessRules.md (BR-304, BR-306).
 
 ---
 
@@ -118,9 +118,61 @@ Zie 16_Facturatie.md voor de volledige flow. Kern per type:
 
 ---
 
-## 7. Openstaande punten
+## 7. Klant-specifieke prijsafspraken (prijs-overrides)
 
-Geen open beslissingen. Strippenkaart is expliciet V2 (PRD § 9.1) en hier conceptueel voorbereid zodat het datamodel en de facturatie-flow er nu al rekening mee houden.
+Naast de prijsafspraak die 1:1 aan een Dienstafspraak hangt (§ 1–2), kan een Klant **losse prijs-overrides** hebben die de standaardprijs van een Dienstafspraak (of van meerdere Dienstafspraken tegelijk) overschrijven — bijvoorbeeld een vaste korting voor een grote klant, of een eenmalige opslag voor een lastig bereikbaar object. Dit is een **aanvullend** mechanisme bovenop § 1's prijstypen, geen vervanging: een Dienstafspraak heeft nog steeds precies één prijsafspraak-type (§ 1); een override past dát bedrag aan, zonder het type te wijzigen.
+
+### 7.1 Prioriteit bij samenloop
+
+Wanneer meerdere overrides tegelijk op een beurt van toepassing zouden kunnen zijn, geldt de **specifiekste wint**:
+
+| Prioriteit | Niveau | Voorbeeld |
+|---|---|---|
+| 1 (hoogst) | **Job** | Eenmalige aanpassing voor precies deze ene beurt |
+| 2 | **Klant** | Geldt voor alle dienstafspraken van deze klant |
+| 3 | **Dienstafspraak** | Geldt voor deze ene dienstafspraak (alle toekomstige beurten eronder) |
+| 4 (laagst) | **Dienst** | De dienst-standaardprijs zelf (17_Producten.md) — geen override, de basiswaarde waar alles vanaf overschrijft |
+
+Bij het bepalen van de daadwerkelijke prijs van een beurt doorloopt het systeem deze volgorde van hoog naar laag en past de **eerste match** toe — een Job-niveau-override (indien aanwezig en binnen zijn geldigheidsperiode, § 7.3) wint altijd, ongeacht wat er op Klant- of Dienstafspraak-niveau is ingesteld. Is er geen Job-override, dan Klant; is er geen Klant-override, dan de gewone Dienstafspraak-prijsafspraak (§ 1); is er geen van alle, dan de Dienst-standaardprijs.
+
+Dit is vastgelegd als nieuwe **harde business rule BR-306** (zie `10_BusinessRules.md`-wijziging).
+
+### 7.2 Instelbare velden per override
+
+| Veld | Type | Opmerking |
+|---|---|---|
+| `id` | UUID | PK |
+| `company_id` | UUID | RLS |
+| `scope` | ENUM(job, customer, service_agreement) | bepaalt het niveau (§ 7.1); dienst-niveau heeft geen override-rij — dat is de bestaande dienst-standaardprijs |
+| `scope_id` | UUID | verwijst naar `jobs.id` / `customers.id` / `service_agreements.id`, afhankelijk van `scope` |
+| **vast bedrag** (`fixed_amount_cents`) | INT, nullable | vervangt `amount_cents`/`hourly_rate_cents` volledig indien gezet |
+| **uurtarief** (`hourly_rate_cents`) | INT, nullable | alternatief voor vast bedrag; onderling exclusief |
+| **korting %** (`discount_percent`) | DECIMAL, nullable | procentuele verlaging t.o.v. de onderliggende prijs (§ 7.1 volgende niveau) |
+| **opslag %** (`surcharge_percent`) | DECIMAL, nullable | procentuele verhoging; onderling exclusief met korting % |
+| **geldig vanaf** (`valid_from`) | DATE | verplicht |
+| **geldig tot** (`valid_until`) | DATE, nullable | leeg = voor onbepaalde tijd |
+| **opmerking** (`note`) | TEXT, nullable | intern, niet op de factuur (tenzij expliciet overgenomen in een factuurregel-toelichting) |
+
+**Validatie:** exact één van {vast bedrag, uurtarief, korting %, opslag %} is gezet per override — een override die zowel een vast bedrag als een korting % specificeert is ambigu (welke geldt eerst?) en wordt geweigerd. `geldig tot` (indien gezet) ligt na `geldig vanaf`.
+
+### 7.3 Geldigheidsperiode
+
+Een override buiten zijn `[geldig vanaf, geldig tot]`-venster telt niet mee — het systeem valt dan terug op het eerstvolgende niveau in de prioriteitsketen (§ 7.1), niet op een foutmelding. Dit maakt tijdelijke acties (bijv. "20% korting in december") mogelijk zonder de override daarna handmatig te hoeven verwijderen.
+
+### 7.4 Edge cases
+
+| # | Case | Gedrag |
+|---|---|---|
+| PA-06 | Klant-override én Dienstafspraak-eigen prijsafspraak beide aanwezig | Klant-override wint (hogere prioriteit, § 7.1) — de Dienstafspraak-prijsafspraak (§ 1) blijft ongewijzigd zichtbaar in de instellingen, wordt alleen niet gebruikt zolang de override geldig is |
+| PA-07 | Twee Klant-overrides die elkaar in tijd overlappen | Niet toegestaan — validatiefout bij aanmaken ("Er loopt al een prijsafspraak voor deze klant in deze periode"), voorkomt ambiguïteit over welke van de twee zou moeten winnen |
+| PA-08 | Job-override op een beurt die al gefactureerd is | Override heeft geen effect met terugwerkende kracht (BR-020, immutable facturen) — alleen van toepassing als de beurt nog niet gefactureerd is |
+| PA-09 | Korting % zou de prijs negatief maken (bij een klein basisbedrag en korting >100%, foutieve invoer) | Geweigerd bij aanmaken: "Korting kan de prijs niet onder €0 brengen." |
+
+---
+
+## 8. Openstaande punten
+
+Geen open beslissingen. Strippenkaart is expliciet V2 (PRD § 9.1) en hier conceptueel voorbereid zodat het datamodel en de facturatie-flow er nu al rekening mee houden. Klant-specifieke prijsafspraken (§ 7) zijn hier volledig conceptueel uitgewerkt (business rule, datamodel, edge cases); de bijbehorende database-migratie en entiteit-registratie in `11_DatabaseConcept.md`/`12_Entiteiten.md` is werk voor de sprint die dit daadwerkelijk bouwt (nog niet ingepland — geen bestaande FR/sprint-toewijzing in `40_Implementatieplan.md` dekt dit vandaag), niet van dit document zelf.
 
 ---
 
@@ -130,3 +182,4 @@ Geen open beslissingen. Strippenkaart is expliciet V2 (PRD § 9.1) en hier conce
 |---|---|---|
 | 2026-07-06 | 1.0 | Placeholder-tabel met 4 typen |
 | 2026-07-07 | 2.0 | Volledige uitwerking: 4 prijstypen met facturatiemoment, datamodel (`pricings`), facturatie-koppeling, validaties/foutmeldingen, 5 edge cases |
+| 2026-07-12 | 3.0 | § 7 toegevoegd: klant-specifieke prijsafspraken (prijs-overrides) — prioriteitsketen Job > Klant > Dienstafspraak > Dienst (nieuwe BR-306), instelbare velden (vast bedrag/uurtarief/korting %/opslag %/geldigheidsperiode/opmerking), 4 nieuwe edge cases (PA-06 t/m PA-09). Nog niet in `11_DatabaseConcept.md`/`12_Entiteiten.md` gemigreerd (geen sprint-toewijzing vandaag) — puur conceptuele documentatie. |

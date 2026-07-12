@@ -1,7 +1,7 @@
 # 10 — Business Rules
 
 **Status:** DONE
-**Versie:** 1.0
+**Versie:** 1.6
 **Bron van waarheid:** `00_PRD.md` § 15 — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 
@@ -254,6 +254,16 @@ Het teruggegeven volgnummer wordt in dezelfde transactie op de factuur vastgeleg
 
 ---
 
+### BR-306 (Hard): Prioriteit klant-specifieke prijs-overrides
+
+> Bij het bepalen van de prijs van een beurt geldt de specifiekste override: **Job > Klant > Dienstafspraak > Dienst**. De eerste geldige (binnen zijn geldigheidsperiode) match in die volgorde bepaalt de prijs; ontbrekende niveaus vallen door naar het eerstvolgende.
+
+**Voorbeeld:** een klant heeft een lopende 10%-korting-override (Klant-niveau); één specifieke beurt heeft daarnaast een eenmalige Job-override (vast bedrag, bv. een spoedopdracht met meerprijs). De Job-override wint voor die ene beurt; alle andere beurten van diezelfde klant volgen de 10%-korting.
+
+**Implementatie:** 18_Prijsafspraken.md § 7 (volledige uitwerking: instelbare velden, geldigheidsperiode, edge cases PA-06 t/m PA-09).
+
+---
+
 ## 6. Betalings- en Herinneringsregels (BR-400 t/m BR-420)
 
 ### BR-400 (Hard): Betaling-status via Mollie-webhook
@@ -460,10 +470,12 @@ Deze vier gewichten zijn relatief aan elkaar en worden bij wijziging door het sy
 
 ## Relaties met andere documenten
 
-- **00_PRD.md**: § 15 (business rules samenvatting) & § 8 (AI Planner scoring)
-- **08_FunctioneleEisen.md**: FR-xxx implementeren deze regels
+- **00_PRD.md**: § 15 (business rules samenvatting) & § 8 (AI Planner scoring), § 19 A-15 (ADR-011)
+- **08_FunctioneleEisen.md**: FR-xxx implementeren deze regels, incl. FR-900 (Morning Briefing)
 - **11_DatabaseConcept.md**: constraints die regels afdwingen
 - **31_Testplan.md**: test-cases per regel
+- **43_AI_Agents.md**, **docs/adr/ADR-011-human-in-the-loop-ai.md**: BR-702/703 zijn de business-rule-vastlegging van ADR-011's Human Approval- en Explainability-eisen
+- **45_AgentMemory.md**: BR-704/705 zijn de business-rule-vastlegging van de Organizational Memory Human-Control- en privacy-eisen
 
 ---
 
@@ -475,3 +487,6 @@ Deze vier gewichten zijn relatief aan elkaar en worden bij wijziging door het sy
 | 2026-07-07 | 1.1 | Consistentiefix: canonieke PRD §15-nummers hersteld (BR-001 ideale datum, BR-020 nummering/immutabiliteit, BR-030 pauzering, BR-040 klant verwijderen) i.p.v. afwijkende nummering; BR-010 en BR-015 expliciet toegevoegd; alle verwijzende documenten meegetrokken |
 | 2026-07-08 | 1.2 | Production Readiness Review-fix: BR-701-gewichten uitgelijnd op 15_AIPlanner.md § 4 (was intern inconsistent met een tweede, afwijkend gewichtenstel dat niet optelde tot 100%) |
 | 2026-07-08 | 1.3 | Production Readiness Review-fix: BR-020 uitgebreid met concurrency-veilige tellerimplementatie (rij-lock op `invoice_number_counters`) i.p.v. een race-condition-gevoelige `MAX+1`-query, om de wettelijke gap-loze-nummering-eis daadwerkelijk af te dwingen |
+| 2026-07-12 | 1.4 | BR-702 (Human Approval) en BR-703 (AI Explainability) toegevoegd aan § 9, voortvloeiend uit ADR-011 (Human-in-the-Loop AI). |
+| 2026-07-12 | 1.5 | BR-306 (Hard) toegevoegd aan § 5: prioriteitsketen Job > Klant > Dienstafspraak > Dienst voor klant-specifieke prijs-overrides, voortvloeiend uit 18_Prijsafspraken.md § 7. |
+| 2026-07-12 | 1.6 | BR-704 (Human Control over geleerde voorkeuren) en BR-705 (privacy-uitsluitingen Organizational Memory) toegevoegd aan § 9, voortvloeiend uit `45_AgentMemory.md`. |
