@@ -29,6 +29,15 @@ import type { RouteStopInput } from '../../../lib/routing/types.ts';
 interface RequestBody {
   employee_id: string;
   date: string;
+  /**
+   * Sprint 7 (ADR-012 §2, Optimization Agent): candidate-only — berekent de
+   * optimalisatie maar schrijft niets naar routes/jobs. Default false, zodat
+   * het bestaande, manuele "optimaliseren"-pad (drag-and-drop-planner) exact
+   * ongewijzigd blijft. De Agent Orchestrator gebruikt dry_run:true om een
+   * kandidaat te genereren; pas ná menselijke goedkeuring roept de Approval
+   * Handler deze functie nogmaals aan met dry_run:false (of default).
+   */
+  dry_run?: boolean;
 }
 
 interface AppError {
@@ -56,7 +65,8 @@ function parseBody(raw: unknown): RequestBody | null {
   const body = raw as Record<string, unknown>;
   if (typeof body.employee_id !== 'string' || !UUID_RE.test(body.employee_id)) return null;
   if (typeof body.date !== 'string' || !DATE_ONLY.test(body.date)) return null;
-  return { employee_id: body.employee_id, date: body.date };
+  if (body.dry_run !== undefined && typeof body.dry_run !== 'boolean') return null;
+  return { employee_id: body.employee_id, date: body.date, dry_run: body.dry_run ?? false };
 }
 
 Deno.serve(async (req) => {
@@ -88,9 +98,27 @@ Deno.serve(async (req) => {
     );
   }
 
-  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
-    global: { headers: { Authorization: authHeader } },
-  });
+  // Sprint 7 (ADR-012 §1, Agent Orchestrator): de nachtcyclus heeft geen
+  // ingelogde gebruiker, dus geen bruikbare JWT voor RLS. De service-rol mag
+  // hier uitsluitend in combinatie met dry_run:true — dit voorkomt dat de
+  // service-rol-sleutel misbruikt kan worden om een écht schrijfpad (route/
+  // jobs-mutatie) buiten RLS om te forceren; alleen de kandidaat-berekening
+  // (geen schrijfactie) staat open voor deze auth-modus. Het reguliere,
+  // door-een-gebruiker-geïnitieerde pad (handmatige "optimaliseren"-knop,
+  // altijd met een echte JWT, altijd zonder dry_run) is volledig ongewijzigd.
+  const isServiceRoleCaller = authHeader === `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`;
+  if (isServiceRoleCaller && !body.dry_run) {
+    return errorResponse(
+      { code: 'forbidden', message: 'Service-rol-toegang is uitsluitend toegestaan met dry_run.' },
+      403,
+    );
+  }
+
+  const supabase = isServiceRoleCaller
+    ? createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+    : createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+        global: { headers: { Authorization: authHeader } },
+      });
 
   const { data: employee, error: employeeError } = await supabase
     .from('employees')
@@ -142,7 +170,7 @@ Deno.serve(async (req) => {
   // aan deze medewerker gekoppelde beurten (herberekening van een bestaande route).
   const { data: existingRoute } = await supabase
     .from('routes')
-    .select('id, sequence_version')
+    .select('id, sequence_version, total_drive_time_minutes')
     .eq('employee_id', body.employee_id)
     .eq('route_date', body.date)
     .maybeSingle();
@@ -284,6 +312,31 @@ Deno.serve(async (req) => {
   }));
 
   const optimized = optimizeRoute({ stops: stopInputs, matrix, routeDate: body.date });
+
+  if (body.dry_run) {
+    // Candidate-only (ADR-012 §2, Optimization Agent): geen schrijfactie —
+    // levert dezelfde `optimized`-berekening plus de vorige reistijd (indien
+    // een route al bestond) zodat de aanroeper de verwachte winst kan tonen
+    // zonder iets te muteren.
+    log('info', 'route-optimize: dry-run voltooid (geen schrijfactie)', {
+      employeeId: body.employee_id,
+      date: body.date,
+      stops: optimized.stops.length,
+    });
+    return new Response(
+      JSON.stringify({
+        route: null,
+        stops: optimized.stops,
+        unplaceable_job_ids: [...optimized.unplaceableJobIds, ...unroutableJobIds],
+        dry_run: true,
+        total_drive_time_minutes: Math.round(optimized.totalDriveTimeSec / 60),
+        total_distance_meters: optimized.totalDistanceM,
+        optimization_score: optimized.optimizationScore,
+        previous_total_drive_time_minutes: existingRoute?.total_drive_time_minutes ?? null,
+      }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
+    );
+  }
 
   const { data: route, error: routeError } = await supabase
     .from('routes')
