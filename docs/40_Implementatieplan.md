@@ -1,7 +1,7 @@
 # 40 — Implementatieplan (Sprint 1–10)
 
 **Status:** DONE
-**Versie:** 1.1
+**Versie:** 1.2
 **Bron van waarheid:** `00_PRD.md` (scope § 5, architectuur § 12) + 33_Roadmap.md — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`. **Let op:** dit is een *plan*; er wordt in de documentatiefase nog **niets** gebouwd (CLAUDE.md).
 **Relaties:** 08_FunctioneleEisen.md (FR), 10_BusinessRules.md (BR), 11_DatabaseConcept.md (tabellen), 12_Entiteiten.md, 13_API_Specificatie.md, 14_RoutingEngine.md, 15_AIPlanner.md, 26_ComponentLibrary.md, 31_Testplan.md, 33_Roadmap.md, `docs/adr/ADR-011-human-in-the-loop-ai.md` en `43_AI_Agents.md` (agent-architectuur relevant voor Sprint 7).
@@ -213,35 +213,49 @@ BetaalpaginaMobiel, herinneringsstatus op InvoicePreview, wachtrij-lijst (JobCar
 
 ---
 
-## Sprint 7 — AI Planner V1: weer, herplannen, clustering, capaciteit
+## Sprint 7 — "AI wordt echt": Execution Pipeline + Capacity/Optimization/Weather Agent
 
-**Architectuurcontext (ADR-011, `43_AI_Agents.md`):** deze sprint bouwt de Replanning Agent, Weather Agent en Capacity Agent (43_AI_Agents.md § 5/§ 6/§ 9) — de eerste sprint die de agent-architectuur operationeel maakt bovenop de al-bestaande drielagen-logica (15_AIPlanner.md). FR-900 (Morning Briefing) en de overige agents (Planning/Communication/Invoice/Revenue/Optimization — deels al elders gebouwd, deels latere sprints) vallen buiten deze sprint-doelen maar delen dezelfde architectuur (Orchestrator-patroon, Human-Approval-grens BR-702, confidence/explainability-outputcontract BR-703) — geen aparte infrastructuur per agent.
+**Architectuurcontext (ADR-011/ADR-012, `43_AI_Agents.md`):** een strategische review (PRD § 19 A-22, 2026-07-13) paste de oorspronkelijk hier geplande scope (Replanning/Weather/Capacity Agent) aan vóórdat gebouwd werd. **Gebouwd:** de gedeelde Execution Pipeline (ADR-012 § 2: Conflict Detector/Suggestion Generator/Explanation Generator/Approval Handler, als herbruikbare `lib/agents/`-modules — niet per-agent gedupliceerd), de Agent Orchestrator (ADR-012 § 1), en drie agents: **Capacity Agent** (43 § 9, nieuw, geen externe afhankelijkheid), **Optimization Agent** (43 § 11, formaliseert de bestaande `route-optimize`-Edge-Function met een nieuwe `dry_run`-modus, geen nieuwe optimalisatielogica), **Weather Agent** (43 § 6, nieuw, `WeatherProvider`-adapter op Open-Meteo). **Bewust vervangen/uitgesteld:** de Replanning Agent (43 § 5, reactieve laag/herplan-diff bij ziekte/verlof) is naar een vervolgsprint verschoven — te groot (event-driven trigger, multi-job-diff-UI, BR-802-wiring) om naast de pipeline-bouw en drie andere agents in één sprint te passen zonder kwaliteit te verliezen; zie "Sprint 7-vervolg" hieronder. Geografische clustering (FR-025) is eveneens uitgesteld — hoort logisch bij de Planning Agent-formalisering, niet bij deze drie.
 
-### Doelen
-- Reactieve laag: herplannen bij ziekte/verlof met diff-voorstel (FR-024, 15 § 7, BR-802).
-- Weerslaag met drempels (FR-023, 15 § 6).
-- Geografische clustering (FR-025, BR-204), capaciteitswaarschuwing (FR-027), "plan opnieuw" (FR-028), "waarom" (BR-700).
-- Confidence/bronnen/alternatieven-outputcontract (BR-703) op de in deze sprint gebouwde agents.
+### Doelen (gerealiseerd)
+- Weerslaag met drempels (FR-023, 15 § 6) — als Weather Agent-voorstel (informatief; het daadwerkelijk herplannen van geraakte beurten is Replanning Agent-scope, hieronder).
+- Capaciteitswaarschuwing (FR-027) — als Capacity Agent-voorstel, 7 dagen vooruit.
+- Route-optimalisatie als proactief agent-voorstel i.p.v. alleen een handmatige knop (Optimization Agent, hergebruikt Sprint 4).
+- Confidence/bronnen/alternatieven-outputcontract (BR-703) — eenmalig in de gedeelde Explanation Generator, niet per agent herhaald.
+- Morning Briefing (FR-900, UI al gebouwd vóór dit sprint, PRD § 19 A-21) toont voor deze drie voorstel-types geen "Voorbeeldweergave" meer zodra de agent-cyclus voor een bedrijf gedraaid heeft.
 
 ### Bestanden
-- `/lib/planning/reactive.ts` (herplan-diff), `/lib/weather/provider.ts` + `openmeteo.ts`.
-- `/lib/planning/clustering.ts` (PostGIS `ST_DWithin`), `/lib/planning/scoring.ts` (15 § 4).
-- `/supabase/functions/replan/`, `/replan-accept/`.
-- `/components/domain/{ReplanDiff,WeatherBanner,CapacityWarning}.tsx`.
+- `/lib/agents/{types,conflict-detector,suggestion-generator,explanation-generator,approval-handler,capacity,optimization}.ts` — gedeelde pipeline + agent-domeinlogica, puur/getest.
+- `/lib/weather/{types,thresholds,candidates,cache,open-meteo-provider}.ts` — Weather Agent-domeinlogica + provider-adapter (ADR-007).
+- `/supabase/functions/{agent-orchestrator,agent-capacity,agent-optimization,agent-weather}/index.ts` — dunne Edge-Function-wrappers, service-rol-only (nachtcyclus heeft geen ingelogde gebruiker).
+- `/supabase/functions/route-optimize/index.ts` — uitgebreid met optioneel `dry_run`-veld + service-rol-auth-pad (uitsluitend i.c.m. `dry_run:true`); bestaand gedrag ongewijzigd.
+- `/app/(app)/briefing-actions.ts` — `decideProposal`-Server-Action (BR-702-goedkeuringspad).
+- `/lib/briefing/get-briefing.ts` — vervangt `buildDemoProposals` door een echte `agent_proposals`-query zodra er vandaag een succesvolle agent-run is; `WeatherTimeline` blijft voorbeeldweergave (zie A-22 punt 4).
 
 ### Database-migraties
-- `019_weather_cache.sql` — weerdata-cache.
-- `020_planning_reasons.sql` — reden-/scorevelden op jobs (BR-700, transparantie).
-- `021_leave_periods.sql` — `leave_periods` (meerdaags verlof).
+- `022_agent_pipeline.sql` — `agent_runs`/`agent_proposals` (ADR-012 § 6/§ 8-schema) + `decide_agent_proposal()`-RPC (BR-702, state-transition-guard) + kolomgrendel-trigger (alleen `approval_status`/`decided_by`/`decided_at` wijzigbaar door een gebruiker).
+- `023_weerdata_cache.sql` — exact het al-gespecificeerde schema uit 11_DatabaseConcept.md § 3.9.
+- `024_agent_service_role_reads.sql` — ontbrekende service-rol-leesrechten op `companies`/`employees`/`availability`/`jobs`/`routes`/`service_agreements`/`services` (`auto_expose_new_tables` staat uit, PRD § 19 A-22 punt 6).
+
+*(De hier oorspronkelijk geplande nummers `019`–`021` zijn niet meer beschikbaar — Sprint 5 gebruikte die al; zie PRD § 19 A-22 punt 5.)*
 
 ### Componenten
-ReplanDiff (accepteren/aanpassen), WeatherBanner, CapacityWarning, WhyExplanation (volledig), scoring-sliders.
+Geen nieuwe UI-componenten — de Morning Briefing-UI (`components/domain/briefing/*`, PRD § 19 A-21) consumeert de echte `agent_proposals`-data via exact dezelfde `AgentProposal`-shape die al vóór dit sprint bestond.
 
 ### Testcases
-- Unit: scorefunctie + gewichten; clustering-groepen; weer-drempels (15 § 6.3).
-- Integratie: `replan` genereert diff, `replan-accept` past toe; onplaatsbaar → wachtrij (BR-802).
-- BR: **BR-200** stabiliteit bij herplannen; BR-201 beschikbaarheid absoluut.
-- E2E: ziekmelding → herplan-voorstel → accepteren (E2E-10); weerwaarschuwing → herplan (AC-023).
+- Unit (47 nieuw): Conflict Detector (BR-200/tenant-defense/confidence-schema), Explanation Generator (schema-volledigheid), Approval Handler (ADR-012 § 7-beslisboom incl. confidence-drempel), Capacity Agent (drempellogica + per-kandidaat-datumkoppeling), Weather-drempels (15 § 6.3 exacte grenswaarden) + kandidaatgeneratie, Optimization-kandidaatgeneratie (besparingsdrempel).
+- Integratie (8 nieuw, `tests/integration/agent-pipeline-rls.test.ts`): RLS-tenant-isolatie op `agent_runs`/`agent_proposals`, rechtenmatrix (Administratie geen toegang), `decide_agent_proposal()` (goedkeuren, dubbele-beslissing-guard, ongeldige status), kolomgrendel-trigger (rechtstreekse PATCH op `confidence` geweigerd).
+- Lokale end-to-end-verificatie (niet geautomatiseerd, handmatig via `supabase functions serve` + browser): orchestrator → echte capaciteitswaarschuwing → Morning Briefing zonder "Voorbeeldweergave" → "Waarom?"-uitklap → accepteren → `decide_agent_proposal` → toast + verdwijnt uit de briefing. Bestaande Sprint 4/5-regressie bevestigd (golden-path-E2E, handmatige "optimaliseren"-knop).
+
+---
+
+## Sprint 7-vervolg (nog te plannen) — Replanning Agent + geografische clustering
+
+Expliciet uitgesteld tijdens Sprint 7 (PRD § 19 A-22), niet vergeten:
+
+- **Replanning Agent** (43 § 5): reactieve laag, herplan-diff bij ziekte/verlof (BR-802)/spoedopdracht/niet-thuis. Vereist een nieuwe multi-job-diff-UI (`ReplanDiff`, de bestaande enkelvoudige `ProposalCard` volstaat niet), event-driven trigger-wiring (buiten de dagcyclus, ADR-012 § 1), en het stabiliteitsgewogen algoritme (15 § 7.3).
+- **Geografische clustering** (FR-025, BR-204): hoort bij een toekomstige Planning Agent-formalisering (horizon-laag, momenteel nog de Sprint 3-implementatie zonder agent-pipeline-integratie).
+- **Organizational Memory-leeskant** (`45_AgentMemory.md`): Sprint 7 legt alleen het schrijfpad van impliciete waarnemingen vast (PRD § 19 A-22 punt 7); agents gebruiken geleerde voorkeuren nog niet als input.
 
 ---
 
@@ -361,3 +375,4 @@ S1 fundament ─▶ S2 klanten/geocoding ─▶ S3 afspraken/beurt-gen ─▶ S4
 |---|---|---|
 | 2026-07-07 | 1.0 | Implementatieplan Sprint 1–10 opgesteld: per sprint doelen, bestanden, DB-migraties, componenten, testcases; afhankelijkheden-diagram; DoD per sprint. Gebaseerd op 33_Roadmap en de complete docset. |
 | 2026-07-12 | 1.1 | Sprint 7 aangevuld met architectuurcontext vanuit ADR-011 (Human-in-the-Loop AI, `43_AI_Agents.md`) — Sprint 7 bouwt de Replanning/Weather/Capacity Agents; geen wijziging aan bestaande sprintdoelen, alleen expliciete koppeling aan de nieuwe agent-architectuur. |
+| 2026-07-13 | 1.2 | Sprint 7 herzien ná strategische review (PRD § 19 A-22) en gebouwd: Replanning Agent vervangen door Optimization Agent-formalisering (kleinere scope, sluit het grootste zichtbare "voorbeeldweergave"-gat); gedeelde Execution Pipeline (ADR-012 § 2) als herbruikbare `lib/agents/`-modules i.p.v. per-agent-explainability; Capacity/Weather Agent nieuw gebouwd. Replanning Agent + geografische clustering expliciet verschoven naar een nieuwe "Sprint 7-vervolg"-sectie. Migratienummers gecorrigeerd (`022`–`024`, de geplande `019`–`021` waren al door Sprint 5 gebruikt). |

@@ -1,7 +1,7 @@
 # 43 — AI Agents
 
 **Status:** DONE
-**Versie:** 1.2
+**Versie:** 1.3
 **Bron van waarheid:** `ADR-011` (Human-in-the-Loop AI — Agent-orchestratie & Morning Briefing) en `00_PRD.md` § 8. Dit document mag geen van beide tegenspreken; het is de **operationele uitwerking** van ADR-011 (analoog aan hoe `15_AIPlanner.md` de gedetailleerde uitwerking is van ADR-010).
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 **Relaties:** `docs/adr/ADR-011-human-in-the-loop-ai.md` (architectuurbeslissing), `docs/adr/ADR-012-ai-execution-pipeline.md` (technische runtime-mechaniek: orchestratie-volgorde, execution pipeline, agent-contract, kosten, failure handling — zie § 3), `45_AgentMemory.md` (Organizational Memory — hoe agents leren van historische beslissingen, zie § 7 hieronder), `docs/adr/ADR-010-ai-planner-architecture.md` (routing/replan-fundament), `15_AIPlanner.md` (horizon-/dag-/reactieve-laag-detail, blijft leidend voor Planning/Replanning/Weather-agent-logica), `14_RoutingEngine.md` (Optimization Agent), `16_Facturatie.md` (Invoice Agent), `19_WhatsApp.md` (Communication Agent), `21_Notificaties.md`, `10_BusinessRules.md` § 9 (BR-700–705), `08_FunctioneleEisen.md` FR-serie 900+, `40_Implementatieplan.md` (sprintplaatsing).
@@ -60,6 +60,23 @@ Zie ADR-011 § "Gekozen oplossing" punt 3 voor de volledige onderbouwing, en **A
 | Human approval | § 12 (harde grens, niet-onderhandelbaar per agent) |
 
 Vanaf `45_AgentMemory.md` krijgt elke agent hieronder ook een extra, optionele input: relevante geleerde voorkeuren (Organizational Memory) voor de scope die hij verwerkt — zie `45_AgentMemory.md` § 7 voor precies wat elke agent leert en gebruikt. Dit is een uitbreiding van de bestaande input (tabel hieronder per agent), geen wijziging aan de kernverantwoordelijkheid.
+
+---
+
+## 3a. Implementatiestatus (Sprint 7, PRD § 19 A-22)
+
+Dit document beschrijft de doelarchitectuur voor alle acht agents; onderstaande tabel houdt bij welke daadwerkelijk gebouwd zijn (`40_Implementatieplan.md`). Geen van de secties § 4–11 hieronder is met deze aantekening inhoudelijk gewijzigd — een "nog niet gebouwd"-agent is architecturaal al volledig vastgelegd, alleen nog niet geïmplementeerd.
+
+| Agent | Status | Sprint |
+|---|---|---|
+| Capacity Agent (§ 9) | ✅ Gebouwd | 7 |
+| Optimization Agent (§ 11) | ✅ Gebouwd (formalisering van bestaande Sprint 4-Edge-Functions) | 7 |
+| Weather Agent (§ 6) | ✅ Gebouwd (informatief — het herplan-voorstel-deel wacht op Replanning Agent) | 7 |
+| Planning Agent (§ 4) | ⏳ Kernlogica bestaat sinds Sprint 3 (15_AIPlanner.md), nog niet als pipeline-conforme agent geformaliseerd | Nog niet gepland |
+| Replanning Agent (§ 5) | ⏳ Bewust uitgesteld (te grote scope voor Sprint 7, zie 40_Implementatieplan.md "Sprint 7-vervolg") | Nog niet gepland |
+| Communication Agent (§ 7) | ⏳ Wacht op de WhatsApp/360dialog-adapter (Sprint 8) | 8 (gepland) |
+| Invoice Agent (§ 8) | ⏳ Kernwaarde (conceptfactuur bij afronden) al gebouwd als reguliere RPC (Sprint 5), nog niet als agent | Nog niet gepland |
+| Revenue Agent (§ 10) | ⏳ Nog niet gebouwd | Nog niet gepland |
 
 ---
 
@@ -244,3 +261,4 @@ Elke toekomstige agent volgt hetzelfde contract: Edge Function (ADR-008), Provid
 | 2026-07-12 | 1.0 | Eerste volledige versie: visie, agent-architectuurdiagram, Orchestrator-verantwoordelijkheden, alle acht agents (verantwoordelijkheid/input/output/business rules/triggers), Human Approval-checklist, Confidence-Score-outputcontract, Logging & Audit, Toekomstige Agents-roadmap. Geschreven als operationele uitwerking van `ADR-011` (Human-in-the-Loop AI). |
 | 2026-07-12 | 1.1 | Kruisverwijzingen naar `ADR-012` (AI Execution Pipeline) toegevoegd bij § 3 (Orchestrator), § 12 (Human Approval) en § 13 (Confidence Score) — ADR-012 pint de technische runtime-mechaniek (dependency graph, agent-contract, 0–1-confidence-conventie, kosten, failure handling) die dit document tot nu toe alleen op architectuurniveau (ADR-011) beschreef. Geen inhoudelijke wijziging aan de agent-beschrijvingen zelf. |
 | 2026-07-12 | 1.2 | Kruisverwijzing naar `45_AgentMemory.md` toegevoegd (Organizational Memory — elke agent krijgt optioneel geleerde voorkeuren als extra input, § 7 van dat document beschrijft precies wat elke agent leert). Geen inhoudelijke wijziging aan de acht agent-beschrijvingen zelf. |
+| 2026-07-13 | 1.3 | § 3a (Implementatiestatus) toegevoegd — Sprint 7 heeft Capacity/Optimization/Weather Agent daadwerkelijk gebouwd (PRD § 19 A-22, `40_Implementatieplan.md`); de overige vijf agents blijven architecturaal beschreven maar nog niet geïmplementeerd. Geen inhoudelijke wijziging aan de architectuurbeschrijvingen § 4–11 zelf. |

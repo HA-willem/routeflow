@@ -1,7 +1,7 @@
 # 11 — Database Concept
 
 **Status:** DONE
-**Versie:** 1.0
+**Versie:** 1.4
 **Bron van waarheid:** `00_PRD.md` § 12 (Technische Architectuur) — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 
@@ -583,6 +583,44 @@ Let op het onderscheid met `notifications` (§ 3.7): **`notifications`** is het 
 
 **Constraints:** PK `id`; UNIQUE(`area_key`, `forecast_date`, `provider`). **Geen `company_id`** — weerdata is niet tenant-specifiek (analoog aan `distance_cache`); toegang uitsluitend via Edge Functions.
 
+#### `agent_runs` (AI-agent-run-log — ADR-012 § 8, Sprint 7, 022_agent_pipeline.sql)
+| Kolom | Type | Vereist | Opmerkingen |
+|---|---|---|---|
+| `id` | UUID | ✓ | PK |
+| `company_id` | UUID | ✓ | FK, RLS |
+| `agent` | ENUM(planning, replanning, weather, communication, invoice, capacity, revenue, optimization) | ✓ | |
+| `started_at` / `finished_at` | TIMESTAMPTZ | ✗ | `finished_at` NULL zolang de run loopt |
+| `duration_ms` | INT | ✗ | |
+| `result` | ENUM(success, failed, partial) | ✗ | |
+| `candidate_count` | INT | ✓ | Default 0 |
+| `error_message` | VARCHAR(500) | ✗ | Nooit PII (41_CodingStandards.md § 11) |
+| `created_at` | TIMESTAMPTZ | ✓ | UTC |
+
+**Constraints:** PK `id`; FK `company_id`; RLS `company_id = current_company_id() AND current_user_role() IN (owner, admin, planner)` — alleen SELECT voor gebruikers, INSERT/UPDATE uitsluitend service-rol (agent-Edge-Functions).
+
+#### `agent_proposals` (AI-voorstel — ADR-012 § 6/§ 7, Sprint 7, 022_agent_pipeline.sql)
+| Kolom | Type | Vereist | Opmerkingen |
+|---|---|---|---|
+| `id` | UUID | ✓ | PK |
+| `company_id` | UUID | ✓ | FK, RLS |
+| `agent_run_id` | UUID | ✓ | FK → `agent_runs` |
+| `agent` | ENUM | ✓ | Zelfde enum als `agent_runs.agent` |
+| `scheduled_date` | DATE | ✓ | De dag waar het voorstel over gaat — niet per se de run-datum |
+| `title` / `summary` | VARCHAR(200) / TEXT | ✓ | Suggestion Generator-velden (ADR-012 § 2) |
+| `reasoning` | TEXT | ✓ | BR-700/703 |
+| `data_sources` / `business_rules` | JSONB | ✓ | Array resp. van strings / `{code, label}` |
+| `confidence` | NUMERIC(4,3) | ✓ | 0–1 (ADR-012 § 3), CHECK 0 ≤ x ≤ 1 |
+| `impact` / `expected_gain` / `alternatives` | TEXT | ✓ | ADR-012 § 6 |
+| `severity` | ENUM(info, attention, urgent) | ✓ | |
+| `impacted_job_ids` / `impacted_employee_ids` | UUID[] | ✓ | Default `{}` |
+| `payload` | JSONB | ✗ | NULL = informatief; anders wat de Approval Handler bij goedkeuring uitvoert (bv. `{"type":"route_optimize", ...}`) |
+| `approval_status` | ENUM(proposed, approved, rejected, expired, auto_executed) | ✓ | Default `proposed` |
+| `decided_by` | UUID | ✗ | FK → `users` |
+| `decided_at` | TIMESTAMPTZ | ✗ | |
+| `created_at` | TIMESTAMPTZ | ✓ | UTC |
+
+**Constraints:** PK `id`; FK `company_id`/`agent_run_id`/`decided_by`; index `(company_id, scheduled_date, approval_status)` (Morning Briefing-query). RLS: SELECT/UPDATE voor owner/admin/planner binnen eigen bedrijf, INSERT uitsluitend service-rol. Een BEFORE UPDATE-trigger (`enforce_agent_proposal_decision_only`) staat een gebruiker uitsluitend toe `approval_status`/`decided_by`/`decided_at` te wijzigen — alle overige kolommen zijn alleen door de service-rol muteerbaar, zodat het explainability-audittrail (ADR-012 § 8) niet door een gebruiker kan worden overschreven. De enige toegestane mutatie vanuit de app is de `decide_agent_proposal(p_proposal_id, p_approval_status)`-RPC (state-transition-guard: alleen een `proposed`-rij kan naar `approved`/`rejected`).
+
 #### `notification_templates` (berichttemplates — FR-081, 19_WhatsApp.md § 4)
 | Kolom | Type | Vereist | Opmerkingen |
 |---|---|---|---|
@@ -637,6 +675,7 @@ CREATE INDEX idx_reminders_company_invoice ON reminders(company_id, invoice_id);
 CREATE INDEX idx_messages_company_notification ON messages(company_id, notification_id);
 CREATE INDEX idx_job_photos_company_job ON job_photos(company_id, job_id);
 CREATE INDEX idx_weerdata_cache_area_date ON weerdata_cache(area_key, forecast_date, provider);
+CREATE INDEX idx_agent_proposals_briefing ON agent_proposals(company_id, scheduled_date, approval_status);
 ```
 
 ---
@@ -727,3 +766,4 @@ CREATE TABLE audit_log (
 | 2026-07-08 | 1.1 | Production Readiness Review-fixes: `company_id` + RLS-policy toegevoegd aan `invoice_lines` en `payments` (ontbrak, in strijd met NFR-301 "100% RLS"); nieuwe tabel `invoice_number_counters` voor concurrency-veilige factuurnummering (BR-020); § 3.9 toegevoegd met volledige schema's voor `reminders`, `messages`, `job_photos`, `weerdata_cache`, `notification_templates` (eerder alleen elders genoemd, nooit hier gespecificeerd); expliciete deferral-notitie voor `teams` (bewust geen tabel vóór BL-025); bijbehorende indexen toegevoegd |
 | 2026-07-08 | 1.2 | Sprint 1-fix: `users.role`-enum gecorrigeerd van `(owner, admin, planner, support)` naar `(owner, admin, planner, administration, employee)` — uitgelijnd op de canonieke rollenlijst in 23_Gebruikersrollen.md § 1 (miste voorheen de Medewerker-rol volledig). 22_Authenticatie.md § 7 in dezelfde commit meegecorrigeerd. |
 | 2026-07-08 | 1.3 | Sprint 2-kickoff (PRD § 19 A-10): `objects.location` nullable gemaakt (was NOT NULL) — Sprint 2 bouwt bewust geen kaart-UI/Mapbox-geocoding-adapter; objecten worden adres-only aangemaakt. `location_status` default `manual`. |
+| 2026-07-13 | 1.4 | Sprint 7 (PRD § 19 A-22): `agent_runs`/`agent_proposals` toegevoegd aan § 3.9 (ADR-012 § 6/§ 8-schema, `022_agent_pipeline.sql`) + bijbehorende index. `weerdata_cache` was al gespecificeerd (1.1) en is ongewijzigd — Sprint 7 bouwt exact naar dat schema. |
