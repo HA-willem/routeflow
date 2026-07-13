@@ -1,4 +1,7 @@
 @import 'tailwindcss';
+/* animate-in/animate-out-utilities (Radix data-state-overgangen in dialogen,
+   command bar en zijpanelen) — 42_DesignSystem.md § 24-conforme, korte fades. */
+@import 'tw-animate-css';
 @import '../lib/design/tokens.css';
 
 @layer base {
