@@ -1,7 +1,7 @@
 # 30 — Navigatie & Informatiearchitectuur
 
 **Status:** DONE
-**Versie:** 2.0
+**Versie:** 2.1
 **Bron van waarheid:** `00_PRD.md` § 11.4 (command-first), § 11.8 (mobiel/desktop) — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 **Relaties:** 27_PaginaOverzicht.md (sitemap), 26_ComponentLibrary.md (CommandPalette), 23_Gebruikersrollen.md (rol-afhankelijke nav), 29_MobieleApp.md.
@@ -20,12 +20,17 @@ Dit document definieert de **informatiearchitectuur (IA)** en **navigatie**: de 
 
 | Item | Route | Icoon | Rollen (23) |
 |---|---|---|---|
-| Dashboard | `/` | home | Allen (inhoud verschilt) |
+| Vandaag (Morning Briefing) | `/` | zon | Allen (inhoud verschilt per rol, 44 § 2) |
 | Planning | `/planning` | kalender | Eigenaar/Admin/Planner |
 | Klanten | `/klanten` | mensen | Eigenaar/Admin/Planner/Administratie(R) |
 | Facturen | `/facturen` | document | Eigenaar/Admin/Administratie/Planner(R) |
+| Dashboard | `/dashboard` | grafiek | Eigenaar/Admin |
 | Rapportage | `/rapportage` | grafiek | Eigenaar/Admin (overige beperkt) |
 | Instellingen | `/instellingen` | tandwiel | Eigenaar/Admin |
+
+> Sinds ADR-011/PRD § 19 A-21 is `/` de **Morning Briefing** ("Vandaag") — het primaire
+> startscherm (44_MorningBriefing_UX.md). Het KPI-dashboard (28_Dashboard.md) leeft op
+> `/dashboard`.
 
 - Items waarvoor een rol geen toegang heeft, worden **verborgen** (niet gedisabled).
 - Actieve sectie gemarkeerd; zijbalk inklapbaar (icon-only) voor meer werkruimte.
@@ -121,3 +126,4 @@ Volledige mapping met FR's en rollen: 27_PaginaOverzicht.md.
 |---|---|---|
 | 2026-07-06 | 1.0 | Placeholder met boomschets |
 | 2026-07-07 | 2.0 | Volledige uitwerking: desktop-zijbalk + mobiele bottom-bar (rol-bewust), ⌘K-palette (inhoud/gedrag), tabs/breadcrumbs, deep links & 403-gedrag, navigatiefeedback, toegankelijkheid, IA-boom |
+| 2026-07-13 | 2.1 | § 1 bijgewerkt aan PRD § 19 A-21: `/` is de Morning Briefing ("Vandaag", 44_MorningBriefing_UX.md); KPI-dashboard verhuisd naar `/dashboard` (Eigenaar/Admin). ⌘K-palette uit § 1/§ 3 nu daadwerkelijk gebouwd (CommandBar, cmdk). |

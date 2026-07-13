@@ -1,7 +1,7 @@
 # 44 — Morning Briefing UX
 
 **Status:** DONE
-**Versie:** 1.1
+**Versie:** 1.2
 **Bron van waarheid:** `docs/adr/ADR-011-human-in-the-loop-ai.md` § 1 (Morning Briefing, primair startscherm) — dit document mag ADR-011 niet tegenspreken; het is de **UX-uitwerking** van wat ADR-011 op architectuurniveau vastlegt (analoog aan hoe `24_UI_UX.md`/`42_DesignSystem.md` de UX-uitwerking zijn van de bredere productbeslissingen).
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 **Relaties:** `docs/adr/ADR-011-human-in-the-loop-ai.md`, `docs/adr/ADR-012-ai-execution-pipeline.md` (Explanation Generator-schema achter § 5/§ 8), `45_AgentMemory.md` (Organizational Memory — geleerde voorkeuren zichtbaar in § 8 Explainable AI, feedback-loop achter § 5's kaartacties), `43_AI_Agents.md` (agents achter elk onderdeel), `42_DesignSystem.md` (visuele taal, Housapp/Linear-inspiratieprincipe — hier toegepast, niet herhaald), `24_UI_UX.md` (toon & copy, lege-staat-conventies), `28_Dashboard.md` (bestaande layout-precedent dat dit document verdiept), `29_MobieleApp.md` (Medewerker-variant), `23_Gebruikersrollen.md` (rollen/rechtenmatrix), `10_BusinessRules.md` (BR-200–205, BR-700–705), `08_FunctioneleEisen.md` FR-900–902.
@@ -289,3 +289,4 @@ Elke uitbreiding volgt hetzelfde contract als de acht bestaande agents (ADR-012 
 |---|---|---|
 | 2026-07-12 | 1.0 | Eerste volledige versie: doel, drie rolvarianten (Planner/Eigenaar/Medewerker — Medewerker expliciet gekoppeld aan de bestaande PWA-Dagroute i.p.v. een nieuw scherm), volledige pagina-opbouw (9 onderdelen met doel/inhoud/interactie), 11 AI-samenvatting-scenario's, voorstel-kaartstructuur gekoppeld aan ADR-012's Explanation Generator-schema, drie Morning Modes met exacte triggers, uitgebreide weer-tijdlijn-uitwerking, Explainable-AI-uitklappatroon (4 vragen), volledige interactieflow, 5 empty states, toekomstvisie gekoppeld aan de bestaande Toekomstige-Agents-roadmap (43_AI_Agents.md § 15). Geschreven als UX-uitwerking van `ADR-011` § 1, voorafgaand aan verdere Planning-UI-bouw. |
 | 2026-07-12 | 1.1 | § 5 (AI Voorstellen) en § 8 (Explainable AI) uitgebreid met de Organizational Memory-feedback-loop (👍/👎/✏️, FR-902) en geleerde voorkeuren als expliciete "welke gegevens?"-bron, voortvloeiend uit `45_AgentMemory.md`. Geen wijziging aan de overige secties. |
+| 2026-07-13 | 1.2 | UI-laag geïmplementeerd als startscherm `/` (PRD § 19 A-21): § 3-opbouw volledig, § 5-kaarten, § 6-modes, § 7-weer-tijdlijn, § 8-uitklap (4 vragen). Dagfeiten/waarschuwingen/KPI's live; AI-onderdelen tot Sprint 7 als expliciet gemarkeerde "Voorbeeldweergave" (`lib/briefing/demo.ts`); datacontract in `lib/briefing/types.ts` volgt ADR-012 § 6. |

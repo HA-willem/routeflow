@@ -1,7 +1,7 @@
 # 42 — RouteFlow Design System (Sprint 4 Frontend)
 
 **Status:** DONE
-**Versie:** 1.0
+**Versie:** 1.1
 **Bron van waarheid:** `25_DesignSystem.md` (tokens) en `26_ComponentLibrary.md` (componentenlagen) — dit document spreekt geen van beide tegen, het **operationaliseert** ze tot een concreet, visueel systeem voor de Sprint 4 Frontend-bouw (Planning-module) en alle daaropvolgende schermen.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 **Relaties:** `24_UI_UX.md` (gedrag/principes), `25_DesignSystem.md` (tokens — canoniek, dit document voegt niets toe aan de tokenwaarden zelf), `26_ComponentLibrary.md` (componentenlagen/staten-eis), `27_PaginaOverzicht.md` (Planning-schermen), `29_MobieleApp.md` (PWA-varianten, buiten scope hier), `41_CodingStandards.md` (implementatie), `lib/design/tokens.css` (codematige bron van de tokens).
@@ -376,3 +376,4 @@ Zelfde regel als 25 § 9 / 26 § 8: een nieuw visueel patroon in de Planning-mod
 | Datum | Versie | Wijziging |
 |---|---|---|
 | 2026-07-11 | 1.0 | Eerste volledige versie: kleurtoepassing, typografie-toepassing, 8px-spacingritme, radius/shadow-toepassing, Lucide-iconenset, buttons/inputs/cards/tabellen/formulieren-toepassingsregels, plannercomponenten-principes (Housapp/Linear-geïnspireerd), volledige JobCard- en RouteBoard-specificatie, realtime-gedrag, route-details-paneel, sidebar/topbar-visuele regels, dialogen, toasts, skeletons, empty/loading states, motion-tabel, responsief gedrag (tablet/desktop). Geschreven voorafgaand aan de Sprint 4 Frontend-componentbouw op expliciet verzoek. |
+| 2026-07-13 | 1.1 | Nieuwe patronen (§ 26-governance) vastgelegd bij de AI-first frontend (PRD § 19 A-21): CommandPalette (⌘K, top-uitgelijnd paneel, `shadow-lg` conform § 5) via `cmdk`; route-details als rechts-zijpaneel (slide-in, zelfde § 16-inhoud + rijtijd/afstand-totalen en werkbon-links); "Voorbeeldweergave"-chip (gestippelde rand, muted) voor AI-preview-content; `tw-animate-css` toegevoegd zodat de al gespecificeerde Radix-`animate-in`-overgangen (§ 24) daadwerkelijk renderen. Geen tokenwijzigingen. |
