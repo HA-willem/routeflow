@@ -151,7 +151,7 @@ export function CommandBar({ role, searchCustomersAction }: CommandBarProps) {
       >
         <Search aria-hidden className="size-4 shrink-0" />
         <span className="hidden flex-1 text-left sm:block">Zoeken of commando…</span>
-        <kbd className="bg-surface text-text-muted hidden rounded-sm px-1.5 py-0.5 font-sans text-[11px] sm:block">
+        <kbd className="bg-surface text-text-muted hidden rounded-sm px-1.5 py-0.5 font-sans text-xs sm:block">
           {shortcutLabel}
         </kbd>
         <span className="sr-only">Command bar openen</span>
@@ -199,7 +199,7 @@ export function CommandBar({ role, searchCustomersAction }: CommandBarProps) {
                     >
                       <Sparkles aria-hidden className="text-primary size-4 shrink-0" />
                       <span className="flex-1">{example.label}</span>
-                      <span className="border-border text-text-muted rounded-full border border-dashed px-2 py-0.5 text-[11px]">
+                      <span className="border-border text-text-muted rounded-full border border-dashed px-2 py-0.5 text-xs">
                         Voorbeeld
                       </span>
                     </Command.Item>
@@ -271,7 +271,7 @@ export function CommandBar({ role, searchCustomersAction }: CommandBarProps) {
                 </Command.Group>
               </Command.List>
 
-              <div className="border-border text-text-muted flex items-center gap-4 border-t px-4 py-2 text-[11px]">
+              <div className="border-border text-text-muted flex items-center gap-4 border-t px-4 py-2 text-xs">
                 <span>
                   <kbd className="bg-surface rounded-sm px-1 py-0.5 font-sans">↑↓</kbd> navigeren
                 </span>

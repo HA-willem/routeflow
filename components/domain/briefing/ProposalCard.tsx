@@ -54,7 +54,7 @@ export function ProposalCard({
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2 pb-1">
-            <span className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium">
+            <span className="bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium">
               <Sparkles aria-hidden className="size-3" />
               {AGENT_LABELS[proposal.agent]}
             </span>

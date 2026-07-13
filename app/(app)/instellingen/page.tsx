@@ -71,7 +71,7 @@ export default async function InstellingenPage() {
           <span className="min-w-0 flex-1">
             <span className="text-text flex flex-wrap items-center gap-2 text-sm font-semibold">
               AI-assistent
-              <span className="border-border text-text-muted rounded-full border border-dashed px-2 py-0.5 text-[11px] font-medium">
+              <span className="border-border text-text-muted rounded-full border border-dashed px-2 py-0.5 text-xs font-medium">
                 Binnenkort
               </span>
             </span>

@@ -65,7 +65,7 @@ export function WeatherTimeline({ weather, aiPreview }: WeatherTimelineProps) {
               const heavy = hour.precipitationChance >= 70;
               return (
                 <div key={hour.hour} className="flex min-w-0 flex-1 flex-col items-center gap-1">
-                  <span className="text-text-muted text-[10px] tabular-nums">
+                  <span className="text-text-muted text-xs tabular-nums">
                     {hour.precipitationChance}%
                   </span>
                   <div className="bg-surface flex h-16 w-full items-end overflow-hidden rounded-sm">
@@ -77,7 +77,7 @@ export function WeatherTimeline({ weather, aiPreview }: WeatherTimelineProps) {
                       style={{ height: `${Math.max(hour.precipitationChance, 4)}%` }}
                     />
                   </div>
-                  <span className="text-text-muted text-[10px] tabular-nums">
+                  <span className="text-text-muted text-xs tabular-nums">
                     {String(hour.hour).padStart(2, '0')}
                   </span>
                 </div>
