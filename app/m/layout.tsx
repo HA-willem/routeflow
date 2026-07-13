@@ -28,7 +28,7 @@ export const viewport: Viewport = {
  * (bv. een Eigenaar zonder employees-rij) hoort in de desktop-app, niet hier.
  */
 export default async function MobileLayout({ children }: { children: ReactNode }) {
-  const { user } = await requireOnboardedUser();
+  const { user, profile } = await requireOnboardedUser();
   const supabase = await createClient();
 
   const { data: employee } = await supabase
@@ -38,6 +38,19 @@ export default async function MobileLayout({ children }: { children: ReactNode }
     .maybeSingle();
 
   if (!employee) {
+    // Een employee-rol zonder employees-rij is een datainconsistentie; terugsturen
+    // naar / zou een redirect-loop geven (/ stuurt employees naar /m). Toon dan
+    // een neutrale melding i.p.v. te bouncen.
+    if (profile.role === 'employee') {
+      return (
+        <div className="bg-bg text-text mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center px-4 text-center">
+          <p className="text-base font-medium">Geen medewerker-profiel gevonden.</p>
+          <p className="text-text-muted mt-1 text-sm">
+            Vraag je beheerder om je account aan een medewerker te koppelen.
+          </p>
+        </div>
+      );
+    }
     redirect('/');
   }
 

@@ -43,7 +43,7 @@ export async function getMorningBriefing(profile: UserProfile): Promise<MorningB
     { count: jobsThisWeek },
     { count: draftInvoices },
     { count: openInvoices },
-    { data: overdueInvoices },
+    { count: overdueInvoices },
     { data: monthInvoices },
     { data: company },
   ] = await Promise.all([
@@ -96,11 +96,10 @@ export async function getMorningBriefing(profile: UserProfile): Promise<MorningB
       .eq('status', 'sent'),
     supabase
       .from('invoices')
-      .select('id')
+      .select('*', { count: 'exact', head: true })
       .eq('company_id', profile.company_id)
       .eq('status', 'sent')
-      .lt('due_date', today)
-      .limit(10),
+      .lt('due_date', today),
     supabase
       .from('invoices')
       .select('total_amount_cents')
@@ -139,12 +138,11 @@ export async function getMorningBriefing(profile: UserProfile): Promise<MorningB
 
   // Waarschuwingen zijn échte feiten uit de database — geen voorbeeldcontent (44 § 3.7).
   const warnings: BriefingWarning[] = [];
-  if ((overdueInvoices ?? []).length > 0) {
-    const count = overdueInvoices!.length;
+  if ((overdueInvoices ?? 0) > 0) {
     warnings.push({
       id: 'overdue-invoices',
       severity: 'attention',
-      text: `${count} verzonden ${count === 1 ? 'factuur is' : 'facturen zijn'} over de vervaldatum.`,
+      text: `${overdueInvoices} verzonden ${overdueInvoices === 1 ? 'factuur is' : 'facturen zijn'} over de vervaldatum.`,
       href: '/facturen',
       hrefLabel: 'Naar facturen',
     });

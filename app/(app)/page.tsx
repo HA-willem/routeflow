@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 import { AiSummary } from '@/components/domain/briefing/AiSummary';
 import { DayOverview } from '@/components/domain/briefing/DayOverview';
@@ -33,6 +34,13 @@ function greeting(): string {
  */
 export default async function MorningBriefingPage() {
   const { profile } = await requireOnboardedUser();
+
+  // Medewerkers hebben géén bedrijfsbrede briefing (44 § 2.3, P1/P2-grens
+  // 23_Gebruikersrollen.md § 3) — hun dagstart is de PWA-Dagroute.
+  if (profile.role === 'employee') {
+    redirect('/m');
+  }
+
   const briefing = await getMorningBriefing(profile);
 
   return (
