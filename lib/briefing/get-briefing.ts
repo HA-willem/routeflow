@@ -6,7 +6,26 @@ import { buildDemoProposals, buildDemoSummary, buildDemoWeather } from './demo';
 import { deriveConfidence, deriveMorningMode } from './mode';
 
 import type { DemoDayFacts } from './demo';
-import type { BriefingConfidence, BriefingWarning, MorningBriefing } from './types';
+import type { AgentProposal, BriefingConfidence, BriefingWarning, MorningBriefing } from './types';
+
+type AgentProposalRow = Database['public']['Tables']['agent_proposals']['Row'];
+
+function toAgentProposal(row: AgentProposalRow): AgentProposal {
+  return {
+    id: row.id,
+    agent: row.agent,
+    title: row.title,
+    summary: row.summary,
+    reasoning: row.reasoning,
+    dataSources: (row.data_sources ?? []) as string[],
+    businessRules: (row.business_rules ?? []) as unknown as AgentProposal['businessRules'],
+    confidence: row.confidence,
+    impact: row.impact,
+    expectedGain: row.expected_gain,
+    alternatives: row.alternatives,
+    severity: row.severity,
+  };
+}
 
 type UserProfile = Database['public']['Tables']['users']['Row'];
 
@@ -46,6 +65,8 @@ export async function getMorningBriefing(profile: UserProfile): Promise<MorningB
     { count: overdueInvoices },
     { data: monthInvoices },
     { data: company },
+    { data: successfulRunsToday },
+    { data: realProposalRows },
   ] = await Promise.all([
     supabase
       .from('jobs')
@@ -106,6 +127,26 @@ export async function getMorningBriefing(profile: UserProfile): Promise<MorningB
       .eq('company_id', profile.company_id)
       .gte('created_at', `${startOfMonthIso()}T00:00:00`),
     supabase.from('companies').select('name').eq('id', profile.company_id).single(),
+    // Sprint 7 (ADR-012): een agent_runs-rij voor vandaag betekent dat de
+    // nachtcyclus (of een handmatige trigger) al gedraaid heeft voor dit
+    // bedrijf — de AI-samenvatting/voorstellen zijn dan echt, geen
+    // voorbeeldweergave meer. Zonder run (bv. nog geen enkele cyclus
+    // gedraaid) blijft de bestaande demo-voorbeeldweergave het vangnet
+    // (ADR-012 §4, "de applicatie blijft altijd bruikbaar").
+    supabase
+      .from('agent_runs')
+      .select('id')
+      .eq('company_id', profile.company_id)
+      .gte('started_at', `${today}T00:00:00`)
+      .eq('result', 'success')
+      .limit(1),
+    supabase
+      .from('agent_proposals')
+      .select('*')
+      .eq('company_id', profile.company_id)
+      .eq('scheduled_date', today)
+      .eq('approval_status', 'proposed')
+      .order('created_at', { ascending: true }),
   ]);
 
   // Nog te koppelen jobs per route zijn hier niet nodig — alleen aantallen per route.
@@ -169,8 +210,22 @@ export async function getMorningBriefing(profile: UserProfile): Promise<MorningB
   const firstName = profile.full_name.split(' ')[0]!;
   const hour = new Date().getHours();
   const greetingWord = hour < 12 ? 'Goedemorgen' : hour < 18 ? 'Goedemiddag' : 'Goedenavond';
+
+  // Sprint 7: zodra de agent-pipeline vandaag al gedraaid heeft, zijn de
+  // samenvatting en voorstellen echt (agent_proposals, ADR-012 §6) i.p.v.
+  // voorbeeldweergave. De weer-tíjdlijn (uur-voor-uur-grafiek) blijft nog wel
+  // gevuld met buildDemoWeather: agent-weather cachet uitsluitend het
+  // dagaggregaat (11_DatabaseConcept.md §3.9-schema, geen eigen, rijkere
+  // urencache — ADR-012 §3), dus er is geen echte urenreeks om te tonen. De
+  // weer-gerelateerde AI-voorstellen zelf zijn wél echt (via agent_proposals).
+  const hasRealAiToday = (successfulRunsToday ?? []).length > 0;
   const weather = buildDemoWeather(facts);
-  const proposals = buildDemoProposals(facts, weather);
+  const proposals = hasRealAiToday
+    ? (realProposalRows ?? []).map(toAgentProposal)
+    : buildDemoProposals(facts, weather);
+  // buildDemoSummary is generieke tekstopbouw op basis van AgentProposal[] +
+  // dagfeiten — werkt identiek op echte en voorbeeld-voorstellen, geen aparte
+  // "echte samenvatting"-functie nodig.
   const summary = buildDemoSummary(`${greetingWord} ${firstName}.`, facts, weather, proposals);
   const { level, score } = deriveConfidence(proposals);
 
@@ -204,6 +259,6 @@ export async function getMorningBriefing(profile: UserProfile): Promise<MorningB
           completedToday: completedToday ?? 0,
         }
       : null,
-    aiPreview: true,
+    aiPreview: !hasRealAiToday,
   };
 }

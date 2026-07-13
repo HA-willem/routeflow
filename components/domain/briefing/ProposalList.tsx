@@ -2,19 +2,29 @@
 
 import { CheckCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/primitives/button';
 import { EmptyState } from '@/components/primitives/empty-state';
 import type { AgentProposal } from '@/lib/briefing/types';
+import type { ActionResult } from '@/lib/errors';
 
 import { AiPreviewBadge } from './AiPreviewBadge';
 import { ProposalCard } from './ProposalCard';
 
+export type DecideProposalAction = (
+  proposalId: string,
+  decision: 'approved' | 'rejected',
+) => Promise<ActionResult<{ executed: boolean }>>;
+
 interface ProposalListProps {
   proposals: AgentProposal[];
   aiPreview: boolean;
+  /** Server Action (41_CodingStandards.md § 1: leeft in app/(app)/briefing-actions.ts,
+   * hier als prop doorgegeven i.p.v. geïmporteerd — components/domain hangt nooit
+   * rechtstreeks van /app af, zelfde patroon als RouteBoard's moveJobAction). */
+  decideProposalAction: DecideProposalAction;
 }
 
 const PREVIEW_NOTE = 'Voorbeeldweergave — er is nog niets uitgevoerd of opgeslagen.';
@@ -23,11 +33,17 @@ const PREVIEW_NOTE = 'Voorbeeldweergave — er is nog niets uitgevoerd of opgesl
  * Voorstellen-sectie (44 § 3.6/§ 5): kaarten met accepteren/bewerken/afwijzen
  * plus "alles accepteren". Zolang `aiPreview` geldt, werken de acties lokaal
  * (kaart verdwijnt, met ongedaan maken) en meldt de toast expliciet dat er
- * niets is uitgevoerd — de echte uitvoering via Edge Functions is Sprint 7.
+ * niets is uitgevoerd. Zodra de agent-pipeline echte voorstellen levert
+ * (Sprint 7, `aiPreview: false`) roept accepteren/afwijzen de echte
+ * `decideProposal`-Server Action aan (BR-702-goedkeuringspad,
+ * 022_agent_pipeline.sql `decide_agent_proposal()`), inclusief uitvoering van
+ * uitvoerbare voorstellen (Optimization Agent) via de bestaande
+ * route-optimize-Edge-Function.
  */
-export function ProposalList({ proposals, aiPreview }: ProposalListProps) {
+export function ProposalList({ proposals, aiPreview, decideProposalAction }: ProposalListProps) {
   const router = useRouter();
   const [handledIds, setHandledIds] = useState<ReadonlySet<string>>(new Set());
+  const [, startTransition] = useTransition();
   const visible = proposals.filter((p) => !handledIds.has(p.id));
 
   function markHandled(ids: string[]) {
@@ -42,20 +58,46 @@ export function ProposalList({ proposals, aiPreview }: ProposalListProps) {
     });
   }
 
+  function decideReal(proposal: AgentProposal, decision: 'approved' | 'rejected') {
+    startTransition(async () => {
+      const result = await decideProposalAction(proposal.id, decision);
+      if (!result.success) {
+        toast.error(result.error.message);
+        restore([proposal.id]);
+        return;
+      }
+      if (decision === 'approved' && result.data.executed) {
+        toast.success(`Uitgevoerd: ${proposal.title}`, {
+          description: 'De route is bijgewerkt.',
+        });
+      }
+    });
+  }
+
   function handleAccept(proposal: AgentProposal) {
     markHandled([proposal.id]);
-    toast.success(`Voorstel geaccepteerd: ${proposal.title}`, {
-      description: aiPreview ? PREVIEW_NOTE : undefined,
-      action: { label: 'Ongedaan maken', onClick: () => restore([proposal.id]) },
-    });
+    if (aiPreview) {
+      toast.success(`Voorstel geaccepteerd: ${proposal.title}`, {
+        description: PREVIEW_NOTE,
+        action: { label: 'Ongedaan maken', onClick: () => restore([proposal.id]) },
+      });
+      return;
+    }
+    toast.success(`Voorstel geaccepteerd: ${proposal.title}`);
+    decideReal(proposal, 'approved');
   }
 
   function handleReject(proposal: AgentProposal) {
     markHandled([proposal.id]);
-    toast(`Voorstel afgewezen: ${proposal.title}`, {
-      description: aiPreview ? PREVIEW_NOTE : undefined,
-      action: { label: 'Ongedaan maken', onClick: () => restore([proposal.id]) },
-    });
+    if (aiPreview) {
+      toast(`Voorstel afgewezen: ${proposal.title}`, {
+        description: PREVIEW_NOTE,
+        action: { label: 'Ongedaan maken', onClick: () => restore([proposal.id]) },
+      });
+      return;
+    }
+    toast(`Voorstel afgewezen: ${proposal.title}`);
+    decideReal(proposal, 'rejected');
   }
 
   function handleEdit() {
@@ -70,12 +112,21 @@ export function ProposalList({ proposals, aiPreview }: ProposalListProps) {
   }
 
   function handleAcceptAll() {
-    const ids = visible.map((p) => p.id);
+    const targets = visible;
+    const ids = targets.map((p) => p.id);
     markHandled(ids);
-    toast.success(`${ids.length} ${ids.length === 1 ? 'voorstel' : 'voorstellen'} geaccepteerd.`, {
-      description: aiPreview ? PREVIEW_NOTE : undefined,
-      action: { label: 'Ongedaan maken', onClick: () => restore(ids) },
-    });
+    if (aiPreview) {
+      toast.success(
+        `${ids.length} ${ids.length === 1 ? 'voorstel' : 'voorstellen'} geaccepteerd.`,
+        {
+          description: PREVIEW_NOTE,
+          action: { label: 'Ongedaan maken', onClick: () => restore(ids) },
+        },
+      );
+      return;
+    }
+    toast.success(`${ids.length} ${ids.length === 1 ? 'voorstel' : 'voorstellen'} geaccepteerd.`);
+    for (const proposal of targets) decideReal(proposal, 'approved');
   }
 
   return (

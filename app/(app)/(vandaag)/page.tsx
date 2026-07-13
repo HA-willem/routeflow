@@ -13,6 +13,8 @@ import { requireOnboardedUser } from '@/lib/auth/session';
 import { getMorningBriefing } from '@/lib/briefing/get-briefing';
 import { formatCents } from '@/lib/invoicing/money';
 
+import { decideProposal } from '../briefing-actions';
+
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -75,7 +77,11 @@ export default async function MorningBriefingPage() {
       />
 
       {/* § 3.6 Voorstellen */}
-      <ProposalList proposals={briefing.proposals} aiPreview={briefing.aiPreview} />
+      <ProposalList
+        proposals={briefing.proposals}
+        aiPreview={briefing.aiPreview}
+        decideProposalAction={decideProposal}
+      />
 
       {/* § 3.7 Waarschuwingen */}
       <WarningsList warnings={briefing.warnings} />
