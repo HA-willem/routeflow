@@ -21,7 +21,7 @@ export async function searchCustomersForCommand(query: string): Promise<CommandC
     .select('id, name, objects(city)')
     .eq('company_id', profile.company_id)
     .is('archived_at', null)
-    .ilike('name', `%${trimmed.replaceAll('%', '')}%`)
+    .ilike('name', `%${trimmed.replaceAll(/[%_\\]/g, '')}%`)
     .order('name', { ascending: true })
     .limit(6);
 

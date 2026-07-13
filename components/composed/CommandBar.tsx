@@ -15,7 +15,14 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Dialog as DialogPrimitive } from 'radix-ui';
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  useTransition,
+} from 'react';
 import { toast } from 'sonner';
 
 import type { CommandCustomerResult } from '@/lib/command/types';
@@ -75,6 +82,14 @@ export function CommandBar({ role, searchCustomersAction }: CommandBarProps) {
   const [customers, setCustomers] = useState<CommandCustomerResult[]>([]);
   const [, startTransition] = useTransition();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Platform-specifiek sneltoetslabel (⌘K vs Ctrl K): server-snapshot toont ⌘K,
+  // de client corrigeert direct na hydration — zonder mismatch of effect-setState.
+  const isMac = useSyncExternalStore(
+    subscribeNoop,
+    () => /Mac|iPhone|iPad/.test(navigator.userAgent),
+    () => true,
+  );
+  const shortcutLabel = isMac ? '⌘K' : 'Ctrl K';
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -85,6 +100,13 @@ export function CommandBar({ role, searchCustomersAction }: CommandBarProps) {
     }
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  // Bij elk sluiten (esc/overlay/navigatie) de invoer wissen — heropenen
+  // begint altijd met een schone balk, geen stale zoekterm.
+  const handleOpenChange = useCallback((nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) setQuery('');
   }, []);
 
   useEffect(() => {
@@ -105,11 +127,10 @@ export function CommandBar({ role, searchCustomersAction }: CommandBarProps) {
 
   const navigate = useCallback(
     (href: string) => {
-      setOpen(false);
-      setQuery('');
+      handleOpenChange(false);
       router.push(href);
     },
-    [router],
+    [handleOpenChange, router],
   );
 
   function runAiExample(example: (typeof AI_EXAMPLES)[number]) {
@@ -131,12 +152,12 @@ export function CommandBar({ role, searchCustomersAction }: CommandBarProps) {
         <Search aria-hidden className="size-4 shrink-0" />
         <span className="hidden flex-1 text-left sm:block">Zoeken of commando…</span>
         <kbd className="bg-surface text-text-muted hidden rounded-sm px-1.5 py-0.5 font-sans text-[11px] sm:block">
-          ⌘K
+          {shortcutLabel}
         </kbd>
         <span className="sr-only">Command bar openen</span>
       </button>
 
-      <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+      <DialogPrimitive.Root open={open} onOpenChange={handleOpenChange}>
         <DialogPrimitive.Portal>
           <DialogPrimitive.Overlay className="data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50" />
           <DialogPrimitive.Content
@@ -267,4 +288,8 @@ export function CommandBar({ role, searchCustomersAction }: CommandBarProps) {
       </DialogPrimitive.Root>
     </>
   );
+}
+
+function subscribeNoop(): () => void {
+  return () => {};
 }
