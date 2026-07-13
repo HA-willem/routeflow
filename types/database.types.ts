@@ -34,6 +34,150 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_proposals: {
+        Row: {
+          agent: Database["public"]["Enums"]["agent_name"]
+          agent_run_id: string
+          alternatives: string
+          approval_status: Database["public"]["Enums"]["proposal_approval_status"]
+          business_rules: Json
+          company_id: string
+          confidence: number
+          created_at: string
+          data_sources: Json
+          decided_at: string | null
+          decided_by: string | null
+          expected_gain: string
+          id: string
+          impact: string
+          impacted_employee_ids: string[]
+          impacted_job_ids: string[]
+          payload: Json | null
+          reasoning: string
+          scheduled_date: string
+          severity: Database["public"]["Enums"]["proposal_severity"]
+          summary: string
+          title: string
+        }
+        Insert: {
+          agent: Database["public"]["Enums"]["agent_name"]
+          agent_run_id: string
+          alternatives: string
+          approval_status?: Database["public"]["Enums"]["proposal_approval_status"]
+          business_rules?: Json
+          company_id: string
+          confidence: number
+          created_at?: string
+          data_sources?: Json
+          decided_at?: string | null
+          decided_by?: string | null
+          expected_gain: string
+          id?: string
+          impact: string
+          impacted_employee_ids?: string[]
+          impacted_job_ids?: string[]
+          payload?: Json | null
+          reasoning: string
+          scheduled_date: string
+          severity?: Database["public"]["Enums"]["proposal_severity"]
+          summary: string
+          title: string
+        }
+        Update: {
+          agent?: Database["public"]["Enums"]["agent_name"]
+          agent_run_id?: string
+          alternatives?: string
+          approval_status?: Database["public"]["Enums"]["proposal_approval_status"]
+          business_rules?: Json
+          company_id?: string
+          confidence?: number
+          created_at?: string
+          data_sources?: Json
+          decided_at?: string | null
+          decided_by?: string | null
+          expected_gain?: string
+          id?: string
+          impact?: string
+          impacted_employee_ids?: string[]
+          impacted_job_ids?: string[]
+          payload?: Json | null
+          reasoning?: string
+          scheduled_date?: string
+          severity?: Database["public"]["Enums"]["proposal_severity"]
+          summary?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_proposals_agent_run_id_fkey"
+            columns: ["agent_run_id"]
+            isOneToOne: false
+            referencedRelation: "agent_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_proposals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_proposals_decided_by_fkey"
+            columns: ["decided_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_runs: {
+        Row: {
+          agent: Database["public"]["Enums"]["agent_name"]
+          candidate_count: number
+          company_id: string
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          result: Database["public"]["Enums"]["agent_run_result"] | null
+          started_at: string
+        }
+        Insert: {
+          agent: Database["public"]["Enums"]["agent_name"]
+          candidate_count?: number
+          company_id: string
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          result?: Database["public"]["Enums"]["agent_run_result"] | null
+          started_at?: string
+        }
+        Update: {
+          agent?: Database["public"]["Enums"]["agent_name"]
+          candidate_count?: number
+          company_id?: string
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          result?: Database["public"]["Enums"]["agent_run_result"] | null
+          started_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_runs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       availability: {
         Row: {
           company_id: string
@@ -1007,6 +1151,42 @@ export type Database = {
           },
         ]
       }
+      weerdata_cache: {
+        Row: {
+          area_key: string
+          cached_at: string
+          forecast_date: string
+          id: string
+          min_temp_celsius: number | null
+          precipitation_mm_per_hour: number | null
+          precipitation_probability: number | null
+          provider: string
+          wind_bft: number | null
+        }
+        Insert: {
+          area_key: string
+          cached_at?: string
+          forecast_date: string
+          id?: string
+          min_temp_celsius?: number | null
+          precipitation_mm_per_hour?: number | null
+          precipitation_probability?: number | null
+          provider: string
+          wind_bft?: number | null
+        }
+        Update: {
+          area_key?: string
+          cached_at?: string
+          forecast_date?: string
+          id?: string
+          min_temp_celsius?: number | null
+          precipitation_mm_per_hour?: number | null
+          precipitation_probability?: number | null
+          provider?: string
+          wind_bft?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       geography_columns: {
@@ -1188,6 +1368,42 @@ export type Database = {
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
+      }
+      decide_agent_proposal: {
+        Args: {
+          p_approval_status: Database["public"]["Enums"]["proposal_approval_status"]
+          p_proposal_id: string
+        }
+        Returns: {
+          agent: Database["public"]["Enums"]["agent_name"]
+          agent_run_id: string
+          alternatives: string
+          approval_status: Database["public"]["Enums"]["proposal_approval_status"]
+          business_rules: Json
+          company_id: string
+          confidence: number
+          created_at: string
+          data_sources: Json
+          decided_at: string | null
+          decided_by: string | null
+          expected_gain: string
+          id: string
+          impact: string
+          impacted_employee_ids: string[]
+          impacted_job_ids: string[]
+          payload: Json | null
+          reasoning: string
+          scheduled_date: string
+          severity: Database["public"]["Enums"]["proposal_severity"]
+          summary: string
+          title: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "agent_proposals"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
@@ -2147,6 +2363,16 @@ export type Database = {
       }
     }
     Enums: {
+      agent_name:
+        | "planning"
+        | "replanning"
+        | "weather"
+        | "communication"
+        | "invoice"
+        | "capacity"
+        | "revenue"
+        | "optimization"
+      agent_run_result: "success" | "failed" | "partial"
       availability_status: "available" | "sick" | "leave"
       billing_period: "per_job" | "weekly" | "monthly" | "quarterly"
       billing_preference: "email" | "whatsapp" | "post"
@@ -2175,6 +2401,13 @@ export type Database = {
       object_location_status: "geocoded" | "manual" | "failed"
       object_type: "residence" | "commercial" | "complex" | "other"
       pricing_type: "per_job" | "hourly" | "subscription" | "punch_card"
+      proposal_approval_status:
+        | "proposed"
+        | "approved"
+        | "rejected"
+        | "expired"
+        | "auto_executed"
+      proposal_severity: "info" | "attention" | "urgent"
       service_agreement_status: "active" | "paused" | "ended"
       subscription_tier: "starter" | "pro" | "enterprise"
       user_role: "owner" | "admin" | "planner" | "administration" | "employee"
@@ -2317,6 +2550,17 @@ export const Constants = {
   },
   public: {
     Enums: {
+      agent_name: [
+        "planning",
+        "replanning",
+        "weather",
+        "communication",
+        "invoice",
+        "capacity",
+        "revenue",
+        "optimization",
+      ],
+      agent_run_result: ["success", "failed", "partial"],
       availability_status: ["available", "sick", "leave"],
       billing_period: ["per_job", "weekly", "monthly", "quarterly"],
       billing_preference: ["email", "whatsapp", "post"],
@@ -2347,6 +2591,14 @@ export const Constants = {
       object_location_status: ["geocoded", "manual", "failed"],
       object_type: ["residence", "commercial", "complex", "other"],
       pricing_type: ["per_job", "hourly", "subscription", "punch_card"],
+      proposal_approval_status: [
+        "proposed",
+        "approved",
+        "rejected",
+        "expired",
+        "auto_executed",
+      ],
+      proposal_severity: ["info", "attention", "urgent"],
       service_agreement_status: ["active", "paused", "ended"],
       subscription_tier: ["starter", "pro", "enterprise"],
       user_role: ["owner", "admin", "planner", "administration", "employee"],
