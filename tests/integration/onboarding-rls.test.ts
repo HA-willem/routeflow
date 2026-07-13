@@ -26,7 +26,9 @@ describe('onboard_company() + RLS-baseline', () => {
       owner_full_name: 'Test Eigenaar',
     });
     expect(error).toBeNull();
-    expect(company?.slug).toBe('glaswasserij-test-bv');
+    // Basis-slug of met uniekmakend suffix — eerdere (test)runs kunnen de kale
+    // slug al bezet hebben; de test verifieert de generatie, niet een lege DB.
+    expect(company?.slug).toMatch(/^glaswasserij-test-bv(-\d+)?$/);
     expect(company?.subscription_tier).toBe('starter');
     expect(company?.max_employees).toBe(5);
 
