@@ -5,9 +5,13 @@ import { EmptyState } from '@/components/primitives/empty-state';
 import { formatClockTime } from '@/lib/planning/dates';
 import { cn } from '@/lib/utils';
 
+import type { ReactNode } from 'react';
+
 interface RouteStopListProps {
   stops: PlanningJob[];
   className?: string;
+  /** Optionele actie per stop (bv. werkbon-link in het route-details-paneel). */
+  renderStopAction?: (stop: PlanningJob) => ReactNode;
 }
 
 function formatDriveTime(seconds: number | null): string {
@@ -21,7 +25,7 @@ function formatDriveTime(seconds: number | null): string {
  * 42_DesignSystem.md § 16. Geordende stops (op `sequence`) met rijtijd-vanaf-vorige
  * en verwachte service-tijden, gebruikt in het route-details-paneel.
  */
-export function RouteStopList({ stops, className }: RouteStopListProps) {
+export function RouteStopList({ stops, className, renderStopAction }: RouteStopListProps) {
   if (stops.length === 0) {
     return <EmptyState title="Geen stops op deze route." />;
   }
@@ -44,6 +48,7 @@ export function RouteStopList({ stops, className }: RouteStopListProps) {
               <Car className="size-3.5" aria-hidden />
               {formatDriveTime(stop.driveTimeFromPrevSec)} rijden
             </p>
+            {renderStopAction ? renderStopAction(stop) : null}
           </div>
           <div className="shrink-0 text-right text-xs tabular-nums">
             <p className="text-text font-medium">{formatClockTime(stop.serviceStart)}</p>
