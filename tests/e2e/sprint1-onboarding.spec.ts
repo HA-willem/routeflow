@@ -38,5 +38,9 @@ test('registreren → bevestigen → bedrijf aanmaken → dashboard', async ({ p
   await expect(page).toHaveURL('/');
   await expect(page.getByText(companyName)).toBeVisible();
   await expect(page.getByText(`, ${fullName.split(' ')[0]}.`)).toBeVisible();
+
+  // Het KPI-dashboard (met zijn eigen lege-staat) staat sinds de Morning
+  // Briefing-migratie (PRD § 19 A-21) op /dashboard, niet meer op /.
+  await page.goto('/dashboard');
   await expect(page.getByText('Nog geen data.')).toBeVisible();
 });

@@ -12,3 +12,4 @@ supabase/.branches/
 supabase/.temp/
 next-env.d.ts
 .vercel
+.tmp-qa-scratchpad/

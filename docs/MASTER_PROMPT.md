@@ -32,3 +32,4 @@ Een document is klaar als: (a) alle secties uit zijn outline ingevuld zijn, (b) 
 2. Controleer gerelateerde documenten (staan in de kop van elk document).
 3. Schrijf/actualiseer het document volledig.
 4. Werk de statusregel bij (TODO → IN REVIEW → DONE) en noteer wijzigingen in de changelog onderaan.
+5. Schrijf nooit alleen een analyse of rapport. Eindig elke sessie/elk document altijd met een concrete, uitvoerbare opdracht of prompt voor de volgende stap, zodat de ontwikkeling direct kan doorgaan.

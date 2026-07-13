@@ -55,7 +55,11 @@ export class MapboxProvider implements RoutingProvider {
     const body = (await response.json()) as {
       features: Array<{
         geometry: { coordinates: [number, number] };
-        properties: { full_address?: string; match_code?: { confidence?: string } };
+        properties: {
+          full_address?: string;
+          match_code?: { confidence?: string };
+          context?: { postcode?: { name?: string } };
+        };
       }>;
     };
 
@@ -67,8 +71,20 @@ export class MapboxProvider implements RoutingProvider {
     const [lng, lat] = feature!.geometry.coordinates;
     const confidence = feature!.properties.match_code?.confidence === 'exact' ? 1 : 0.6;
 
+    // NL-postcodes zijn adres-uniek genoeg dat een top-match op de exact
+    // gevraagde postcode betrouwbaar is, ook zonder huisnummer-resolutie
+    // (v6 levert voor dit soort adressen vaak alleen een postcode-centroid,
+    // geen `feature_type: address`). Mapbox voegt bij `limit=2` vrijwel altijd
+    // een tweede, ongerelateerde buurpostcode toe — dat alleen al maakt de
+    // top-match niet ambigu. Pas als de top-match zelf niet bij de gevraagde
+    // postcode hoort, is er een echte onzekerheid (bv. straatnaam matcht
+    // meerdere plaatsen).
+    const normalize = (s: string) => s.replace(/\s+/g, '').toUpperCase();
+    const topMatchesRequestedPostcode =
+      normalize(feature!.properties.context?.postcode?.name ?? '') === normalize(input.postalCode);
+
     return {
-      status: body.features.length > 1 ? 'ambiguous' : 'ok',
+      status: !topMatchesRequestedPostcode && body.features.length > 1 ? 'ambiguous' : 'ok',
       location: { lat, lng },
       confidence,
       matchedAddress: feature!.properties.full_address,
