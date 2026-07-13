@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import { flushQueue, listQueuedMutations, type QueuedMutation } from '@/lib/pwa/offline-queue';
 
@@ -12,8 +12,13 @@ import { completeJob, markJobNotHome, pauseJob, resumeJob, startJob } from './ac
  * zodra de verbinding terugkomt.
  */
 export function SyncIndicator() {
-  const [isOnline, setIsOnline] = useState(() =>
-    typeof navigator === 'undefined' ? true : navigator.onLine,
+  // useSyncExternalStore met een server-snapshot van `true`: de server rendert
+  // "Online" en de client leest navigator.onLine pas ná hydration — voorkomt
+  // een hydration-mismatch wanneer de client bij eerste render offline rapporteert.
+  const isOnline = useSyncExternalStore(
+    subscribeToOnlineStatus,
+    () => navigator.onLine,
+    () => true,
   );
   const [pending, setPending] = useState(0);
   const [syncing, setSyncing] = useState(false);
@@ -22,7 +27,6 @@ export function SyncIndicator() {
     listQueuedMutations().then((queued) => setPending(queued.length));
 
     async function handleOnline() {
-      setIsOnline(true);
       setSyncing(true);
       await flushQueue({
         start: async (m: QueuedMutation) =>
@@ -45,15 +49,9 @@ export function SyncIndicator() {
       setSyncing(false);
     }
 
-    function handleOffline() {
-      setIsOnline(false);
-    }
-
     window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
     return () => {
       window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 
@@ -74,4 +72,13 @@ export function SyncIndicator() {
   }
 
   return <span className="text-text-muted text-xs">Online</span>;
+}
+
+function subscribeToOnlineStatus(callback: () => void): () => void {
+  window.addEventListener('online', callback);
+  window.addEventListener('offline', callback);
+  return () => {
+    window.removeEventListener('online', callback);
+    window.removeEventListener('offline', callback);
+  };
 }
