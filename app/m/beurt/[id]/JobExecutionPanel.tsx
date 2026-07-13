@@ -130,7 +130,7 @@ export function JobExecutionPanel({
         </div>
       )}
 
-      <div className="border-border bg-bg fixed inset-x-0 bottom-0 mx-auto max-w-md space-y-2 border-t p-4">
+      <div className="border-border bg-bg fixed inset-x-0 bottom-0 mx-auto max-w-md space-y-2 border-t p-4 md:max-w-2xl">
         <Button className="w-full justify-center" variant="outline" onClick={handleNavigate}>
           Navigeren
         </Button>

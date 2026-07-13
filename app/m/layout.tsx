@@ -42,7 +42,7 @@ export default async function MobileLayout({ children }: { children: ReactNode }
   }
 
   return (
-    <div className="bg-bg text-text mx-auto flex min-h-dvh max-w-md flex-col">
+    <div className="bg-bg text-text mx-auto flex min-h-dvh max-w-md flex-col md:max-w-2xl">
       <RegisterServiceWorker />
       <header className="border-border flex items-center justify-between border-b px-4 py-3">
         <span className="text-sm font-semibold">RouteFlow</span>

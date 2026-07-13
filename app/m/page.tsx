@@ -1,8 +1,11 @@
+import { ChevronRight, CloudRain } from 'lucide-react';
 import Link from 'next/link';
 
+import { AiPreviewBadge } from '@/components/domain/briefing/AiPreviewBadge';
 import { StatusBadge } from '@/components/domain/StatusBadge';
 import { EmptyState } from '@/components/primitives/empty-state';
 import { requireOnboardedUser } from '@/lib/auth/session';
+import { buildDemoWeather } from '@/lib/briefing/demo';
 import { JOB_STATUS_LABEL, JOB_STATUS_TONE } from '@/lib/labels';
 import { formatClockTime } from '@/lib/planning/dates';
 import { createClient } from '@/lib/supabase/server';
@@ -22,7 +25,12 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-/** Dagroute /m (home) — 29_MobieleApp.md § 2.1. */
+/**
+ * Dagroute /m (home) — 29_MobieleApp.md § 2.1; tevens de Medewerker-variant van
+ * de Morning Briefing (44_MorningBriefing_UX.md § 2.3): een kleine, persoonlijke
+ * dagstart — eigen route, voortgang en weer-impact op de eigen stops. Geen
+ * bedrijfsbrede KPI's, collega's of omzet (P1/P2, 23_Gebruikersrollen.md § 3).
+ */
 export default async function DagroutePage() {
   const { user, profile } = await requireOnboardedUser();
   const supabase = await createClient();
@@ -59,22 +67,61 @@ export default async function DagroutePage() {
     : { data: [] };
 
   const jobs = jobRows ?? [];
+  const doneCount = jobs.filter(
+    (job) => job.status === 'completed' || job.status === 'invoiced',
+  ).length;
+  const progressPct = jobs.length > 0 ? Math.round((doneCount / jobs.length) * 100) : 0;
+
+  // Persoonlijke weer-impact op de eigen route (44 § 2.3) — voorbeeldweergave
+  // tot de Weather Agent (Sprint 7) live is, zelfde bron als de desktop-briefing.
+  const weather = buildDemoWeather({
+    dateIso: today(),
+    jobsToday: jobs.length,
+    queueSize: 0,
+    employeesAvailable: 1,
+    routes: [],
+  });
+  const rainHour = weather.hours.find((h) => h.precipitationChance >= 70)?.hour ?? null;
 
   return (
-    <div className="px-4 py-4">
-      <h1 className="text-text text-lg font-semibold">
+    <div className="px-4 py-4 md:px-6">
+      <h1 className="text-text text-lg font-semibold md:text-xl">
         {greeting()}, {profile.full_name.split(' ')[0]}!
       </h1>
       <p className="text-text-muted text-sm">
         {jobs.length === 0 ? 'Geen beurten vandaag.' : `Vandaag ${jobs.length} beurten.`}
       </p>
 
+      {jobs.length > 0 ? (
+        <div className="mt-3 flex items-center gap-3">
+          <div aria-hidden className="bg-border h-1.5 flex-1 overflow-hidden rounded-full">
+            <div
+              className="bg-success h-full rounded-full transition-[width] duration-200"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+          <p className="text-text-muted shrink-0 text-xs tabular-nums">
+            {doneCount} van {jobs.length} afgerond
+          </p>
+        </div>
+      ) : null}
+
+      {jobs.length > 0 && rainHour !== null ? (
+        <p className="border-border bg-surface text-text mt-3 flex items-center gap-2 rounded-lg border px-3 py-2 text-xs">
+          <CloudRain aria-hidden className="text-info size-4 shrink-0" />
+          <span className="flex-1">
+            Regen vanaf {rainHour}:00 — je latere stops kunnen nat worden.
+          </span>
+          <AiPreviewBadge />
+        </p>
+      ) : null}
+
       {jobs.length === 0 ? (
         <div className="mt-8">
           <EmptyState title="Je hebt vandaag geen beurten." description="Geniet van je dag!" />
         </div>
       ) : (
-        <ol className="divide-border mt-4 divide-y">
+        <ol className="mt-4 flex flex-col gap-2">
           {jobs.map((job) => {
             const agreement = job.service_agreements as {
               services: { name: string } | null;
@@ -89,16 +136,16 @@ export default async function DagroutePage() {
               <li key={job.id}>
                 <Link
                   href={`/m/beurt/${job.id}`}
-                  className="focus-visible:outline-primary flex items-center gap-3 py-3 focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className="border-border bg-bg focus-visible:outline-primary active:bg-surface flex min-h-16 items-center gap-3 rounded-lg border px-3 py-3 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 md:px-4 md:py-4"
                 >
-                  <span className="bg-surface text-text-muted flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-medium tabular-nums">
+                  <span className="bg-surface text-text-muted flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-medium tabular-nums md:size-10">
                     {job.sequence ?? '—'}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-text truncate text-sm font-medium">
+                    <p className="text-text truncate text-sm font-medium md:text-base">
                       {object?.customers?.name ?? 'Onbekende klant'}
                     </p>
-                    <p className="text-text-muted truncate text-xs">
+                    <p className="text-text-muted truncate text-xs md:text-sm">
                       {object?.address_line1 ?? '—'}, {object?.city ?? ''}
                     </p>
                     <p className="text-text-muted text-xs">
@@ -106,7 +153,7 @@ export default async function DagroutePage() {
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="text-text text-xs font-medium tabular-nums">
+                    <p className="text-text text-xs font-medium tabular-nums md:text-sm">
                       {formatClockTime(job.service_start)}
                     </p>
                     <StatusBadge
@@ -115,6 +162,7 @@ export default async function DagroutePage() {
                       className="mt-1"
                     />
                   </div>
+                  <ChevronRight aria-hidden className="text-text-muted size-4 shrink-0" />
                 </Link>
               </li>
             );
