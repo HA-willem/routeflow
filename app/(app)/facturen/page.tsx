@@ -49,11 +49,14 @@ export default async function FacturenPage() {
           { header: 'Bedrag', cell: (row) => formatCents(row.total_amount_cents) },
           {
             header: '',
+            // Gebonden Server Actions (serialiseerbaar) — een inline closure vanuit
+            // deze Server Component crasht de hele pagina ("Event handlers cannot
+            // be passed to Client Component props").
             cell: (row) => (
               <InvoiceActions
                 status={row.status}
-                onSend={() => sendInvoice(row.id)}
-                onMarkPaid={() => markInvoicePaid(row.id)}
+                onSend={sendInvoice.bind(null, row.id)}
+                onMarkPaid={markInvoicePaid.bind(null, row.id)}
               />
             ),
           },
