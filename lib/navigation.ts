@@ -16,10 +16,13 @@ export interface NavItem {
  * schrijfpad naar users is onboard_company(), dat altijd role='owner' zet).
  */
 export const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', href: '/', roles: ['owner', 'admin', 'planner', 'administration'] },
+  // De Morning Briefing is het primaire startscherm (ADR-011 § 1, 44_MorningBriefing_UX.md);
+  // het KPI-dashboard leeft sindsdien op /dashboard.
+  { label: 'Vandaag', href: '/', roles: ['owner', 'admin', 'planner', 'administration'] },
   { label: 'Planning', href: '/planning', roles: ['owner', 'admin', 'planner'] },
   { label: 'Klanten', href: '/klanten', roles: ['owner', 'admin', 'planner', 'administration'] },
   { label: 'Facturen', href: '/facturen', roles: ['owner', 'admin', 'planner', 'administration'] },
+  { label: 'Dashboard', href: '/dashboard', roles: ['owner', 'admin'] },
   { label: 'Rapportage', href: '/rapportage', roles: ['owner', 'admin'] },
   { label: 'Instellingen', href: '/instellingen', roles: ['owner', 'admin'] },
 ];
