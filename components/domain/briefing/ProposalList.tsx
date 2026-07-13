@@ -58,14 +58,12 @@ export function ProposalList({ proposals, aiPreview }: ProposalListProps) {
     });
   }
 
-  function handleEdit(proposal: AgentProposal) {
+  function handleEdit() {
     if (aiPreview) toast(PREVIEW_NOTE);
-    void proposal;
     router.push('/planning');
   }
 
-  function handleFeedback(proposal: AgentProposal, positive: boolean) {
-    void proposal;
+  function handleFeedback(positive: boolean) {
     toast(positive ? 'Bedankt — dit helpt de AI leren.' : 'Bedankt voor je feedback.', {
       description: aiPreview ? PREVIEW_NOTE : undefined,
     });

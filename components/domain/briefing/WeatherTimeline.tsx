@@ -30,7 +30,7 @@ export function WeatherTimeline({ weather, aiPreview }: WeatherTimelineProps) {
         type="button"
         onClick={() => setExpanded((open) => !open)}
         aria-expanded={expanded}
-        aria-controls={panelId}
+        aria-controls={expanded ? panelId : undefined}
         className="hover:bg-surface flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors duration-150"
       >
         <Icon aria-hidden className="text-text-muted size-4 shrink-0" />

@@ -7,7 +7,7 @@ import { Button } from '@/components/primitives/button';
 import type { AgentProposal } from '@/lib/briefing/types';
 import { cn } from '@/lib/utils';
 
-export const AGENT_LABELS: Record<AgentProposal['agent'], string> = {
+const AGENT_LABELS: Record<AgentProposal['agent'], string> = {
   planning: 'Planning',
   replanning: 'Herplanning',
   weather: 'Weer',
@@ -21,9 +21,9 @@ export const AGENT_LABELS: Record<AgentProposal['agent'], string> = {
 interface ProposalCardProps {
   proposal: AgentProposal;
   onAccept: (proposal: AgentProposal) => void;
-  onEdit: (proposal: AgentProposal) => void;
+  onEdit: () => void;
   onReject: (proposal: AgentProposal) => void;
-  onFeedback: (proposal: AgentProposal, positive: boolean) => void;
+  onFeedback: (positive: boolean) => void;
 }
 
 /**
@@ -46,7 +46,7 @@ export function ProposalCard({
 
   function giveFeedback(positive: boolean) {
     setFeedback(positive ? 'up' : 'down');
-    onFeedback(proposal, positive);
+    onFeedback(positive);
   }
 
   return (
@@ -108,13 +108,13 @@ export function ProposalCard({
         ) : null}
       </div>
 
-      <div className="border-border flex items-center justify-between gap-2 border-t pt-4">
-        <div className="flex gap-2">
+      <div className="border-border flex flex-wrap items-center justify-between gap-2 border-t pt-4">
+        <div className="flex flex-wrap gap-2">
           <Button size="sm" onClick={() => onAccept(proposal)}>
             <Check aria-hidden className="size-4" />
             Accepteren
           </Button>
-          <Button size="sm" variant="outline" onClick={() => onEdit(proposal)}>
+          <Button size="sm" variant="outline" onClick={onEdit}>
             <Pencil aria-hidden className="size-4" />
             Bewerken
           </Button>

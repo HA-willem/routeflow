@@ -59,7 +59,7 @@ export function DayOverview({ overview }: { overview: DayOverviewData }) {
           />
           <span className="min-w-0">
             <span className="text-text block text-xl font-semibold tabular-nums">{item.value}</span>
-            <span className="text-text-muted block truncate text-xs">{item.label}</span>
+            <span className="text-text-muted block text-xs leading-tight">{item.label}</span>
           </span>
         </Link>
       ))}

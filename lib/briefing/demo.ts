@@ -74,6 +74,7 @@ export function buildDemoWeather(facts: DemoDayFacts): WeatherDay {
     maxWindBft,
     hours,
     affectedJobs,
+    rainFromHour: rainyDay ? rainFrom : null,
   };
 }
 

@@ -76,6 +76,11 @@ export interface WeatherDay {
   hours: WeatherHour[];
   /** Aantal beurten geraakt door een drempeloverschrijding (15_AIPlanner.md § 6.3). */
   affectedJobs: number;
+  /**
+   * Uur waarop de regen begint (null = droge dag) — één bron voor elke weergave
+   * (desktop-samenvatting én PWA-regel noemen hetzelfde uur).
+   */
+  rainFromHour: number | null;
 }
 
 export interface DayOverview {

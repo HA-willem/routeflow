@@ -81,7 +81,7 @@ export default async function DagroutePage() {
     employeesAvailable: 1,
     routes: [],
   });
-  const rainHour = weather.hours.find((h) => h.precipitationChance >= 70)?.hour ?? null;
+  const rainHour = weather.rainFromHour;
 
   return (
     <div className="px-4 py-4 md:px-6">
