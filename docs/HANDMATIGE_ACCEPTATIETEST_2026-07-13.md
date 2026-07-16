@@ -423,6 +423,12 @@ End-to-end via de lokale Edge Runtime (`supabase functions serve`) + directe DB-
 
 ---
 
+### TC-9.x — Invoice Agent (Sprint 7-vervolg) — live geverifieerd (2026-07-16)
+Bij het uitwerken bleek de veronderstelde scope (conceptfactuur aanmaken) al volledig gedekt door `complete_job()` (Sprint 5) — direct geverifieerd door de functie te lezen: prijsresolutie (per_job/hourly/dienst-fallback), BTW-berekening en `invoices`/`invoice_lines`-aanmaak gebeuren daar al synchroon bij het afronden van een beurt. Invoice Agent is daarom herscoped naar uitsluitend signalering. End-to-end via de lokale Edge Runtime tegen de demo-data: 20 bestaande conceptfacturen (uit `scripts/seed-demo.ts`, samen €1226,94) → `agent-invoice` gaf exact "20 conceptfacturen klaar om te versturen, samen €1226.94" terug, severity `attention` (geen enkel concept ≥3 dagen oud in de demo-data). Volledige `agent-orchestrator`-cyclus bevestigd: levert een `agent_proposals`-rij (`agent: 'invoice'`, `severity: 'attention'`). Geen Mollie/betaalverzoek-link in deze stap — expliciet aparte, latere uitbreiding op de bestaande `sendInvoice`-Server-Action (BR-702: versturen blijft menselijk, dus de link hoort bij dat al-menselijke moment, niet bij een autonome agent-actie).
+**Resultaat:** ☑ Geslaagd.
+
+---
+
 ## 6. Approval Handler
 
 ### TC-6.1 — Accepteren zet approval_status correct

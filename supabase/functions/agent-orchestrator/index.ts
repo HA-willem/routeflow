@@ -185,6 +185,15 @@ Deno.serve(async (req) => {
       requestBody: { company_id: body.company_id, dates: capacityDates },
       scheduledDate: today,
     },
+    // Invoice Agent — onafhankelijk van de andere agents (signaleert alleen
+    // al-bestaande conceptfacturen, 43_AI_Agents.md § 8), plek in de volgorde
+    // is daarom niet kritiek.
+    {
+      agent: 'invoice' as const,
+      functionName: 'agent-invoice',
+      requestBody: { company_id: body.company_id, today },
+      scheduledDate: today,
+    },
   ];
 
   for (const call of AGENT_CALLS) {

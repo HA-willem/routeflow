@@ -1,7 +1,7 @@
 # 40 — Implementatieplan (Sprint 1–11)
 
 **Status:** DONE
-**Versie:** 1.5
+**Versie:** 1.6
 **Bron van waarheid:** `00_PRD.md` (scope § 5, architectuur § 12) + 33_Roadmap.md — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`. **Let op:** dit is een *plan*; er wordt in de documentatiefase nog **niets** gebouwd (CLAUDE.md).
 **Relaties:** 08_FunctioneleEisen.md (FR), 10_BusinessRules.md (BR), 11_DatabaseConcept.md (tabellen), 12_Entiteiten.md, 13_API_Specificatie.md, 14_RoutingEngine.md, 15_AIPlanner.md, 26_ComponentLibrary.md, 31_Testplan.md, 33_Roadmap.md, `docs/adr/ADR-011-human-in-the-loop-ai.md` en `43_AI_Agents.md` (agent-architectuur relevant voor Sprint 7), `docs/adr/ADR-013-platform-admin-product-agent.md` en `46_PlatformAdmin.md` (Sprint 11).
@@ -251,12 +251,13 @@ Geen nieuwe UI-componenten — de Morning Briefing-UI (`components/domain/briefi
 
 ---
 
-## Sprint 7-vervolg — Replanning + Planning Agent (✅ gebouwd) + geografische clustering (nog te plannen)
+## Sprint 7-vervolg — Replanning + Planning + Invoice Agent (✅ gebouwd) + geografische clustering (nog te plannen)
 
 Expliciet uitgesteld tijdens Sprint 7 (PRD § 19 A-22), niet vergeten:
 
 - **Replanning Agent** (43 § 5) — ✅ **gebouwd en live geverifieerd** (2026-07-14, `HANDMATIGE_ACCEPTATIETEST_2026-07-13.md` TC-7.x): reactieve laag, herplan-diff bij ziekte/verlof (BR-802) via de nieuwe multi-job-diff-UI (`ReplanDiff`, `components/domain/briefing/ReplanDiff.tsx`), event-driven trigger-wiring (`reportSickLeave`-Server-Action → `agent-replanning`-Edge-Function, buiten de dagcyclus om, ADR-012 § 1), stabiliteitsgewogen bin-packing-algoritme (15 § 7.3, `lib/agents/replanning.ts`). Scope bewust beperkt tot ziekmelding/verlof van één medewerker op één dag; spoedopdracht/niet-thuis/weersgedreven herplanning volgen dezelfde vorm in een latere sprint.
 - **Planning Agent** (43 § 4) — ✅ **gebouwd en live geverifieerd** (2026-07-16, `HANDMATIGE_ACCEPTATIETEST_2026-07-13.md` TC-8.x): formaliseert de bestaande horizon-laag (`lib/planning/horizon.ts`/`planning-generate`, Sprint 3) tot agent — `planning-generate` kreeg een service-rol-pad met verplichte `company_id`-filter (RLS wordt bij service-rol volledig omzeild, dus expliciete filtering is de enige tenant-grens op dit pad) plus een fix zodat alleen daadwerkelijk-nieuw-ingevoegde beurten gerapporteerd worden (`ON CONFLICT DO NOTHING RETURNING *` i.p.v. het berekende, mogelijk-al-bestaande aantal — voorkomt dat de Briefing elke nacht hetzelfde aantal "nieuwe" beurten blijft melden). Nieuwe `agent-planning`-Edge-Function bouwt een informatieve kandidaat (`lib/agents/planning.ts`, geen `payload` — het aanmaken van `voorgesteld`-beurten is zelf al de door ADR-011 § 4 toegestane autonome actie), draait als eerste stap in `agent-orchestrator` (vóór Weather/Optimization/Capacity, die moeten weten welke beurten er zijn). "Medewerker-toewijzing per dag" bewust niet gedupliceerd — blijft bij Optimization Agent (43 § 4-implementatienotitie).
+- **Invoice Agent** (43 § 8) — ✅ **gebouwd en live geverifieerd** (2026-07-16, `HANDMATIGE_ACCEPTATIETEST_2026-07-13.md` TC-9.x). Bij de bouw bleek conceptfactuur-aanmaak zelf al volledig geïmplementeerd (`complete_job()`, 020_job_completion.sql, Sprint 5) — geen nieuwe aanmaaklogica nodig. De agent (`agent-invoice`, `lib/agents/invoice.ts`) signaleert uitsluitend openstaande conceptfacturen (`status = 'draft'`) als persistente Briefing-waarschuwing (severity schaalt naar `urgent` vanaf 3 dagen oud), analoog aan Capacity Agent. BR-702 blijft ongewijzigd: versturen is en blijft een losse, menselijke actie (bestaande `sendInvoice`-Server-Action) — geen `payload`, geen goedkeuringsstap.
 - **Geografische clustering** (FR-025, BR-204): kan nu wél bij een Planning Agent-uitbreiding, aangezien de formalisering hierboven is afgerond — nog niet gebouwd.
 - **Organizational Memory-leeskant** (`45_AgentMemory.md`): Sprint 7 legt alleen het schrijfpad van impliciete waarnemingen vast (PRD § 19 A-22 punt 7); agents gebruiken geleerde voorkeuren nog niet als input.
 
@@ -429,3 +430,4 @@ S1 fundament ─▶ S2 klanten/geocoding ─▶ S3 afspraken/beurt-gen ─▶ S4
 | 2026-07-16 | 1.3 | Sprint 11 (Platform Admin & Product Agent — fundament) toegevoegd, voortvloeiend uit ADR-013/`46_PlatformAdmin.md`/PRD § 19 A-23: platform-admin-allowlist, tenant-zijde feature requests (FR-950), portal met alleen handmatige goedkeuring (FR-952/953). Geautomatiseerde Product Agent-triage (FR-951) expliciet uitgesteld naar nieuwe "Sprint 11-vervolg"-sectie, analoog aan het Sprint 7-vervolg-precedent. Sprint 11 expliciet buiten de MVP/V1/V2-fase-tabel geplaatst (§ "Doel & uitgangspunten") en buiten het afhankelijkheden-diagram (enige harde afhankelijkheid: Sprint 1). |
 | 2026-07-16 | 1.4 | Sprint 7-vervolg bijgewerkt: Replanning Agent gemarkeerd als gebouwd en live geverifieerd (was "nog te plannen"); geografische clustering en Organizational Memory-leeskant blijven open. |
 | 2026-07-16 | 1.5 | Sprint 7-vervolg bijgewerkt: Planning Agent gemarkeerd als gebouwd en live geverifieerd (`planning-generate` service-rol-pad + incrementele-detectie-fix, nieuwe `agent-planning`-Edge-Function, orchestrator-koppeling als eerste stap). Geografische clustering blijft open, nu niet meer geblokkeerd op de formalisering. |
+| 2026-07-16 | 1.6 | Sprint 7-vervolg bijgewerkt: Invoice Agent gemarkeerd als gebouwd en live geverifieerd — bleek bij de bouw uitsluitend signalering nodig te hebben (conceptfactuur-aanmaak was al `complete_job()`, Sprint 5); geen Mollie/betaalverzoek-link meegenomen in deze stap (aparte, latere uitbreiding op `sendInvoice`). |

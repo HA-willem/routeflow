@@ -1,7 +1,7 @@
 # 43 — AI Agents
 
 **Status:** DONE
-**Versie:** 1.5
+**Versie:** 1.6
 **Bron van waarheid:** `ADR-011` (Human-in-the-Loop AI — Agent-orchestratie & Morning Briefing) en `00_PRD.md` § 8. Dit document mag geen van beide tegenspreken; het is de **operationele uitwerking** van ADR-011 (analoog aan hoe `15_AIPlanner.md` de gedetailleerde uitwerking is van ADR-010).
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 **Relaties:** `docs/adr/ADR-011-human-in-the-loop-ai.md` (architectuurbeslissing), `docs/adr/ADR-012-ai-execution-pipeline.md` (technische runtime-mechaniek: orchestratie-volgorde, execution pipeline, agent-contract, kosten, failure handling — zie § 3), `45_AgentMemory.md` (Organizational Memory — hoe agents leren van historische beslissingen, zie § 7 hieronder), `docs/adr/ADR-010-ai-planner-architecture.md` (routing/replan-fundament), `15_AIPlanner.md` (horizon-/dag-/reactieve-laag-detail, blijft leidend voor Planning/Replanning/Weather-agent-logica), `14_RoutingEngine.md` (Optimization Agent), `16_Facturatie.md` (Invoice Agent), `19_WhatsApp.md` (Communication Agent), `21_Notificaties.md`, `10_BusinessRules.md` § 9 (BR-700–705), `08_FunctioneleEisen.md` FR-serie 900+, `40_Implementatieplan.md` (sprintplaatsing).
@@ -75,7 +75,7 @@ Dit document beschrijft de doelarchitectuur voor alle acht agents; onderstaande 
 | Replanning Agent (§ 5) | ✅ Gebouwd (Sprint 7-vervolg, scope: ziekmelding/verlof één medewerker één dag — spoedopdracht/niet-thuis/weersgedreven volgen later dezelfde vorm) | 7-vervolg |
 | Planning Agent (§ 4) | ✅ Gebouwd (Sprint 7-vervolg, formaliseert de bestaande horizon-laag/`planning-generate` uit Sprint 3 — geen nieuwe datumlogica, alleen de informatieve Briefing-samenvatting + orchestrator-koppeling) | 7-vervolg |
 | Communication Agent (§ 7) | ⏳ Wacht op de WhatsApp/360dialog-adapter (Sprint 8) | 8 (gepland) |
-| Invoice Agent (§ 8) | ⏳ Kernwaarde (conceptfactuur bij afronden) al gebouwd als reguliere RPC (Sprint 5), nog niet als agent | Nog niet gepland |
+| Invoice Agent (§ 8) | ✅ Gebouwd (Sprint 7-vervolg, uitsluitend signalering — conceptfactuur-aanmaak was al `complete_job()`, Sprint 5) | 7-vervolg |
 | Revenue Agent (§ 10) | ⏳ Nog niet gebouwd | Nog niet gepland |
 
 ---
@@ -147,6 +147,8 @@ Dit document beschrijft de doelarchitectuur voor alle acht agents; onderstaande 
 | **Output** | Conceptfactuur (`16_Facturatie.md`-formaat), inclusief betaalherinneringen-planning als voorstel |
 | **Business rules** | BR-302 (concept → definitief, blijft een expliciete menselijke stap), BR-303 (BTW correct per dienst), BR-304 (abonnement dekt inbegrepen beurten), BR-401/402 (herinneringsplanning) |
 | **Triggers** | Na voltooiing van een beurt (directe conceptfactuur-suggestie bij per-job-facturatie), of periodiek (abonnementsfacturatie-cyclus, dagelijkse cyclus) |
+
+**Implementatienotitie (Sprint 7-vervolg):** het aanmaken van de conceptfactuur zelf (Output-rij hierboven) bleek bij de bouw al **volledig geïmplementeerd** — `complete_job()` (020_job_completion.sql, Sprint 5) maakt synchroon een conceptfactuur + factuurregel aan zodra een beurt wordt afgerond, inclusief prijsresolutie (per_job/hourly/dienst-fallback) en BTW-berekening. Er was dus geen aparte "conceptfactuur aanmaken"-stap meer te bouwen. De gebouwde Invoice Agent doet in plaats daarvan uitsluitend **signalering**: welke conceptfacturen (`status = 'draft'`) al een tijd wachten op verzending, als persistente Briefing-waarschuwing (zelfde rol als Capacity Agent — blijft zichtbaar tot de mens 'm oplost, geen eenmalige melding). Abonnementsfacturatie-cyclus (periodieke batch-facturatie) en betaalherinneringen-planning zijn geen Sprint 7-vervolg-scope — blijven "nog te bouwen".
 
 ---
 
@@ -266,3 +268,4 @@ Elke toekomstige agent volgt hetzelfde contract: Edge Function (ADR-008), Provid
 | 2026-07-13 | 1.3 | § 3a (Implementatiestatus) toegevoegd — Sprint 7 heeft Capacity/Optimization/Weather Agent daadwerkelijk gebouwd (PRD § 19 A-22, `40_Implementatieplan.md`); de overige vijf agents blijven architecturaal beschreven maar nog niet geïmplementeerd. Geen inhoudelijke wijziging aan de architectuurbeschrijvingen § 4–11 zelf. |
 | 2026-07-16 | 1.4 | § 3a bijgewerkt: Replanning Agent (§ 5) gebouwd en live geverifieerd (Sprint 7-vervolg, `HANDMATIGE_ACCEPTATIETEST_2026-07-13.md` TC-7.x) — ziek/verlof melden op `/planning` genereert direct een `replan_jobs`-herplanvoorstel (`agent-replanning`-Edge-Function), zichtbaar op de Morning Briefing via de nieuwe `ReplanDiff`-tabel, geaccepteerd via de bestaande `decideProposal`/`route-move-job`-keten. Geen inhoudelijke wijziging aan § 5 zelf. |
 | 2026-07-16 | 1.5 | § 3a/§ 4 bijgewerkt: Planning Agent gebouwd en live geverifieerd (Sprint 7-vervolg) — formaliseert de bestaande `planning-generate`-Edge-Function (Sprint 3) met een service-rol-pad + expliciete `company_id`-filter, en een nieuwe `agent-planning`-wrapper die een informatieve Briefing-kandidaat bouwt (geen `payload`, analoog Capacity/Weather). § 4 aangevuld met een implementatienotitie: "medewerker-toewijzing per dag" blijft bewust bij de Optimization Agent (§ 11), niet gedupliceerd. |
+| 2026-07-16 | 1.6 | § 3a/§ 8 bijgewerkt: Invoice Agent gebouwd en live geverifieerd (Sprint 7-vervolg). Bij de bouw bleek conceptfactuur-aanmaak al volledig geïmplementeerd (`complete_job()`, Sprint 5) — de agent doet daarom uitsluitend signalering van openstaande concepten (persistente Briefing-waarschuwing, analoog Capacity Agent), geen aanmaak-of verzendlogica. § 8 aangevuld met implementatienotitie. |
