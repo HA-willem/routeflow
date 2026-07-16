@@ -1,7 +1,7 @@
 # 40 — Implementatieplan (Sprint 1–11)
 
 **Status:** DONE
-**Versie:** 1.6
+**Versie:** 1.7
 **Bron van waarheid:** `00_PRD.md` (scope § 5, architectuur § 12) + 33_Roadmap.md — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`. **Let op:** dit is een *plan*; er wordt in de documentatiefase nog **niets** gebouwd (CLAUDE.md).
 **Relaties:** 08_FunctioneleEisen.md (FR), 10_BusinessRules.md (BR), 11_DatabaseConcept.md (tabellen), 12_Entiteiten.md, 13_API_Specificatie.md, 14_RoutingEngine.md, 15_AIPlanner.md, 26_ComponentLibrary.md, 31_Testplan.md, 33_Roadmap.md, `docs/adr/ADR-011-human-in-the-loop-ai.md` en `43_AI_Agents.md` (agent-architectuur relevant voor Sprint 7), `docs/adr/ADR-013-platform-admin-product-agent.md` en `46_PlatformAdmin.md` (Sprint 11).
@@ -384,11 +384,29 @@ FeatureRequestForm, FeatureRequestList (statusbadges), ProposalCard (platform-ad
 
 ## Sprint 11-vervolg (nog te plannen) — Product Agent-triage inschakelen
 
-Expliciet uitgesteld tijdens Sprint 11 (analoog aan het Sprint 7-vervolg-precedent), niet vergeten:
+**Startvoorwaarde (nog niet vervuld):** niet eerder beginnen dan dat Sprint 11's fundament (handmatige flow, commits `09b5e51`/`d82999a`, 2026-07-16) minstens één sprint stabiel heeft gedraaid — geen harde regel, maar een expliciete aanbeveling (vergelijkbaar met hoe Organizational Memory's leeskant pas ná het schrijfpad kwam, PRD § 19 A-22 punt 7). Deze sectie legt de scope al vast zodat een latere bouwsessie niet opnieuw hoeft te ontwerpen — het is **planning, geen vrijgave om te starten**.
 
-- **Geplande Product Agent-run** (FR-951, 46 § 3): leest `feature_requests` + `agent_runs`-foutpatronen, clustert over tenants, opent zelfstandig branch + PR, schrijft naar `platform_proposals`. Draait als geplande Claude Code-agent (bestaande `schedule`-capaciteit), geen nieuwe Edge-Function-infrastructuur.
-- **High-risk-classificatielogica** (BR-902): welke bestandspaden/migratie-patronen automatisch als high-risk gelden — vereist een expliciete lijst (migraties, RLS-policy-bestanden, auth-/betalingscode, Vault-gerelateerde code) vóór de eerste geautomatiseerde run.
-- Pas inschakelen zodra Sprint 11's fundament (handmatige flow) minstens één sprint stabiel heeft gedraaid — geen harde regel, maar een expliciete aanbeveling (vergelijkbaar met hoe Organizational Memory's leeskant pas ná het schrijfpad kwam, PRD § 19 A-22 punt 7).
+### Doelen
+- Geplande Product Agent-run (FR-951, 46 § 3): leest `feature_requests` + `agent_runs`-foutpatronen, clustert over tenants, opent zelfstandig branch + PR, schrijft een `platform_proposals`-rij met het volledige BR-903-contract.
+- High-risk-classificatielogica (BR-902) mechanisch toegepast vóór elke automatische run — definitieve lijst in `46_PlatformAdmin.md` § 3.5.
+- Geen wijziging aan de Human-Approval-grens uit Sprint 11 (BR-901): de agent opent uitsluitend een branch + PR, mergt/deployt nooit zelf.
+
+### Bestanden
+- Scheduling-configuratie voor de geplande run (cadans: wekelijks, instelbaar) — via de bestaande Claude Code-`schedule`-capaciteit van de ontwikkelomgeving, **geen** nieuwe Edge-Function-infrastructuur (46 § 3.2).
+- `lib/platform-admin/high-risk-classifier.ts` (nieuw) — pure functie die een voorgestelde bestandenlijst/diff toetst aan `46_PlatformAdmin.md` § 3.5; gebruikt door de agent-run zelf vóór het openen van een PR, en indien technisch haalbaar aanvullend als CI-check op elke Product-Agent-PR (defense-in-depth, PA-03: menselijke review blijft sowieso de laatste linie).
+- Schrijfpad naar `platform_proposals` vanuit de agent-run (service-rol, analoog aan hoe de bestaande domein-agents naar `agent_proposals` schrijven, ADR-012 § 2) — het bestaande, handmatige aanmaakpad uit Sprint 11 blijft ongewijzigd naast dit nieuwe pad.
+
+### Database-migraties
+Geen nieuwe tabellen verwacht. `platform_proposals` (Sprint 11) krijgt vermoedelijk één kolom om "automatisch door de Product Agent aangemaakt" te onderscheiden van "handmatig door de platform-eigenaar aangemaakt" (bv. `created_by_agent boolean not null default false`) — exacte kolomnaam/migratienummer te bepalen bij daadwerkelijke bouw, niet hier vast vooringevuld (zelfde reden als de migratienummer-opmerking bij Sprint 11 zelf).
+
+### Componenten
+Geen nieuwe UI-componenten verwacht — het bestaande `ProposalCard` (Sprint 11) toont zowel handmatig als agent-aangemaakte voorstellen; een klein visueel onderscheid (bv. een "Automatisch voorstel"-badge) is aan te raden voor transparantie over de bron, ook al niet expliciet vereist door BR-903.
+
+### Testcases
+- Unit: `high-risk-classifier.ts` — elk scenario uit `46_PlatformAdmin.md` § 3.5 (migratiebestand, RLS-SQL, auth-pad, betalingspad, secret/Vault-pad, eigen governance-pad) classificeert correct als high-risk; een voorstel zonder enig geraakt patroon classificeert als normaal.
+- Integratie: een simulatie-run met een high-risk-diff triggert nooit automatisch een PR (BR-902, negatieve test).
+- E2E: feature-request-clustering → voorstel in `platform_proposals` → zichtbaar in portal → handmatige goedkeuring/merge ongewijzigd t.o.v. Sprint 11 (geen "auto-merge"-pad ontstaat door deze uitbreiding).
+- BR: **BR-901/902/903**, nu getest tegen het geautomatiseerde schrijfpad i.p.v. alleen het handmatige uit Sprint 11.
 
 ---
 
@@ -431,3 +449,4 @@ S1 fundament ─▶ S2 klanten/geocoding ─▶ S3 afspraken/beurt-gen ─▶ S4
 | 2026-07-16 | 1.4 | Sprint 7-vervolg bijgewerkt: Replanning Agent gemarkeerd als gebouwd en live geverifieerd (was "nog te plannen"); geografische clustering en Organizational Memory-leeskant blijven open. |
 | 2026-07-16 | 1.5 | Sprint 7-vervolg bijgewerkt: Planning Agent gemarkeerd als gebouwd en live geverifieerd (`planning-generate` service-rol-pad + incrementele-detectie-fix, nieuwe `agent-planning`-Edge-Function, orchestrator-koppeling als eerste stap). Geografische clustering blijft open, nu niet meer geblokkeerd op de formalisering. |
 | 2026-07-16 | 1.6 | Sprint 7-vervolg bijgewerkt: Invoice Agent gemarkeerd als gebouwd en live geverifieerd — bleek bij de bouw uitsluitend signalering nodig te hebben (conceptfactuur-aanmaak was al `complete_job()`, Sprint 5); geen Mollie/betaalverzoek-link meegenomen in deze stap (aparte, latere uitbreiding op `sendInvoice`). |
+| 2026-07-16 | 1.7 | Sprint 11-vervolg formeel uitgewerkt (scope, bestanden, database-migraties, componenten, testcases — zelfde diepte als reguliere sprintsecties), incl. verwijzing naar de nieuwe high-risk-classificatielijst (`46_PlatformAdmin.md` § 3.5). Uitdrukkelijk **planning, geen vrijgave om te bouwen**: de startvoorwaarde ("minstens één sprint stabiel gedraaid" sinds Sprint 11-fundament, 2026-07-16) is nog niet vervuld. |

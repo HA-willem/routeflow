@@ -1,7 +1,7 @@
 # 46 — Platform Admin & Product Agent
 
 **Status:** DONE
-**Versie:** 1.0
+**Versie:** 1.2
 **Bron van waarheid:** `ADR-013` (Platform Admin & Product Agent) en `00_PRD.md` § 19 A-23. Dit document mag geen van beide tegenspreken; het is de **operationele uitwerking** van ADR-013 (analoog aan hoe `43_AI_Agents.md` de uitwerking is van ADR-011).
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 **Relaties:** `docs/adr/ADR-013-platform-admin-product-agent.md` (architectuurbeslissing), `docs/adr/ADR-011-human-in-the-loop-ai.md` (Human-Approval-principe, hier hergebruikt en verstrengd), `docs/adr/ADR-012-ai-execution-pipeline.md` (Explainability-contract hergebruikt), `43_AI_Agents.md` (bestaande domein-agents — Product Agent is er bewust géén negende), `23_Gebruikersrollen.md` (platform-admin staat expliciet buiten de tenant-rollenmatrix), `10_BusinessRules.md` § 12 (BR-900–904), `08_FunctioneleEisen.md` FR-serie 950+, `41_CodingStandards.md` (Git Safety Protocol waar de Product Agent aan gebonden is), `40_Implementatieplan.md` (sprintplaatsing).
@@ -85,6 +85,20 @@ Elk voorstel (`platform_proposals`) bevat verplicht:
 - Geen high-risk-PR (migraties, RLS, auth, betalingen, secrets/Vault) zonder expliciete, on-demand trigger door de platform-eigenaar (BR-902) — nooit op de automatische cadans.
 - Geen wijziging aan de platform-admin-allowlist of enige Vault/secret-waarde (§ 1.1) — dat blijft altijd een handmatige actie van de platform-eigenaar zelf, buiten elke agent om.
 
+### 3.5 High-risk-classificatielijst (BR-902) — mechanisch toepasbaar vóór elke automatische run
+
+BR-902 noemt vier categorieën (migraties, RLS, auth, betalingen, secrets/Vault) zonder ze concreet aan bestandspaden te koppelen. Deze lijst maakt dat mechanisch toetsbaar — door de Product Agent zelf vóór het openen van een PR, en (indien technisch haalbaar bij de bouw) als aanvullende CI-check op elke Product-Agent-PR, defense-in-depth analoog aan PA-03 ("menselijke review blijft sowieso de laatste linie"). Een voorstel is **high-risk** zodra het ook maar één bestand/patroon uit onderstaande lijst raakt — nooit per-bestand gesplitst om een deel van een voorstel alsnog automatisch te laten passeren:
+
+| # | Categorie (BR-902) | Concrete trigger |
+|---|---|---|
+| 1 | Migraties | Elk nieuw of gewijzigd bestand onder `supabase/migrations/**` — schema-wijzigingen zijn per definitie high-risk, ongeacht inhoud. |
+| 2 | RLS/autorisatie | SQL met `ROW LEVEL SECURITY`, `CREATE POLICY`, `ALTER POLICY`, `DROP POLICY`, `GRANT`, `REVOKE`; code onder `lib/auth/**`, `lib/platform-admin/guard.ts`, `lib/supabase/proxy.ts` (de auth-middleware-laag), `app/(auth)/**`. |
+| 3 | Betalingen | Code onder het Mollie-providerpad (ADR-007 Provider Adapter Pattern), en server actions die factuurstatus naar `sent`/`paid` zetten of een betaalverzoek genereren (`app/(app)/facturen/**`). |
+| 4 | Secrets/Vault | Elke wijziging aan `.env*`-bestanden (de agent muteert deze sowieso nooit, § 3.4), `vault.*`-SQL-aanroepen, env-var-wiring onder `supabase/functions/**`, en deploy-credential-configuratie in `.github/workflows/**`. |
+| 5 | Eigen governance-grens (aanbevolen uitbreiding, niet expliciet in BR-902's vier categorieën maar zelfreferentieel risico) | `platform_admins`, `is_platform_admin()`, of enig bestand onder `lib/platform-admin/**`/`app/platform-admin/**` zelf — de agent mag nooit zijn eigen autorisatiegrens verruimen. |
+
+Bij twijfel (een bestand past niet duidelijk in bovenstaande, maar voelt gevoelig) geldt high-risk — zelfde conservatieve grondhouding als ADR-013 "Mitigaties" en PA-03.
+
 ---
 
 ## 4. Human Approval — de harde grens (codebase-niveau)
@@ -127,6 +141,7 @@ Analoog aan ADR-011 § 4 (BR-702, domeindata) maar **strenger**, omdat een codew
 |---|---|---|
 | 2026-07-15 | 1.0 | Nieuw document: Platform Admin-portal en Product Agent (feature-request-triage, code-voorstellen via PR, strengere Human-Approval-grens dan BR-702), voortvloeiend uit ADR-013/PRD § 19 A-23. |
 | 2026-07-16 | 1.1 | § 1.3/§ 1.4: AI-tokengebruik-dashboard toegevoegd (ADR-014, `032_ai_usage_tracking.sql`) — kostenobservabiliteit per Bedrijf voor de Command Bar-intentherkenning. |
+| 2026-07-16 | 1.2 | § 3.5 (nieuw): concrete high-risk-classificatielijst voor BR-902 — koppelt de vier BR-902-categorieën (migraties/RLS/betalingen/secrets) aan toetsbare bestandspaden/SQL-patronen, plus een aanbevolen vijfde categorie (de eigen platform-admin-governance-grens). Vereiste stap vóór Sprint 11-vervolg (FR-951) daadwerkelijk gebouwd wordt — zie `40_Implementatieplan.md`. |
 
 ---
 

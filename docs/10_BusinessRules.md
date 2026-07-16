@@ -1,7 +1,7 @@
 # 10 — Business Rules
 
 **Status:** DONE
-**Versie:** 1.7
+**Versie:** 1.8
 **Bron van waarheid:** `00_PRD.md` § 15 — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 
@@ -540,7 +540,7 @@ Nieuwe serie (ADR-013, Platform Admin & Product Agent — `docs/adr/ADR-013-plat
 
 **Reden:** deze categorieën zijn precies de plekken waar een subtiele fout het grootste, moeilijkst te detecteren schadepotentieel heeft (bv. een verzwakte RLS-policy) — een classificatiefout hier weegt zwaarder dan bij een gewone feature-PR. Bij twijfel geldt high-risk, nooit andersom (ADR-013 "Mitigaties").
 
-**Implementatie:** ADR-013 § 4, `46_PlatformAdmin.md` § 3.4/§ 4.
+**Implementatie:** ADR-013 § 4, `46_PlatformAdmin.md` § 3.4/§ 4; concrete, toetsbare bestandspaden/SQL-patronen per categorie in `46_PlatformAdmin.md` § 3.5 (nieuw, 2026-07-16).
 
 ---
 
@@ -588,3 +588,4 @@ Nieuwe serie (ADR-013, Platform Admin & Product Agent — `docs/adr/ADR-013-plat
 | 2026-07-12 | 1.5 | BR-306 (Hard) toegevoegd aan § 5: prioriteitsketen Job > Klant > Dienstafspraak > Dienst voor klant-specifieke prijs-overrides, voortvloeiend uit 18_Prijsafspraken.md § 7. |
 | 2026-07-12 | 1.6 | BR-704 (Human Control over geleerde voorkeuren) en BR-705 (privacy-uitsluitingen Organizational Memory) toegevoegd aan § 9, voortvloeiend uit `45_AgentMemory.md`. |
 | 2026-07-16 | 1.7 | § 11 (BR-900 t/m BR-904) toegevoegd: platform-admin-autorisatie los van tenant-rollen, Product Agent Human-Approval-grens (nooit zelf mergen/deployen, high-risk-PR's nooit automatisch), voorstel-contract, cross-tenant zichtbaarheidsverbod voor feature requests — voortvloeiend uit ADR-013/`46_PlatformAdmin.md`/PRD § 19 A-23. |
+| 2026-07-16 | 1.8 | BR-902-implementatieverwijzing uitgebreid met `46_PlatformAdmin.md` § 3.5 (nieuw) — de concrete, toetsbare bestandspaden/SQL-patronen per high-risk-categorie, voorwaarde vóór Sprint 11-vervolg (FR-951) gebouwd wordt. |
