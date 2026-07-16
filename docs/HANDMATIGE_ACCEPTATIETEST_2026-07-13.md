@@ -417,6 +417,12 @@ Volledige flow via de browser + DB-controle (Playwright, demo-data): ziek/verlof
 
 ---
 
+### TC-8.x — Planning Agent (Sprint 7-vervolg) — live geverifieerd (2026-07-16)
+End-to-end via de lokale Edge Runtime (`supabase functions serve`) + directe DB-controle, tegen de echte demo-data (`scripts/seed-demo.ts`, 101 dienstafspraken): `agent-planning` met een geldige service-rol-token + `company_id` → `planning-generate` genereerde 217 nieuwe `voorgesteld`-beurten over 101 dienstafspraken, correct gescoped (0 van 0 cross-tenant-controles faalden: elke aangemaakte `jobs`-rij hoort bij dezelfde `company_id` als zijn dienstafspraak). Kandidaat correct opgebouwd (titel/samenvatting/BR-001/101/102/103-referenties, confidence 0,95, `payload: null`). Bevinding tijdens verificatie: een tweede aanroep met dezelfde parameters bleef **hetzelfde** aantal "217 nieuwe beurten" rapporteren, terwijl er niets nieuws was bijgekomen (`generateHorizonDates` berekent altijd dezelfde datums; de oorspronkelijke upsert rapporteerde het berekende aantal, niet het daadwerkelijk ingevoegde aantal) — zou de Morning Briefing elke nacht een misleidend "vol" signaal hebben gegeven. **Gefixt:** `.select()` toegevoegd aan de `ON CONFLICT DO NOTHING`-upsert, die daardoor uitsluitend de echt-nieuw-ingevoegde rijen teruggeeft. Na de fix opnieuw geverifieerd: een herhaalde aanroep met identieke parameters gaf terecht `{"candidates":[]}`; na het gericht verwijderen van de beurten van één dienstafspraak gaf een volgende aanroep exact "1 nieuwe beurt, 1 dienstafspraak, 100 overgeslagen" — incrementele detectie werkt precies. Volledige `agent-orchestrator`-cyclus voor het demo-bedrijf bevestigd: Planning Agent draait als eerste stap en levert een `agent_proposals`-rij (`agent: 'planning'`, `severity: 'info'`).
+**Resultaat:** ☑ Geslaagd (na fix).
+
+---
+
 ## 6. Approval Handler
 
 ### TC-6.1 — Accepteren zet approval_status correct

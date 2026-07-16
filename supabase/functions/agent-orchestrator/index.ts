@@ -1,17 +1,20 @@
 // agent-orchestrator — AI Orchestrator (ADR-011 §3, ADR-012 §1/§2).
 //
-// Coördineert de drie Sprint 7-agents (Weather → Optimization → Capacity,
-// ADR-012 §1-volgorde) voor één bedrijf en laat elke kandidaat de gedeelde
-// Execution Pipeline doorlopen (Conflict Detector → Suggestion Generator →
-// Explanation Generator → Approval Handler, ADR-012 §2) — geen domeinlogica
-// hier, uitsluitend volgorde, dependency-resolutie en foutisolatie (ADR-011
-// §3: "Orchestrator kent zelf geen domeinlogica").
+// Coördineert Planning + de drie Sprint 7-agents (Planning → Weather →
+// Optimization → Capacity, ADR-011 § "Event Flow"-volgorde) voor één bedrijf
+// en laat elke kandidaat de gedeelde Execution Pipeline doorlopen (Conflict
+// Detector → Suggestion Generator → Explanation Generator → Approval
+// Handler, ADR-012 §2) — geen domeinlogica hier, uitsluitend volgorde,
+// dependency-resolutie en foutisolatie (ADR-011 §3: "Orchestrator kent zelf
+// geen domeinlogica").
 //
-// Sprint 7-scope: de drie agents zijn onderling logisch onafhankelijk (geen
-// van hun input hangt af van elkaars output — dat verandert pas zodra
-// Weather-signalen daadwerkelijk een Replanning-trigger worden, een latere
-// sprint); sequentieel uitgevoerd voor eenvoudige logging/foutisolatie, niet
-// omdat het technisch vereist is.
+// Sprint 7-scope: de agents zijn onderling logisch onafhankelijk (geen van
+// hun input hangt af van elkaars output binnen dezelfde cyclus — dat
+// verandert pas zodra Weather-signalen daadwerkelijk een Replanning-trigger
+// worden, een latere sprint); sequentieel uitgevoerd voor eenvoudige
+// logging/foutisolatie, niet omdat het technisch vereist is. Planning staat
+// wél altijd eerst (Weather/Optimization/Capacity moeten weten welke
+// beurten er zijn), Sprint 7-vervolg (Planning Agent-formalisering).
 //
 // Aanroep: POST { company_id }, service-rol-only (nachtcyclus/handmatige
 // trigger heeft geen ingelogde gebruiker). pg_cron-scheduling is bewust nog
@@ -34,6 +37,8 @@ interface RequestBody {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CAPACITY_HORIZON_DAYS = 7;
+/** 15_AIPlanner.md § 1.1 / 43_AI_Agents.md § 4 — horizon-laag kijkt 12 weken vooruit. */
+const PLANNING_HORIZON_WEEKS = 12;
 
 function errorResponse(code: string, message: string, status: number): Response {
   return new Response(JSON.stringify({ error: { code, message } }), {
@@ -151,6 +156,17 @@ Deno.serve(async (req) => {
     requestBody: Record<string, unknown>;
     scheduledDate: string;
   }> = [
+    // Planning Agent eerst (ADR-011 § "Event Flow"): Weather/Optimization/
+    // Capacity moeten weten welke beurten er zijn vóórdat ze er iets over
+    // kunnen zeggen. Eén aanroep per cyclus (niet per dag zoals Weather/
+    // Optimization) — planning-generate dekt de volledige 12-weken-horizon
+    // al in één keer (43_AI_Agents.md § 4).
+    {
+      agent: 'planning' as const,
+      functionName: 'agent-planning',
+      requestBody: { company_id: body.company_id, from_date: today, weeks: PLANNING_HORIZON_WEEKS },
+      scheduledDate: today,
+    },
     ...capacityDates.map((date) => ({
       agent: 'weather' as const,
       functionName: 'agent-weather',

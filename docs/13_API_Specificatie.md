@@ -1,7 +1,7 @@
 # 13 — API Specificatie
 
 **Status:** DONE
-**Versie:** 2.0
+**Versie:** 2.1
 **Bron van waarheid:** `00_PRD.md` § 12 (Architectuur, API-first) — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 **Relaties:** 11_DatabaseConcept.md (resources), 12_Entiteiten.md (modellen), 22_Authenticatie.md (auth), 16_Facturatie.md & 19_WhatsApp.md (webhooks), 09_NietFunctioneleEisen.md (NFR-307).
@@ -78,7 +78,7 @@ Server-side operaties die domeinlogica of externe providers raken. Alle POST, JS
 
 | Endpoint | Body (kern) | Effect | FR |
 |---|---|---|---|
-| `POST /functions/v1/planning-generate` | `{ from_date, weeks }` | Genereert voorgestelde beurten uit dienstafspraken | FR-020 |
+| `POST /functions/v1/planning-generate` | `{ from_date, weeks, service_agreement_id?, company_id? }` | Genereert voorgestelde beurten uit dienstafspraken. `company_id` is verplicht bij een service-rol-aanroep (Planning Agent, 43_AI_Agents.md § 4) — RLS scoped het reguliere pad al, dit veld is dan optioneel en genegeerd. | FR-020 |
 | `POST /functions/v1/route-optimize` | `{ employee_id, date }` | Berekent optimale route (14_RoutingEngine.md) | FR-021 |
 | `POST /functions/v1/route-move-job` | `{ job_id, target_route_id, position }` | Verplaatst beurt + herberekent | FR-022 |
 | `POST /functions/v1/replan` | `{ trigger, employee_id?, date? }` | Reactief herplannen; geeft diff-voorstel terug | FR-024 |
@@ -177,3 +177,4 @@ Geen open beslissingen. Concrete OpenAPI/Swagger-definitie wordt als artefact in
 |---|---|---|
 | 2026-07-06 | 1.0 | Placeholder met enkele voorbeeld-endpoints |
 | 2026-07-07 | 2.0 | Volledige uitwerking: auth/tenant-model, PostgREST-CRUD + query-conventies, domein-RPC-endpoints, Mollie/WhatsApp-webhooks met idempotentie, uniform foutmodel, paginatie & rate limiting |
+| 2026-07-16 | 2.1 | `planning-generate`-body uitgebreid met optioneel `company_id`, verplicht bij een service-rol-aanroep (Planning Agent-formalisering, 43_AI_Agents.md § 4, Sprint 7-vervolg) — het reguliere, gebruikersgeïnitieerde pad blijft ongewijzigd op RLS leunen. |

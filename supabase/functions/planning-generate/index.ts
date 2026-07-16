@@ -4,17 +4,29 @@
 // 15_AIPlanner.md § 1.1) op basis van BR-001 (ideale datum = laatste
 // `uitgevoerd` + interval)/BR-102 (once = geen opvolger)/BR-103 (maandpatronen).
 //
-// Draait onder de sessie van de aanroeper (JWT uit de Authorization-header),
-// niet onder de service-role: RLS is de enige autorisatiegrens (ADR-003) en de
-// insert/update-policies op `jobs`/`service_agreements` staan dit al toe voor
-// owner/admin/planner (23_Gebruikersrollen.md § 2, 009_jobs.sql). Er is dus
-// geen `lib/supabase/admin.ts` nodig voor deze functie.
+// Draait onder de sessie van de aanroeper (JWT uit de Authorization-header)
+// voor het reguliere, door-de-gebruiker-geïnitieerde pad: RLS is dan de enige
+// autorisatiegrens (ADR-003) en de insert/update-policies op
+// `jobs`/`service_agreements` staan dit al toe voor owner/admin/planner
+// (23_Gebruikersrollen.md § 2, 009_jobs.sql).
 //
 // `service_agreement_id` is een optionele uitbreiding op de
 // 13_API_Specificatie.md § 4-body (die alleen `{ from_date, weeks }`
 // documenteert): scoped de generatie tot één dienstafspraak, gebruikt door de
 // Server Action na het aanmaken/hervatten van een afspraak (FR-004 AC3 /
 // FR-005) i.p.v. steeds de hele tenant te herberekenen.
+//
+// `company_id` (Planning Agent, 43_AI_Agents.md § 4, Sprint 7-vervolg): een
+// tweede, service-rol-only aanroeppad voor de dagelijkse cyclus
+// (agent-planning/agent-orchestrator, geen ingelogde gebruiker). De
+// service-rol omzeilt RLS volledig — zonder een expliciete company_id-filter
+// zou de agreements-query hierboven dan over ALLE bedrijven heen lopen. Dit
+// veld is daarom verplicht zodra de aanroeper de service-rol is (geweigerd
+// met 400 als het ontbreekt), en wordt bij elke query expliciet meegegeven
+// i.p.v. op RLS te vertrouwen — zelfde defense-in-depth-motivatie als
+// route-optimize's `dry_run`-service-rol-pad (022_agent_pipeline.sql-precedent).
+// Het reguliere, gebruikersgeïnitieerde pad blijft ongewijzigd (company_id
+// wordt dan genegeerd, RLS scoped al correct).
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
@@ -24,6 +36,7 @@ interface RequestBody {
   from_date: string;
   weeks: number;
   service_agreement_id?: string;
+  company_id?: string;
 }
 
 interface AppError {
@@ -44,6 +57,7 @@ function log(level: 'info' | 'error', message: string, context: Record<string, u
 }
 
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function parseBody(raw: unknown): RequestBody | null {
   if (typeof raw !== 'object' || raw === null) {
@@ -64,10 +78,17 @@ function parseBody(raw: unknown): RequestBody | null {
   if (body.service_agreement_id !== undefined && typeof body.service_agreement_id !== 'string') {
     return null;
   }
+  if (
+    body.company_id !== undefined &&
+    (typeof body.company_id !== 'string' || !UUID_RE.test(body.company_id))
+  ) {
+    return null;
+  }
   return {
     from_date: body.from_date,
     weeks: body.weeks,
     service_agreement_id: body.service_agreement_id as string | undefined,
+    company_id: body.company_id as string | undefined,
   };
 }
 
@@ -100,9 +121,27 @@ Deno.serve(async (req) => {
     );
   }
 
-  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
-    global: { headers: { Authorization: authHeader } },
-  });
+  const isServiceRoleCaller = authHeader === `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`;
+  if (isServiceRoleCaller && !body.company_id) {
+    return errorResponse(
+      {
+        code: 'validation_error',
+        message: 'company_id (uuid) is verplicht voor service-rol-aanroepen (Planning Agent).',
+      },
+      400,
+    );
+  }
+
+  // Service-rol (Planning Agent, dagelijkse cyclus, geen ingelogde gebruiker)
+  // omzeilt RLS volledig — de company_id-filter hieronder is daarom géén
+  // optionele extra maar de enige tenant-grens op dit pad (zie module-comment).
+  // Het reguliere pad blijft de sessie van de aanroeper gebruiken; RLS scoped
+  // daar al correct.
+  const supabase = isServiceRoleCaller
+    ? createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+    : createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+        global: { headers: { Authorization: authHeader } },
+      });
 
   let agreementsQuery = supabase
     .from('service_agreements')
@@ -110,6 +149,10 @@ Deno.serve(async (req) => {
       'id, company_id, frequency_type, frequency_interval_days, preferred_day, exclude_dates, status, service_id, last_completed_job_id',
     )
     .eq('status', 'active');
+
+  if (body.company_id) {
+    agreementsQuery = agreementsQuery.eq('company_id', body.company_id);
+  }
 
   if (body.service_agreement_id) {
     agreementsQuery = agreementsQuery.eq('id', body.service_agreement_id);
@@ -188,10 +231,18 @@ Deno.serve(async (req) => {
 
     // BR-203/jobs_agreement_date_unique: een eerder gegenereerde voorgestelde
     // beurt op dezelfde datum is geen fout, gewoon al gedaan werk — negeren
-    // i.p.v. de hele batch te laten falen op de unique-constraint.
-    const { error: insertError } = await supabase
+    // i.p.v. de hele batch te laten falen op de unique-constraint. `.select()`
+    // is hier geen optionele toevoeging: `ON CONFLICT DO NOTHING RETURNING *`
+    // levert uitsluitend de daadwerkelijk ingevoegde rijen terug — zonder deze
+    // call zou `dates` (berekend, niet per se nieuw) bij elke herhaalde
+    // dagelijkse cyclus (Planning Agent, 43_AI_Agents.md § 4) een identiek
+    // "X nieuwe beurten"-resultaat blijven melden, ook wanneer er niets nieuws
+    // is bijgekomen — misleidende Briefing-ruis (ADR-011: "nooit een kale/
+    // onjuiste lege staat", hier het omgekeerde risico: een onterecht volle).
+    const { data: insertedRows, error: insertError } = await supabase
       .from('jobs')
-      .upsert(rows, { onConflict: 'service_agreement_id,scheduled_date', ignoreDuplicates: true });
+      .upsert(rows, { onConflict: 'service_agreement_id,scheduled_date', ignoreDuplicates: true })
+      .select('scheduled_date');
 
     if (insertError) {
       log('error', 'planning-generate: job-insert mislukt', {
@@ -214,7 +265,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    generatedJobs.push({ service_agreement_id: agreement.id, dates });
+    const newlyInsertedDates = (insertedRows ?? []).map((r) => r.scheduled_date as string);
+    if (newlyInsertedDates.length === 0) {
+      skippedAgreements.push({ service_agreement_id: agreement.id, reason: 'already_generated' });
+      continue;
+    }
+
+    generatedJobs.push({ service_agreement_id: agreement.id, dates: newlyInsertedDates });
   }
 
   log('info', 'planning-generate: voltooid', {

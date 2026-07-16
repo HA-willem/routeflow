@@ -1,7 +1,7 @@
 # 43 — AI Agents
 
 **Status:** DONE
-**Versie:** 1.4
+**Versie:** 1.5
 **Bron van waarheid:** `ADR-011` (Human-in-the-Loop AI — Agent-orchestratie & Morning Briefing) en `00_PRD.md` § 8. Dit document mag geen van beide tegenspreken; het is de **operationele uitwerking** van ADR-011 (analoog aan hoe `15_AIPlanner.md` de gedetailleerde uitwerking is van ADR-010).
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 **Relaties:** `docs/adr/ADR-011-human-in-the-loop-ai.md` (architectuurbeslissing), `docs/adr/ADR-012-ai-execution-pipeline.md` (technische runtime-mechaniek: orchestratie-volgorde, execution pipeline, agent-contract, kosten, failure handling — zie § 3), `45_AgentMemory.md` (Organizational Memory — hoe agents leren van historische beslissingen, zie § 7 hieronder), `docs/adr/ADR-010-ai-planner-architecture.md` (routing/replan-fundament), `15_AIPlanner.md` (horizon-/dag-/reactieve-laag-detail, blijft leidend voor Planning/Replanning/Weather-agent-logica), `14_RoutingEngine.md` (Optimization Agent), `16_Facturatie.md` (Invoice Agent), `19_WhatsApp.md` (Communication Agent), `21_Notificaties.md`, `10_BusinessRules.md` § 9 (BR-700–705), `08_FunctioneleEisen.md` FR-serie 900+, `40_Implementatieplan.md` (sprintplaatsing).
@@ -73,7 +73,7 @@ Dit document beschrijft de doelarchitectuur voor alle acht agents; onderstaande 
 | Optimization Agent (§ 11) | ✅ Gebouwd (formalisering van bestaande Sprint 4-Edge-Functions) | 7 |
 | Weather Agent (§ 6) | ✅ Gebouwd (informatief — het herplan-voorstel-deel gebruikt nu de Replanning Agent) | 7 |
 | Replanning Agent (§ 5) | ✅ Gebouwd (Sprint 7-vervolg, scope: ziekmelding/verlof één medewerker één dag — spoedopdracht/niet-thuis/weersgedreven volgen later dezelfde vorm) | 7-vervolg |
-| Planning Agent (§ 4) | ⏳ Kernlogica bestaat sinds Sprint 3 (15_AIPlanner.md), nog niet als pipeline-conforme agent geformaliseerd | Nog niet gepland |
+| Planning Agent (§ 4) | ✅ Gebouwd (Sprint 7-vervolg, formaliseert de bestaande horizon-laag/`planning-generate` uit Sprint 3 — geen nieuwe datumlogica, alleen de informatieve Briefing-samenvatting + orchestrator-koppeling) | 7-vervolg |
 | Communication Agent (§ 7) | ⏳ Wacht op de WhatsApp/360dialog-adapter (Sprint 8) | 8 (gepland) |
 | Invoice Agent (§ 8) | ⏳ Kernwaarde (conceptfactuur bij afronden) al gebouwd als reguliere RPC (Sprint 5), nog niet als agent | Nog niet gepland |
 | Revenue Agent (§ 10) | ⏳ Nog niet gebouwd | Nog niet gepland |
@@ -92,6 +92,8 @@ Dit document beschrijft de doelarchitectuur voor alle acht agents; onderstaande 
 | **Confidence score** | Hoog bij ideale-datum-match binnen flexvenster + succesvolle clustering; lager naarmate de voorgestelde datum verder van het ideaal afwijkt of capaciteit krap is (§ 13) |
 | **Why explanation** | Bestaand mechanisme (BR-700, `15_AIPlanner.md` § 9) — ongewijzigd, nu als output van deze specifieke agent i.p.v. "de AI Planner" in het algemeen |
 | **Triggers** | Dagelijkse cyclus (00:00–06:00, ADR-011 § "Event Flow"); direct na het aanmaken/wijzigen van een dienstafspraak (nieuwe klant, nieuwe frequentie) |
+
+**Implementatienotitie (Sprint 7-vervolg):** "medewerker-toewijzing per dag" (Output-rij hierboven) is bij de daadwerkelijke bouw bewust **niet** in deze agent geïmplementeerd — dat is al de verantwoordelijkheid van de Optimization Agent (§ 11, dag-laag-volgordebepaling), en zou hier dupliceren wat die agent al doet (zelfde motivatie als § 11's eigen "voegt geen nieuwe optimalisatielogica toe"). De gebouwde Planning Agent beperkt zich tot het horizon-laag-deel: `jobs` met status `voorgesteld` aanmaken (hergebruikt de bestaande `planning-generate`-Edge-Function/`lib/planning/horizon.ts`, Sprint 3, ongewijzigde datumlogica) en een informatieve Briefing-samenvatting (geen `payload`, zelfde rol als Capacity/Weather Agent — het aanmaken van `voorgesteld`-beurten is zelf al de door ADR-011 § 4 toegestane autonome actie, geen aparte goedkeuring nodig).
 
 ---
 
@@ -263,3 +265,4 @@ Elke toekomstige agent volgt hetzelfde contract: Edge Function (ADR-008), Provid
 | 2026-07-12 | 1.2 | Kruisverwijzing naar `45_AgentMemory.md` toegevoegd (Organizational Memory — elke agent krijgt optioneel geleerde voorkeuren als extra input, § 7 van dat document beschrijft precies wat elke agent leert). Geen inhoudelijke wijziging aan de acht agent-beschrijvingen zelf. |
 | 2026-07-13 | 1.3 | § 3a (Implementatiestatus) toegevoegd — Sprint 7 heeft Capacity/Optimization/Weather Agent daadwerkelijk gebouwd (PRD § 19 A-22, `40_Implementatieplan.md`); de overige vijf agents blijven architecturaal beschreven maar nog niet geïmplementeerd. Geen inhoudelijke wijziging aan de architectuurbeschrijvingen § 4–11 zelf. |
 | 2026-07-16 | 1.4 | § 3a bijgewerkt: Replanning Agent (§ 5) gebouwd en live geverifieerd (Sprint 7-vervolg, `HANDMATIGE_ACCEPTATIETEST_2026-07-13.md` TC-7.x) — ziek/verlof melden op `/planning` genereert direct een `replan_jobs`-herplanvoorstel (`agent-replanning`-Edge-Function), zichtbaar op de Morning Briefing via de nieuwe `ReplanDiff`-tabel, geaccepteerd via de bestaande `decideProposal`/`route-move-job`-keten. Geen inhoudelijke wijziging aan § 5 zelf. |
+| 2026-07-16 | 1.5 | § 3a/§ 4 bijgewerkt: Planning Agent gebouwd en live geverifieerd (Sprint 7-vervolg) — formaliseert de bestaande `planning-generate`-Edge-Function (Sprint 3) met een service-rol-pad + expliciete `company_id`-filter, en een nieuwe `agent-planning`-wrapper die een informatieve Briefing-kandidaat bouwt (geen `payload`, analoog Capacity/Weather). § 4 aangevuld met een implementatienotitie: "medewerker-toewijzing per dag" blijft bewust bij de Optimization Agent (§ 11), niet gedupliceerd. |
