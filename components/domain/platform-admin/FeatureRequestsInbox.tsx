@@ -11,6 +11,9 @@ import type { FeatureRequestRow } from '@/lib/platform-admin/queries';
 
 interface FeatureRequestsInboxProps {
   requests: Array<FeatureRequestRow & { companies: { name: string } | null }>;
+  onAccept: (
+    featureRequestId: string,
+  ) => Promise<{ success: true } | { success: false; error: { message: string } }>;
   onReject: (
     featureRequestId: string,
   ) => Promise<{ success: true } | { success: false; error: { message: string } }>;
@@ -23,8 +26,19 @@ interface FeatureRequestsInboxProps {
  * voorstel is Sprint 11-vervolg (FR-951); dit fundament biedt alleen
  * afwijzen als directe actie.
  */
-export function FeatureRequestsInbox({ requests, onReject }: FeatureRequestsInboxProps) {
+export function FeatureRequestsInbox({ requests, onAccept, onReject }: FeatureRequestsInboxProps) {
   const [isPending, startTransition] = useTransition();
+
+  function handleAccept(id: string) {
+    startTransition(async () => {
+      const result = await onAccept(id);
+      if (!result.success) {
+        toast.error(result.error.message);
+        return;
+      }
+      toast.success('Feature request geaccepteerd');
+    });
+  }
 
   function handleReject(id: string) {
     startTransition(async () => {
@@ -64,15 +78,19 @@ export function FeatureRequestsInbox({ requests, onReject }: FeatureRequestsInbo
           </div>
           <p className="text-text-muted mt-2 text-sm whitespace-pre-wrap">{request.description}</p>
           {request.status === 'nieuw' ? (
-            <Button
-              size="sm"
-              variant="outline"
-              className="mt-3"
-              disabled={isPending}
-              onClick={() => handleReject(request.id)}
-            >
-              Afwijzen
-            </Button>
+            <div className="mt-3 flex gap-2">
+              <Button size="sm" disabled={isPending} onClick={() => handleAccept(request.id)}>
+                Accepteren
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={isPending}
+                onClick={() => handleReject(request.id)}
+              >
+                Afwijzen
+              </Button>
+            </div>
           ) : null}
         </div>
       ))}

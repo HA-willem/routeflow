@@ -12,6 +12,7 @@ import {
 import { createClient } from '@/lib/supabase/server';
 
 import {
+  acceptFeatureRequest,
   createPlatformProposal,
   decidePlatformProposal,
   markPlatformProposalMerged,
@@ -53,7 +54,11 @@ export default async function PlatformAdminPage() {
 
       <section>
         <h2 className="text-text mb-3 text-lg font-semibold">Feature requests</h2>
-        <FeatureRequestsInbox requests={featureRequests} onReject={rejectFeatureRequest} />
+        <FeatureRequestsInbox
+          requests={featureRequests}
+          onAccept={acceptFeatureRequest}
+          onReject={rejectFeatureRequest}
+        />
       </section>
 
       <section>

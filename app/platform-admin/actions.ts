@@ -121,3 +121,31 @@ export async function rejectFeatureRequest(featureRequestId: string): Promise<Ac
   revalidatePath('/platform-admin');
   return actionSuccess(null);
 }
+
+/**
+ * Feature request handmatig accepteren (→ 'gepland') vanuit het portal.
+ * Tijdelijk handmatig triage-pad zolang de Product Agent-triage (FR-951,
+ * Sprint 11-vervolg) nog niet gebouwd is — normaal loopt "goedkeuren" via
+ * een concreet Product Agent-voorstel (getrieerd → voorgesteld), maar die
+ * stap bestaat nog niet.
+ */
+export async function acceptFeatureRequest(featureRequestId: string): Promise<ActionResult<null>> {
+  await requirePlatformAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from('feature_requests')
+    .update({ status: 'gepland' })
+    .eq('id', featureRequestId);
+
+  if (error) {
+    logger.error('acceptFeatureRequest failed', { code: error.code, featureRequestId });
+    return actionError({
+      code: error.code || 'accept_feature_request_failed',
+      message: 'Kon de feature request niet accepteren. Probeer het opnieuw.',
+    });
+  }
+
+  revalidatePath('/platform-admin');
+  return actionSuccess(null);
+}
