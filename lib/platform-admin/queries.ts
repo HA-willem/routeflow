@@ -1,8 +1,10 @@
+import { calculateCostUsd } from '@/lib/ai/pricing';
 import type { Database } from '@/types/database.types';
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 type AgentRunRow = Database['public']['Tables']['agent_runs']['Row'];
+type AiUsageEventRow = Database['public']['Tables']['ai_usage_events']['Row'];
 export type PlatformProposalRow = Database['public']['Tables']['platform_proposals']['Row'];
 export type FeatureRequestRow = Database['public']['Tables']['feature_requests']['Row'];
 
@@ -67,6 +69,64 @@ export async function getPlatformProposals(
     .order('created_at', { ascending: false });
 
   return data ?? [];
+}
+
+export interface CompanyAiUsage {
+  companyId: string;
+  companyName: string;
+  totalCalls: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalCostUsd: number;
+  lastUsedAt: string;
+}
+
+/**
+ * Tokengebruik per bedrijf (ADR-014, 032_ai_usage_tracking.sql) — bron voor het
+ * platform-admin kostendashboard. Kosten worden hier berekend (lib/ai/pricing.ts,
+ * huidige prijzen) i.p.v. opgeslagen, zodat een prijswijziging bij Anthropic geen
+ * historische rijen ongeldig maakt. RLS-bypass via `is_platform_admin()` levert
+ * hier alle bedrijven i.p.v. alleen het eigen bedrijf.
+ */
+export async function getAiUsageOverview(
+  supabase: SupabaseClient<Database>,
+): Promise<CompanyAiUsage[]> {
+  const { data } = await supabase
+    .from('ai_usage_events')
+    .select('company_id, model, input_tokens, output_tokens, created_at, companies(name)')
+    .order('created_at', { ascending: false });
+
+  const byCompany = new Map<string, CompanyAiUsage>();
+
+  for (const event of (data ?? []) as Array<
+    Pick<
+      AiUsageEventRow,
+      'company_id' | 'model' | 'input_tokens' | 'output_tokens' | 'created_at'
+    > & {
+      companies: { name: string } | null;
+    }
+  >) {
+    const cost = calculateCostUsd(event.model, event.input_tokens, event.output_tokens);
+    const existing = byCompany.get(event.company_id);
+    if (existing) {
+      existing.totalCalls += 1;
+      existing.totalInputTokens += event.input_tokens;
+      existing.totalOutputTokens += event.output_tokens;
+      existing.totalCostUsd += cost;
+      continue;
+    }
+    byCompany.set(event.company_id, {
+      companyId: event.company_id,
+      companyName: event.companies?.name ?? 'Onbekend bedrijf',
+      totalCalls: 1,
+      totalInputTokens: event.input_tokens,
+      totalOutputTokens: event.output_tokens,
+      totalCostUsd: cost,
+      lastUsedAt: event.created_at,
+    });
+  }
+
+  return Array.from(byCompany.values()).sort((a, b) => b.totalCostUsd - a.totalCostUsd);
 }
 
 /** Feature requests platformbreed (FR-952), voor de inbox in het portal. */

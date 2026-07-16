@@ -32,6 +32,11 @@ Eigen routegroep, los van de bestaande `(app)`-tenant-routegroep (bv. `/platform
 | Feature requests-inbox | Alle binnengekomen tenant-feature requests, met Product Agent-triage-status (§ 3) en clustering ("4 bedrijven vroegen hierom"). |
 | Product Agent-voorstellen | Lijst van open/goedgekeurde/afgewezen/gemergede voorstellen (§ 3), met PR-link, diff-samenvatting, risicoclassificatie (§ 4) en het volledige why/trigger/bronnen-contract (analoog BR-703). |
 | Goedkeuringsactie | Eén voorstel goedkeuren/afwijzen — goedkeuring betekent uitsluitend "deze PR mag gemerged worden"; de merge zelf blijft een losse, handmatige actie (§ 4). |
+| AI-tokengebruik | Anthropic-tokengebruik (input/output) en geschatte kosten van de Command Bar-intentherkenning (ADR-014), geaggregeerd per Bedrijf met een bedrijfsfilter — puur kostenobservabiliteit, geen sturing op de agents zelf (`ai_usage_events`, § 1.4). |
+
+### 1.4 AI-tokengebruik (ADR-014)
+
+Elke Command Bar-aanroep aan het taalmodel (ADR-014 "het taalmodel routeert, het beslist niet") logt `input_tokens`/`output_tokens`/`model` naar `ai_usage_events` (`company_id`, `user_id`, `feature`, RLS zelfde model als `feature_requests` § 2.2). Kosten worden op weergave-tijd berekend uit een prijstabel (`lib/ai/pricing.ts`) i.p.v. opgeslagen, zodat een latere Anthropic-prijswijziging geen historische rijen ongeldig maakt. Uitsluitend observabiliteit — geen budget-limiet of afsluitmechanisme in deze scope.
 
 ---
 
@@ -121,6 +126,7 @@ Analoog aan ADR-011 § 4 (BR-702, domeindata) maar **strenger**, omdat een codew
 | Datum | Versie | Wijziging |
 |---|---|---|
 | 2026-07-15 | 1.0 | Nieuw document: Platform Admin-portal en Product Agent (feature-request-triage, code-voorstellen via PR, strengere Human-Approval-grens dan BR-702), voortvloeiend uit ADR-013/PRD § 19 A-23. |
+| 2026-07-16 | 1.1 | § 1.3/§ 1.4: AI-tokengebruik-dashboard toegevoegd (ADR-014, `032_ai_usage_tracking.sql`) — kostenobservabiliteit per Bedrijf voor de Command Bar-intentherkenning. |
 
 ---
 

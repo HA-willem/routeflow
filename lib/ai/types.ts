@@ -13,7 +13,19 @@ export interface IntentCommand {
   label: string;
 }
 
-export interface IntentRouterProvider {
+/** Tokengebruik van één aanroep — voor kostenlogging (ai_usage_events, 032_ai_usage_tracking.sql). */
+export interface AiUsage {
+  model: string;
+  inputTokens: number;
+  outputTokens: number;
+}
+
+export interface IntentRouteResult {
   /** `null` = geen commando past goed genoeg — aanroeper toont fallback-UI. */
-  routeIntent(params: { text: string; commands: IntentCommand[] }): Promise<string | null>;
+  commandId: string | null;
+  usage: AiUsage;
+}
+
+export interface IntentRouterProvider {
+  routeIntent(params: { text: string; commands: IntentCommand[] }): Promise<IntentRouteResult>;
 }

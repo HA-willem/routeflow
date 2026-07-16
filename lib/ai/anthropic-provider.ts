@@ -1,4 +1,4 @@
-import type { IntentCommand, IntentRouterProvider } from './types';
+import type { IntentCommand, IntentRouteResult, IntentRouterProvider } from './types';
 
 /**
  * Claude-implementatie van IntentRouterProvider (ADR-014, ADR-007). Gebruikt
@@ -26,6 +26,7 @@ interface AnthropicToolUseBlock {
 
 interface AnthropicMessagesResponse {
   content: Array<AnthropicToolUseBlock | { type: string }>;
+  usage: { input_tokens: number; output_tokens: number };
 }
 
 export class AnthropicIntentRouter implements IntentRouterProvider {
@@ -37,7 +38,7 @@ export class AnthropicIntentRouter implements IntentRouterProvider {
   }: {
     text: string;
     commands: IntentCommand[];
-  }): Promise<string | null> {
+  }): Promise<IntentRouteResult> {
     const commandIds = commands.map((c) => c.id);
     const commandList = commands.map((c) => `- ${c.id}: "${c.label}"`).join('\n');
 
@@ -89,6 +90,13 @@ export class AnthropicIntentRouter implements IntentRouterProvider {
     );
     const commandId = toolUse?.input.command_id;
 
-    return commandId && commandIds.includes(commandId) ? commandId : null;
+    return {
+      commandId: commandId && commandIds.includes(commandId) ? commandId : null,
+      usage: {
+        model: MODEL,
+        inputTokens: data.usage.input_tokens,
+        outputTokens: data.usage.output_tokens,
+      },
+    };
   }
 }

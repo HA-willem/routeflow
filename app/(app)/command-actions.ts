@@ -113,7 +113,7 @@ const AI_COMMANDS: IntentCommand[] = [
  * dan terug op de vaste voorbeeldenlijst (graceful degradation, analoog AP-04).
  */
 export async function routeAiCommand(text: string): Promise<AiCommandId | null> {
-  await requireOnboardedUser();
+  const { user, profile } = await requireOnboardedUser();
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -122,12 +122,42 @@ export async function routeAiCommand(text: string): Promise<AiCommandId | null> 
 
   try {
     const router = new AnthropicIntentRouter(apiKey);
-    const commandId = await router.routeIntent({ text, commands: AI_COMMANDS });
+    const { commandId, usage } = await router.routeIntent({ text, commands: AI_COMMANDS });
+    await logAiUsage({ companyId: profile.company_id, userId: user.id, usage });
     return AI_COMMANDS.some((c) => c.id === commandId) ? (commandId as AiCommandId) : null;
   } catch (error) {
     logger.error('routeAiCommand: Anthropic-aanroep mislukt', {
       message: error instanceof Error ? error.message : String(error),
     });
     return null;
+  }
+}
+
+/**
+ * Logt tokengebruik van één Command Bar-aanroep (ADR-014, 032_ai_usage_tracking.sql)
+ * t.b.v. het platform-admin kostendashboard. Best-effort: een mislukte log-insert
+ * mag de gebruiker nooit blokkeren — de AI-routing zelf is al voltooid.
+ */
+async function logAiUsage({
+  companyId,
+  userId,
+  usage,
+}: {
+  companyId: string;
+  userId: string;
+  usage: { model: string; inputTokens: number; outputTokens: number };
+}): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.from('ai_usage_events').insert({
+    company_id: companyId,
+    user_id: userId,
+    feature: 'command_bar_intent_routing',
+    model: usage.model,
+    input_tokens: usage.inputTokens,
+    output_tokens: usage.outputTokens,
+  });
+
+  if (error) {
+    logger.error('logAiUsage: kon tokengebruik niet loggen', { message: error.message });
   }
 }

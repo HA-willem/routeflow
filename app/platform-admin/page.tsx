@@ -1,4 +1,5 @@
 import { PageHeader } from '@/components/composed/PageHeader';
+import { AiUsageOverview } from '@/components/domain/platform-admin/AiUsageOverview';
 import { FeatureRequestsInbox } from '@/components/domain/platform-admin/FeatureRequestsInbox';
 import { OperationalOverview } from '@/components/domain/platform-admin/OperationalOverview';
 import { PlatformProposalForm } from '@/components/domain/platform-admin/PlatformProposalForm';
@@ -6,6 +7,7 @@ import { ProposalCard } from '@/components/domain/platform-admin/ProposalCard';
 import { requirePlatformAdmin } from '@/lib/platform-admin/guard';
 import {
   getAgentHealthOverview,
+  getAiUsageOverview,
   getFeatureRequestsForPortal,
   getPlatformProposals,
 } from '@/lib/platform-admin/queries';
@@ -34,10 +36,11 @@ export default async function PlatformAdminPage() {
   await requirePlatformAdmin();
   const supabase = await createClient();
 
-  const [companies, proposals, featureRequests] = await Promise.all([
+  const [companies, proposals, featureRequests, aiUsage] = await Promise.all([
     getAgentHealthOverview(supabase),
     getPlatformProposals(supabase),
     getFeatureRequestsForPortal(supabase),
+    getAiUsageOverview(supabase),
   ]);
 
   return (
@@ -50,6 +53,11 @@ export default async function PlatformAdminPage() {
       <section>
         <h2 className="text-text mb-3 text-lg font-semibold">Operationeel overzicht (7 dagen)</h2>
         <OperationalOverview companies={companies} />
+      </section>
+
+      <section>
+        <h2 className="text-text mb-3 text-lg font-semibold">AI-tokengebruik</h2>
+        <AiUsageOverview usage={aiUsage} />
       </section>
 
       <section>

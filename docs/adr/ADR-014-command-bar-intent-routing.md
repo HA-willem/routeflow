@@ -51,11 +51,12 @@ Dit is expliciet **geen** uitbreiding van ADR-010: geen enkele agent (Planning/W
 **Negatief / risico's**
 - Nieuwe externe afhankelijkheid + kosten per aanroep (Anthropic API) — voor een functie (4 commando's routeren) die ook zonder taalmodel had gekund.
 - Vrije tekst van de gebruiker gaat naar een derde partij (Anthropic) — geen klant-/bedrijfsdata in de prompt nodig (alleen de getypte zin + de commandolijst), maar wel een nieuw datastroom-punt om te documenteren (36_Security.md-relevant, nog niet bijgewerkt).
-- Live niet te verifiëren in de ontwikkelomgeving van vandaag: geen `ANTHROPIC_API_KEY` beschikbaar tijdens de bouw — alleen de deterministische onderdelen (validatie, fallback-gedrag, providerinterface) zijn unit-getest; de daadwerkelijke Anthropic-aanroep vereist verificatie door de platform-eigenaar zodra de key is ingesteld.
+- ~~Live niet te verifiëren in de ontwikkelomgeving van vandaag: geen `ANTHROPIC_API_KEY` beschikbaar tijdens de bouw~~ — opgelost 2026-07-16: key ingesteld, live geverifieerd (echte Anthropic-aanroep, Command Bar → `routeAiCommand()` → correcte commando-match).
 
 **Mitigaties**
 - Gesloten commando-set + geen model-schrijftoegang (zie Architectuur) beperkt de blast radius tot "verkeerde navigatie", nooit een verkeerde mutatie.
 - Graceful degradation zorgt dat een API-storing de Command Bar nooit onbruikbaar maakt — de bestaande klantzoeken/navigatie blijven altijd werken.
+- Kosten-risico is geadresseerd met observabiliteit: elke aanroep logt tokengebruik naar `ai_usage_events` (`032_ai_usage_tracking.sql`), zichtbaar in het platform-admin-portal per Bedrijf (`46_PlatformAdmin.md` § 1.4) — geen budgetlimiet, wel zichtbaarheid vóórdat kosten materieel worden.
 
 ## Referenties
 

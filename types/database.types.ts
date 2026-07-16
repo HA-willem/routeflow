@@ -178,6 +178,54 @@ export type Database = {
           },
         ]
       }
+      ai_usage_events: {
+        Row: {
+          company_id: string
+          created_at: string
+          feature: string
+          id: string
+          input_tokens: number
+          model: string
+          output_tokens: number
+          user_id: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          feature: string
+          id?: string
+          input_tokens: number
+          model: string
+          output_tokens: number
+          user_id?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          feature?: string
+          id?: string
+          input_tokens?: number
+          model?: string
+          output_tokens?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       availability: {
         Row: {
           company_id: string
@@ -1910,6 +1958,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      run_nightly_agent_orchestrator: { Args: never; Returns: undefined }
       slugify: { Args: { input: string }; Returns: string }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
