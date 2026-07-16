@@ -1,7 +1,7 @@
 # 40 — Implementatieplan (Sprint 1–11)
 
 **Status:** DONE
-**Versie:** 1.3
+**Versie:** 1.4
 **Bron van waarheid:** `00_PRD.md` (scope § 5, architectuur § 12) + 33_Roadmap.md — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`. **Let op:** dit is een *plan*; er wordt in de documentatiefase nog **niets** gebouwd (CLAUDE.md).
 **Relaties:** 08_FunctioneleEisen.md (FR), 10_BusinessRules.md (BR), 11_DatabaseConcept.md (tabellen), 12_Entiteiten.md, 13_API_Specificatie.md, 14_RoutingEngine.md, 15_AIPlanner.md, 26_ComponentLibrary.md, 31_Testplan.md, 33_Roadmap.md, `docs/adr/ADR-011-human-in-the-loop-ai.md` en `43_AI_Agents.md` (agent-architectuur relevant voor Sprint 7), `docs/adr/ADR-013-platform-admin-product-agent.md` en `46_PlatformAdmin.md` (Sprint 11).
@@ -251,11 +251,11 @@ Geen nieuwe UI-componenten — de Morning Briefing-UI (`components/domain/briefi
 
 ---
 
-## Sprint 7-vervolg (nog te plannen) — Replanning Agent + geografische clustering
+## Sprint 7-vervolg — Replanning Agent (✅ gebouwd) + geografische clustering (nog te plannen)
 
 Expliciet uitgesteld tijdens Sprint 7 (PRD § 19 A-22), niet vergeten:
 
-- **Replanning Agent** (43 § 5): reactieve laag, herplan-diff bij ziekte/verlof (BR-802)/spoedopdracht/niet-thuis. Vereist een nieuwe multi-job-diff-UI (`ReplanDiff`, de bestaande enkelvoudige `ProposalCard` volstaat niet), event-driven trigger-wiring (buiten de dagcyclus, ADR-012 § 1), en het stabiliteitsgewogen algoritme (15 § 7.3).
+- **Replanning Agent** (43 § 5) — ✅ **gebouwd en live geverifieerd** (2026-07-14, `HANDMATIGE_ACCEPTATIETEST_2026-07-13.md` TC-7.x): reactieve laag, herplan-diff bij ziekte/verlof (BR-802) via de nieuwe multi-job-diff-UI (`ReplanDiff`, `components/domain/briefing/ReplanDiff.tsx`), event-driven trigger-wiring (`reportSickLeave`-Server-Action → `agent-replanning`-Edge-Function, buiten de dagcyclus om, ADR-012 § 1), stabiliteitsgewogen bin-packing-algoritme (15 § 7.3, `lib/agents/replanning.ts`). Scope bewust beperkt tot ziekmelding/verlof van één medewerker op één dag; spoedopdracht/niet-thuis/weersgedreven herplanning volgen dezelfde vorm in een latere sprint.
 - **Geografische clustering** (FR-025, BR-204): hoort bij een toekomstige Planning Agent-formalisering (horizon-laag, momenteel nog de Sprint 3-implementatie zonder agent-pipeline-integratie).
 - **Organizational Memory-leeskant** (`45_AgentMemory.md`): Sprint 7 legt alleen het schrijfpad van impliciete waarnemingen vast (PRD § 19 A-22 punt 7); agents gebruiken geleerde voorkeuren nog niet als input.
 
@@ -426,3 +426,4 @@ S1 fundament ─▶ S2 klanten/geocoding ─▶ S3 afspraken/beurt-gen ─▶ S4
 | 2026-07-12 | 1.1 | Sprint 7 aangevuld met architectuurcontext vanuit ADR-011 (Human-in-the-Loop AI, `43_AI_Agents.md`) — Sprint 7 bouwt de Replanning/Weather/Capacity Agents; geen wijziging aan bestaande sprintdoelen, alleen expliciete koppeling aan de nieuwe agent-architectuur. |
 | 2026-07-13 | 1.2 | Sprint 7 herzien ná strategische review (PRD § 19 A-22) en gebouwd: Replanning Agent vervangen door Optimization Agent-formalisering (kleinere scope, sluit het grootste zichtbare "voorbeeldweergave"-gat); gedeelde Execution Pipeline (ADR-012 § 2) als herbruikbare `lib/agents/`-modules i.p.v. per-agent-explainability; Capacity/Weather Agent nieuw gebouwd. Replanning Agent + geografische clustering expliciet verschoven naar een nieuwe "Sprint 7-vervolg"-sectie. Migratienummers gecorrigeerd (`022`–`024`, de geplande `019`–`021` waren al door Sprint 5 gebruikt). |
 | 2026-07-16 | 1.3 | Sprint 11 (Platform Admin & Product Agent — fundament) toegevoegd, voortvloeiend uit ADR-013/`46_PlatformAdmin.md`/PRD § 19 A-23: platform-admin-allowlist, tenant-zijde feature requests (FR-950), portal met alleen handmatige goedkeuring (FR-952/953). Geautomatiseerde Product Agent-triage (FR-951) expliciet uitgesteld naar nieuwe "Sprint 11-vervolg"-sectie, analoog aan het Sprint 7-vervolg-precedent. Sprint 11 expliciet buiten de MVP/V1/V2-fase-tabel geplaatst (§ "Doel & uitgangspunten") en buiten het afhankelijkheden-diagram (enige harde afhankelijkheid: Sprint 1). |
+| 2026-07-16 | 1.4 | Sprint 7-vervolg bijgewerkt: Replanning Agent gemarkeerd als gebouwd en live geverifieerd (was "nog te plannen"); geografische clustering en Organizational Memory-leeskant blijven open. |

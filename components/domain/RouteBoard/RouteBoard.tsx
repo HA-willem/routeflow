@@ -10,12 +10,21 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { Wand2 } from 'lucide-react';
+import { UserX, Wand2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { JobCard, type PlanningJob } from '@/components/domain/JobCard';
 import { Button } from '@/components/primitives/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/primitives/dialog';
 import { EmptyState } from '@/components/primitives/empty-state';
 import type { ActionResult } from '@/lib/errors';
 import { cn } from '@/lib/utils';
@@ -43,6 +52,12 @@ export type OptimizeEmployeeDayAction = (params: {
   ActionResult<{ route: { id: string } | null; stops: unknown[]; unplaceable_job_ids: string[] }>
 >;
 
+/** BR-802/43_AI_Agents.md § 5 (Replanning Agent) — ziek/verlof melden genereert direct een herplanvoorstel. */
+export type ReportSickLeaveAction = (params: {
+  employeeId: string;
+  date: string;
+}) => Promise<ActionResult<{ proposal_id: string | null }>>;
+
 interface RouteBoardProps {
   date: string;
   columns: RouteColumn[];
@@ -52,6 +67,7 @@ interface RouteBoardProps {
    * doorgegeven i.p.v. geïmporteerd, zodat components/domain nooit rechtstreeks van /app afhangt (§ 1 lagenregel). */
   moveJobAction: MoveJobAction;
   optimizeEmployeeDayAction: OptimizeEmployeeDayAction;
+  reportSickLeaveAction: ReportSickLeaveAction;
 }
 
 /** BR-202 werkdag-limiet (8,5u) — hier alleen als UI-preview-drempel voor de capaciteitsbalk (42_DesignSystem.md § 14); de harde grens wordt door route-move-job gehandhaafd. */
@@ -99,16 +115,72 @@ function DraggableJobCard({
   );
 }
 
+function ReportSickButton({
+  employeeName,
+  isReporting,
+  onConfirm,
+}: {
+  employeeName: string;
+  isReporting: boolean;
+  onConfirm: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={`${employeeName} ziek/verlof melden`}
+          disabled={isReporting}
+        >
+          <UserX className="size-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{employeeName} ziek/verlof melden?</DialogTitle>
+          <DialogDescription>
+            Dit genereert een herplanvoorstel voor de beurten van vandaag — de beurten worden pas
+            daadwerkelijk verplaatst nadat je dat voorstel op &quot;Vandaag&quot; goedkeurt
+            (BR-702).
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setOpen(false)} disabled={isReporting}>
+            Annuleren
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => {
+              onConfirm();
+              setOpen(false);
+            }}
+            disabled={isReporting}
+          >
+            {isReporting ? 'Bezig…' : 'Ziek/verlof melden'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function Column({
   column,
   onOptimize,
   isOptimizing,
+  onReportSick,
+  isReportingSick,
   onOpenDetails,
   highlightedJobIds,
 }: {
   column: RouteColumn;
   onOptimize: () => void;
   isOptimizing: boolean;
+  onReportSick: () => void;
+  isReportingSick: boolean;
   onOpenDetails?: () => void;
   highlightedJobIds?: Set<string>;
 }) {
@@ -122,6 +194,11 @@ function Column({
             {column.employeeName.charAt(0).toUpperCase()}
           </span>
           <p className="text-text flex-1 truncate text-sm font-semibold">{column.employeeName}</p>
+          <ReportSickButton
+            employeeName={column.employeeName}
+            isReporting={isReportingSick}
+            onConfirm={onReportSick}
+          />
           <Button
             variant="ghost"
             size="icon-sm"
@@ -176,11 +253,13 @@ export function RouteBoard({
   highlightedJobIds,
   moveJobAction,
   optimizeEmployeeDayAction,
+  reportSickLeaveAction,
 }: RouteBoardProps) {
   const [prevColumns, setPrevColumns] = useState(columns);
   const [columnsState, setColumnsState] = useState(columns);
   const [activeJob, setActiveJob] = useState<PlanningJob | null>(null);
   const [optimizingEmployeeId, setOptimizingEmployeeId] = useState<string | null>(null);
+  const [reportingSickEmployeeId, setReportingSickEmployeeId] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     // NFR-602/PRD A-14: @dnd-kit is uitdrukkelijk gekozen om keyboard-drag te
@@ -289,6 +368,23 @@ export function RouteBoard({
     }
   }
 
+  async function handleReportSick(employeeId: string, employeeName: string) {
+    setReportingSickEmployeeId(employeeId);
+    const result = await reportSickLeaveAction({ employeeId, date });
+    setReportingSickEmployeeId(null);
+
+    if (!result.success) {
+      toast.error(result.error.message);
+      return;
+    }
+
+    if (result.data.proposal_id) {
+      toast.success(`${employeeName} ziek gemeld — herplanvoorstel staat klaar op "Vandaag".`);
+    } else {
+      toast(`${employeeName} ziek gemeld — geen beurten om te herverdelen vandaag.`);
+    }
+  }
+
   return (
     <DndContext
       id="route-board"
@@ -303,6 +399,8 @@ export function RouteBoard({
             column={column}
             isOptimizing={optimizingEmployeeId === column.employeeId}
             onOptimize={() => handleOptimize(column.employeeId)}
+            isReportingSick={reportingSickEmployeeId === column.employeeId}
+            onReportSick={() => handleReportSick(column.employeeId, column.employeeName)}
             onOpenDetails={
               onOpenRouteDetails ? () => onOpenRouteDetails(column.employeeId) : undefined
             }

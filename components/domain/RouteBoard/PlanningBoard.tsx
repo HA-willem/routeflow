@@ -6,6 +6,7 @@ import {
   RouteBoard,
   type MoveJobAction,
   type OptimizeEmployeeDayAction,
+  type ReportSickLeaveAction,
   type RouteColumn,
 } from '@/components/domain/RouteBoard/RouteBoard';
 import { RouteDetailsDialog } from '@/components/domain/RouteDetailsDialog';
@@ -24,6 +25,7 @@ interface PlanningBoardProps {
   columns: RouteColumn[];
   moveJobAction: MoveJobAction;
   optimizeEmployeeDayAction: OptimizeEmployeeDayAction;
+  reportSickLeaveAction: ReportSickLeaveAction;
 }
 
 /**
@@ -37,6 +39,7 @@ export function PlanningBoard({
   columns,
   moveJobAction,
   optimizeEmployeeDayAction,
+  reportSickLeaveAction,
 }: PlanningBoardProps) {
   const [openEmployeeId, setOpenEmployeeId] = useState<string | null>(null);
   const suppressUntilRef = useRef(0);
@@ -62,6 +65,7 @@ export function PlanningBoard({
         onOpenRouteDetails={setOpenEmployeeId}
         moveJobAction={suppressedMoveJobAction}
         optimizeEmployeeDayAction={suppressedOptimizeEmployeeDayAction}
+        reportSickLeaveAction={reportSickLeaveAction}
       />
       <RouteDetailsDialog
         column={openColumn}

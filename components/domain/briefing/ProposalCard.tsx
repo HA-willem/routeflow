@@ -7,6 +7,8 @@ import { Button } from '@/components/primitives/button';
 import type { AgentProposal } from '@/lib/briefing/types';
 import { cn } from '@/lib/utils';
 
+import { ReplanDiff } from './ReplanDiff';
+
 const AGENT_LABELS: Record<AgentProposal['agent'], string> = {
   planning: 'Planning',
   replanning: 'Herplanning',
@@ -68,16 +70,20 @@ export function ProposalCard({
         </div>
       </div>
 
-      <dl className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
-        <div className="flex gap-2">
-          <dt className="text-text-muted shrink-0 text-xs leading-5">Impact</dt>
-          <dd className="text-text text-xs leading-5">{proposal.impact}</dd>
-        </div>
-        <div className="flex gap-2">
-          <dt className="text-text-muted shrink-0 text-xs leading-5">Winst</dt>
-          <dd className="text-text text-xs leading-5">{proposal.expectedGain}</dd>
-        </div>
-      </dl>
+      {proposal.agent === 'replanning' && proposal.payload?.type === 'replan_jobs' ? (
+        <ReplanDiff payload={proposal.payload} />
+      ) : (
+        <dl className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
+          <div className="flex gap-2">
+            <dt className="text-text-muted shrink-0 text-xs leading-5">Impact</dt>
+            <dd className="text-text text-xs leading-5">{proposal.impact}</dd>
+          </div>
+          <div className="flex gap-2">
+            <dt className="text-text-muted shrink-0 text-xs leading-5">Winst</dt>
+            <dd className="text-text text-xs leading-5">{proposal.expectedGain}</dd>
+          </div>
+        </dl>
+      )}
 
       <div>
         <button

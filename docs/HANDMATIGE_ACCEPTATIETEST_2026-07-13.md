@@ -401,6 +401,22 @@ Aanbevolen oplossing: geef WeatherTimeline een eigen, altijd-true preview-vlag t
 
 ---
 
+### TC-5.x — Live geverifieerd (2026-07-13, na Mapbox-fix)
+TC-5.1 ✅: `agent-optimization` (rechtstreeks aangeroepen met `date=2026-07-14`, zie hieronder waarom) genereerde een correct kandidaat-voorstel voor Rick's route: "Route van Rick herschikken", 15 minuten besparing, confidence 0,85, BR-200/BR-202 correct gerefereerd, `payload: {type: 'route_optimize', employeeId, date}`.
+TC-5.2 ✅ (indirect bevestigd): een echte (niet-dry-run) `route-optimize`-aanroep als Eigenaar persisteerde de route daadwerkelijk (8/9 stops, realistische tijden or `/planning?date=2026-07-14` zichtbaar in de UI — zie screenshot, Rick-kolom toont 08:07–11:53 met correcte adressen).
+
+**Bevinding TC-5.1b:** de `agent-orchestrator` roept `agent-optimization` en `agent-weather` **uitsluitend met `date: today`** aan (`supabase/functions/agent-orchestrator/index.ts` — `AGENT_CALLS`); alleen Capacity Agent krijgt een 7-daagse horizon (`capacityDates`). Op een dag zonder geplande beurten (zoals 13 juli in deze demo) genereert Optimization Agent daardoor via de normale orchestrator-cyclus **nooit** een voorstel, ook al bestaat er morgen een aantoonbaar suboptimale route — pas wanneer die dag zelf aanbreekt. Dit ondermijnt het "vroegtijdig zicht"-voordeel dat wél voor Capacity Agent geldt.
+**Ernst:** P3 — geen dataverlies, wel een gemiste-kans t.o.v. de eigen productbelofte (vergelijk 44_MorningBriefing_UX.md § 4 scenario 4, dat expliciet vooruitkijken beschrijft).
+**Resultaat:** ☑ Opgelost (2026-07-14, Sprint 7-vervolg) — `agent-orchestrator` roept Weather en Optimization nu, net als Capacity, één keer per dag over dezelfde `capacityDates`-horizon (7 dagen) aan i.p.v. alleen `today`; `agent_run_id` per kandidaat wordt nu per dag-specifieke run meegedragen i.p.v. per agent-naam opgezocht (was anders fout gegaan zodra een agent meerdere runs per cyclus kreeg). Live geverifieerd: 7 Weather- + 7 Optimization-runs + 1 Capacity-run per cyclus, geen fouten. Aanvullend ontdekt tijdens deze verificatie en meegefixed: `lib/briefing/get-briefing.ts` filterde `agent_proposals` op `scheduled_date = today`, waardoor zowel deze horizon-uitbreiding als een Replanning-voorstel voor een toekomstige datum (bv. een ziekmelding voor morgen) nooit op de Briefing verscheen — nu `scheduled_date >= today`.
+
+---
+
+### TC-7.x — Replanning Agent (Sprint 7-vervolg, BR-802) — live geverifieerd (2026-07-14)
+Volledige flow via de browser + DB-controle (Playwright, demo-data): ziek/verlof melden op `/planning` (Rick/Bas, dialoog met BR-702-toelichting) → `agent-replanning` genereert direct een `replan_jobs`-voorstel (geen wachttijd op de nachtcyclus) → voorstel zichtbaar op de Morning Briefing met correcte titel/confidence/severity → "Waarom?"-uitklap toont alle vier de vaste vragen → `ReplanDiff`-tabel toont Van/Naar per beurt → "Accepteren" roept `decideProposal` aan, die per move `route-move-job` uitvoert → DB bevestigt dat alle beurten daadwerkelijk naar de route van de juiste collega zijn verplaatst (`jobs.route_id` gewijzigd, geen wijziging aan vergrendelde beurten). Lokale omgevingsgaten die tijdens verificatie zijn tegengekomen (geen product-defecten): `config_json.depot_location` en objectgeocoding staan niet in `scripts/seed-demo.ts` en gaan verloren bij een `supabase db reset` — na eenmalig lokaal instellen werkte de volledige keten zonder verdere aanpassing.
+**Resultaat:** ☑ Geslaagd.
+
+---
+
 ## 6. Approval Handler
 
 ### TC-6.1 — Accepteren zet approval_status correct

@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { requireOnboardedUser } from '@/lib/auth/session';
-import { actionError, actionSuccess, type ActionResult } from '@/lib/errors';
+import { actionError, actionSuccess, mapPostgresError, type ActionResult } from '@/lib/errors';
 import { logger } from '@/lib/logging/logger';
 import { createClient } from '@/lib/supabase/server';
 
@@ -94,5 +94,77 @@ export async function optimizeEmployeeDay(params: {
 
   revalidatePath('/planning');
   revalidatePath('/planning/wachtrij');
+  return actionSuccess(data);
+}
+
+interface ReplanningResult {
+  proposal_id: string | null;
+}
+
+/**
+ * Ziek/verlof melden (BR-802, 43_AI_Agents.md § 5, Replanning Agent —
+ * Sprint 7-vervolg). Twee stappen, nooit één: (1) legt de afwezigheid vast in
+ * `availability` (bestaand schema, geen nieuwe tabel); (2) roept direct
+ * agent-replanning aan zodat het herplan-voorstel meteen beschikbaar is,
+ * geen wachttijd tot een toekomstige nachtcyclus (ADR-011 § 6: "een
+ * user-actie tijdens de dag genereert een gerichte tussentijdse Replanning
+ * Agent-aanroep"). `proposal_id: null` is een geldige uitkomst (bv. geen
+ * route die dag) — geen fout.
+ */
+export async function reportSickLeave(params: {
+  employeeId: string;
+  date: string;
+  reason?: string;
+}): Promise<ActionResult<ReplanningResult>> {
+  const { profile } = await requireOnboardedUser();
+  const supabase = await createClient();
+
+  const { error: availabilityError } = await supabase.from('availability').insert({
+    company_id: profile.company_id,
+    employee_id: params.employeeId,
+    date: params.date,
+    status: 'sick',
+    reason: params.reason ?? null,
+  });
+
+  if (availabilityError) {
+    return mapPostgresError(
+      availabilityError,
+      {
+        code: 'already_reported',
+        message: 'Deze medewerker is al afwezig gemeld op deze datum.',
+      },
+      {
+        code: 'availability_insert_failed',
+        message: 'Kon de afwezigheid niet vastleggen. Probeer het opnieuw.',
+      },
+    );
+  }
+
+  const { data, error } = await supabase.functions.invoke<
+    ReplanningResult | { error: EdgeFunctionError }
+  >('agent-replanning', {
+    body: { company_id: profile.company_id, employee_id: params.employeeId, date: params.date },
+  });
+
+  if (error || !data || 'error' in data) {
+    const edgeError = data && 'error' in data ? data.error : null;
+    if (!edgeError) {
+      logger.error('reportSickLeave: agent-replanning onbereikbaar', { message: error?.message });
+    }
+    // Afwezigheid staat al vast; alleen het voorstel kon niet gegenereerd
+    // worden — de planner ziet dit terug als een foutmelding, maar de
+    // ziekmelding zelf is niet verloren gegaan.
+    return actionError({
+      code: edgeError?.code ?? 'replanning_failed',
+      message:
+        edgeError?.message ??
+        'Afwezigheid is vastgelegd, maar het herplanvoorstel kon niet worden gegenereerd.',
+      hint: edgeError?.hint,
+    });
+  }
+
+  revalidatePath('/');
+  revalidatePath('/planning');
   return actionSuccess(data);
 }

@@ -24,6 +24,7 @@ function toAgentProposal(row: AgentProposalRow): AgentProposal {
     expectedGain: row.expected_gain,
     alternatives: row.alternatives,
     severity: row.severity,
+    payload: row.payload as AgentProposal['payload'],
   };
 }
 
@@ -140,12 +141,20 @@ export async function getMorningBriefing(profile: UserProfile): Promise<MorningB
       .gte('started_at', `${today}T00:00:00`)
       .eq('result', 'success')
       .limit(1),
+    // `gte` i.p.v. `eq` op scheduled_date: Capacity Agent kijkt tot 7 dagen
+    // vooruit (44 § 4 scenario 4, "woensdag wordt het lastiger") en de
+    // Replanning Agent genereert bij een ziekmelding meteen een voorstel voor
+    // de getroffen datum (vaak morgen, niet vandaag) — een strikte
+    // vandaag-filter zou beide categorieën onzichtbaar maken totdat de
+    // betrokken dag zelf aanbreekt, wat het "meteen beschikbaar"-doel van
+    // beide agents ondermijnt (ADR-011 §6).
     supabase
       .from('agent_proposals')
       .select('*')
       .eq('company_id', profile.company_id)
-      .eq('scheduled_date', today)
+      .gte('scheduled_date', today)
       .eq('approval_status', 'proposed')
+      .order('scheduled_date', { ascending: true })
       .order('created_at', { ascending: true }),
   ]);
 

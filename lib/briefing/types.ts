@@ -7,6 +7,13 @@
  * vult `lib/briefing/demo.ts` de AI-onderdelen met voorbeeldcontent (`aiPreview`).
  */
 
+/** Zelfde vorm als lib/agents/types.ts::ActionablePayload — hier hergebruikt
+ * i.p.v. gedupliceerd, want beide kanten (agent-pipeline én briefing-UI)
+ * moeten hetzelfde uitvoerbare/weergave-contract lezen. */
+import type { ActionablePayload } from '@/lib/agents/types';
+
+export type { ActionablePayload };
+
 export type MorningMode = 'green' | 'yellow' | 'red';
 
 export type AgentName =
@@ -47,6 +54,10 @@ export interface AgentProposal {
   /** Overwogen alternatieven + waarom afgewezen (44 § 8.4). */
   alternatives: string;
   severity: WarningSeverity;
+  /** null/undefined = informatief (Capacity/Weather). Aanwezig = uitvoerbaar
+   * bij goedkeuring (Optimization: route_optimize; Replanning: replan_jobs,
+   * ReplanDiff-tabel, 44 § 5). */
+  payload?: ActionablePayload | null;
 }
 
 export interface BriefingWarning {

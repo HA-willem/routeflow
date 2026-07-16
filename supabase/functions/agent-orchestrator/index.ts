@@ -128,27 +128,41 @@ Deno.serve(async (req) => {
     addDaysIso(today, i),
   );
 
-  const agentRuns: Record<AgentName, { id: string; startedAt: number }> = {} as never;
-  const rawCandidatesByAgent: Array<{ agent: AgentName; date: string; raw: unknown[] }> = [];
+  const rawCandidatesByAgent: Array<{
+    agent: AgentName;
+    date: string;
+    runId: string;
+    raw: unknown[];
+  }> = [];
 
+  // TC-5.1b (docs/HANDMATIGE_ACCEPTATIETEST_2026-07-13.md § 5): Weather en
+  // Optimization Agent draaiden voorheen uitsluitend voor `today`, waardoor
+  // een aantoonbaar suboptimale route pas een voorstel opleverde op de dag
+  // zelf — in tegenstelling tot Capacity Agent, die al 7 dagen vooruitkijkt
+  // (44_MorningBriefing_UX.md § 4 scenario 4, "woensdag wordt het lastiger").
+  // Fix: dezelfde korte horizon (`capacityDates`) voor alle drie, één aanroep
+  // per agent per dag — geen nieuwe agent, geen wijziging aan hun Edge-
+  // Function-contract (nog steeds één `date` per aanroep), alleen meer
+  // aanroepen vanuit de Orchestrator (§ 1 "harde dependency-keten" blijft
+  // ongewijzigd per dag; dagen onderling zijn al onafhankelijk).
   const AGENT_CALLS: Array<{
     agent: AgentName;
     functionName: string;
     requestBody: Record<string, unknown>;
     scheduledDate: string;
   }> = [
-    {
-      agent: 'weather',
+    ...capacityDates.map((date) => ({
+      agent: 'weather' as const,
       functionName: 'agent-weather',
-      requestBody: { company_id: body.company_id, date: today },
-      scheduledDate: today,
-    },
-    {
-      agent: 'optimization',
+      requestBody: { company_id: body.company_id, date },
+      scheduledDate: date,
+    })),
+    ...capacityDates.map((date) => ({
+      agent: 'optimization' as const,
       functionName: 'agent-optimization',
-      requestBody: { company_id: body.company_id, date: today },
-      scheduledDate: today,
-    },
+      requestBody: { company_id: body.company_id, date },
+      scheduledDate: date,
+    })),
     {
       agent: 'capacity',
       functionName: 'agent-capacity',
@@ -171,7 +185,7 @@ Deno.serve(async (req) => {
       });
       continue;
     }
-    agentRuns[call.agent] = { id: run.id, startedAt: new Date(run.started_at).getTime() };
+    const startedAt = new Date(run.started_at).getTime();
 
     const result = await callAgentFunction(
       functionsBaseUrl,
@@ -185,7 +199,7 @@ Deno.serve(async (req) => {
       .from('agent_runs')
       .update({
         finished_at: new Date(finishedAt).toISOString(),
-        duration_ms: finishedAt - agentRuns[call.agent]!.startedAt,
+        duration_ms: finishedAt - startedAt,
         result: result ? 'success' : 'failed',
         candidate_count: result?.candidates.length ?? 0,
         error_message: result ? null : `${call.functionName} onbereikbaar of gaf een foutstatus.`,
@@ -196,6 +210,7 @@ Deno.serve(async (req) => {
       rawCandidatesByAgent.push({
         agent: call.agent,
         date: call.scheduledDate,
+        runId: run.id,
         raw: result.candidates,
       });
     }
@@ -204,12 +219,20 @@ Deno.serve(async (req) => {
   // Suggestion Generator (ADR-012 §2): agent/datum toevoegen. Een kandidaat
   // mag zijn eigen `scheduled_date` meedragen (Capacity Agent kijkt tot 7
   // dagen vooruit — elke kandidaat gaat over een andere dag dan de run-datum);
-  // ontbreekt dat veld, dan geldt de call-datum (Weather/Optimization, altijd
-  // "vandaag" in Sprint 7-scope).
-  const suggested: PipelineCandidate[] = rawCandidatesByAgent.flatMap(({ agent, date, raw }) =>
-    (raw as Array<Parameters<typeof generateSuggestion>[0] & { scheduled_date?: string }>).map(
-      (candidate) => generateSuggestion(candidate, agent, candidate.scheduled_date ?? date),
-    ),
+  // ontbreekt dat veld, dan geldt de call-datum van de specifieke Weather/
+  // Optimization-aanroep (TC-5.1b: dat is niet meer altijd "vandaag"). `runId`
+  // wordt per kandidaat meegedragen i.p.v. per agent-naam opgezocht, omdat
+  // Weather/Optimization nu per dag een eigen `agent_runs`-rij hebben — een
+  // kandidaat moet naar zíjn eigen run verwijzen (audittrail, ADR-012 §8), niet
+  // naar de laatst-uitgevoerde dag van dat agent-type.
+  const suggested: Array<PipelineCandidate & { runId: string }> = rawCandidatesByAgent.flatMap(
+    ({ agent, date, runId, raw }) =>
+      (raw as Array<Parameters<typeof generateSuggestion>[0] & { scheduled_date?: string }>).map(
+        (candidate) => ({
+          ...generateSuggestion(candidate, agent, candidate.scheduled_date ?? date),
+          runId,
+        }),
+      ),
   );
 
   if (suggested.length === 0) {
@@ -278,7 +301,7 @@ Deno.serve(async (req) => {
 
     const { error: insertError } = await supabase.from('agent_proposals').insert({
       company_id: body.company_id,
-      agent_run_id: agentRuns[candidate.agent]?.id,
+      agent_run_id: candidate.runId,
       agent: candidate.agent,
       scheduled_date: candidate.scheduledDate,
       title: candidate.title,

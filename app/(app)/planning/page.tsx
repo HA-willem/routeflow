@@ -18,7 +18,7 @@ import {
 import { PLANNING_JOB_SELECT, toPlanningJob, type PlanningJobRow } from '@/lib/planning/jobs';
 import { createClient } from '@/lib/supabase/server';
 
-import { moveJob, optimizeEmployeeDay } from './actions';
+import { moveJob, optimizeEmployeeDay, reportSickLeave } from './actions';
 
 import type { Metadata } from 'next';
 
@@ -184,6 +184,7 @@ export default async function PlanningPage({ searchParams }: PlanningPageProps) 
         columns={columns}
         moveJobAction={moveJob}
         optimizeEmployeeDayAction={optimizeEmployeeDay}
+        reportSickLeaveAction={reportSickLeave}
       />
     </div>
   );

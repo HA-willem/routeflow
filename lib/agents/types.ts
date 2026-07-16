@@ -35,8 +35,30 @@ export interface BusinessRuleRef {
  * bestaande, ongewijzigde Edge Function (ADR-011 §7: "geen agent krijgt een
  * eigen, parallelle integratie"). Sprint 7 kent één actie-type; toekomstige
  * agents (Replanning, Invoice) breiden deze union uit, niet vervangen.
+ *
+ * `replan_jobs` (Sprint 7-vervolg, Replanning Agent, 43_AI_Agents.md § 5):
+ * elke move wordt bij goedkeuring via de bestaande route-move-job-Edge-Function
+ * uitgevoerd (geen nieuwe verplaatsingslogica) — `unplaceableJobIds` zijn
+ * beurten die nergens pasten en naar de herplan-wachtrij gaan (BR-015-precedent).
+ * `customerName`/`targetEmployeeFirstName` per move zijn uitsluitend voor de
+ * `ReplanDiff`-weergave (44_MorningBriefing_UX.md § 5-diff-tabel) — route-move-job
+ * leest alleen `jobId`/`targetRouteId`/`position`, de rest wordt genegeerd bij
+ * uitvoering (geen aparte "display"-vorm nodig naast het uitvoerbare payload).
  */
-export type ActionablePayload = { type: 'route_optimize'; employeeId: string; date: string };
+export type ActionablePayload =
+  | { type: 'route_optimize'; employeeId: string; date: string }
+  | {
+      type: 'replan_jobs';
+      sickEmployeeFirstName: string;
+      moves: Array<{
+        jobId: string;
+        targetRouteId: string;
+        position: number;
+        customerName: string;
+        targetEmployeeFirstName: string;
+      }>;
+      unplaceableJobIds: string[];
+    };
 
 /** Kandidaat-wijziging vóór de gedeelde pipeline (ADR-012 §2). */
 export interface RawCandidate {

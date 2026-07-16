@@ -161,6 +161,62 @@ describe('Sprint 7 — agent pipeline RLS + decide_agent_proposal()', () => {
     expect(error?.code).toBe('P0002');
   });
 
+  it('agent_proposals accepteert een replanning-voorstel met replan_jobs-payload (Sprint 7-vervolg, BR-802)', async () => {
+    const admin = adminClient();
+    const { data: run } = await admin
+      .from('agent_runs')
+      .insert({ company_id: companyId, agent: 'replanning', result: 'success', candidate_count: 1 })
+      .select('id')
+      .single();
+
+    const replanPayload = {
+      type: 'replan_jobs',
+      sickEmployeeFirstName: 'Piet',
+      moves: [
+        {
+          jobId: crypto.randomUUID(),
+          targetRouteId: crypto.randomUUID(),
+          position: 0,
+          customerName: 'Testklant',
+          targetEmployeeFirstName: 'Maria',
+        },
+      ],
+      unplaceableJobIds: [],
+    };
+
+    const { data: replanProposal, error: insertError } = await admin
+      .from('agent_proposals')
+      .insert({
+        company_id: companyId,
+        agent_run_id: requireId(run?.id),
+        agent: 'replanning',
+        scheduled_date: '2026-07-20',
+        title: 'Ziekmelding Piet: 1 beurt herverdelen',
+        summary: "1 van 1 beurten herverdeeld over collega's.",
+        reasoning: 'Testreden',
+        data_sources: ['Test-bron'],
+        business_rules: [{ code: 'BR-201', label: 'Beschikbaarheid medewerker is absoluut' }],
+        confidence: 0.9,
+        impact: '1 beurt, 1 collega',
+        expected_gain: 'Voorkomt onbemande beurten.',
+        alternatives: 'Test-alternatief',
+        payload: replanPayload,
+      })
+      .select('id, payload')
+      .single();
+    expect(insertError).toBeNull();
+    expect(replanProposal?.payload).toEqual(replanPayload);
+
+    const { data: decided, error: decideError } = await ownerClient.rpc('decide_agent_proposal', {
+      p_proposal_id: requireId(replanProposal?.id),
+      p_approval_status: 'approved',
+    });
+    expect(decideError).toBeNull();
+    expect(decided?.approval_status).toBe('approved');
+    // Payload blijft ongewijzigd na de beslissing (kolomgrendel-trigger, § hierboven).
+    expect(decided?.payload).toEqual(replanPayload);
+  });
+
   it('decide_agent_proposal(): een ongeldige approval_status-waarde wordt geweigerd', async () => {
     const admin = adminClient();
     const { data: run } = await admin
