@@ -40,33 +40,63 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   '/instellingen': Settings,
 };
 
-/** AI-voorbeeldcommando's — interface-only tot de Sprint 7-agents live zijn. */
-const AI_EXAMPLES: Array<{ label: string; keywords: string[]; href: string }> = [
+export type AiCommandId =
+  'plan_spoedklus' | 'wie_kan_bij' | 'verplaats_buitenwerk' | 'toon_beschikbaar';
+
+interface EmployeeCapacity {
+  firstName: string;
+  remainingMinutes: number;
+}
+
+/**
+ * AI-commando's (ADR-014). "wie_kan_bij"/"toon_beschikbaar" voeren een echte,
+ * live capaciteitsquery uit; "plan_spoedklus"/"verplaats_buitenwerk" navigeren
+ * naar het relevante scherm (geen bestaande actie om automatisch uit te voeren
+ * zonder een specifieke beurt/medewerker te kiezen — geen kale simulatie).
+ */
+const AI_EXAMPLES: Array<{ id: AiCommandId; label: string; keywords: string[]; href: string }> = [
   {
+    id: 'plan_spoedklus',
     label: 'Plan een spoedklus in',
     keywords: ['spoed', 'spoedklus', 'emergency', 'inplannen'],
     href: '/planning/wachtrij',
   },
   {
+    id: 'wie_kan_bij',
     label: 'Wie kan er vandaag nog een beurt bij hebben?',
     keywords: ['wie', 'beschikbaar', 'capaciteit', 'vandaag'],
     href: '/planning?view=dag',
   },
   {
+    id: 'verplaats_buitenwerk',
     label: 'Verplaats buitenwerk na 15:00',
     keywords: ['verplaats', 'buitenwerk', 'weer', 'regen'],
     href: '/planning',
   },
   {
+    id: 'toon_beschikbaar',
     label: 'Toon beschikbare medewerkers',
     keywords: ['medewerkers', 'beschikbaar', 'team'],
     href: '/instellingen/medewerkers',
   },
 ];
 
+function formatCapacityList(capacity: EmployeeCapacity[]): string {
+  return capacity
+    .map((c) => {
+      const hours = Math.floor(c.remainingMinutes / 60);
+      const minutes = c.remainingMinutes % 60;
+      return `${c.firstName} (${hours}u${minutes ? ` ${minutes}m` : ''} vrij)`;
+    })
+    .join(', ');
+}
+
 interface CommandBarProps {
   role: UserRole;
   searchCustomersAction: (query: string) => Promise<CommandCustomerResult[]>;
+  getCapacitySummaryAction: () => Promise<EmployeeCapacity[]>;
+  /** ADR-014: routeert vrije tekst naar één van AI_EXAMPLES' id's, of `null` (geen goede match/geen key). */
+  routeAiCommandAction: (text: string) => Promise<AiCommandId | null>;
 }
 
 /**
@@ -75,11 +105,17 @@ interface CommandBarProps {
  * Sprint 7-agent-interface alvast laten zien (interface-only, met expliciete
  * voorbeeld-markering — er wordt geen AI gesuggereerd die er nog niet is).
  */
-export function CommandBar({ role, searchCustomersAction }: CommandBarProps) {
+export function CommandBar({
+  role,
+  searchCustomersAction,
+  getCapacitySummaryAction,
+  routeAiCommandAction,
+}: CommandBarProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [customers, setCustomers] = useState<CommandCustomerResult[]>([]);
+  const [isRoutingAi, setIsRoutingAi] = useState(false);
   const [, startTransition] = useTransition();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Platform-specifiek sneltoetslabel (⌘K vs Ctrl K): server-snapshot toont ⌘K,
@@ -133,14 +169,48 @@ export function CommandBar({ role, searchCustomersAction }: CommandBarProps) {
     [handleOpenChange, router],
   );
 
-  function runAiExample(example: (typeof AI_EXAMPLES)[number]) {
-    toast('AI-commando’s komen beschikbaar met de AI Planner (Sprint 7).', {
-      description: 'Ik breng je alvast naar het relevante scherm.',
-    });
+  async function runAiExample(example: (typeof AI_EXAMPLES)[number]) {
+    if (example.id === 'wie_kan_bij' || example.id === 'toon_beschikbaar') {
+      const capacity = await getCapacitySummaryAction();
+      if (capacity.length === 0) {
+        toast('Geen medewerkers beschikbaar vandaag.');
+      } else if (example.id === 'wie_kan_bij') {
+        const withRoom = capacity.filter((c) => c.remainingMinutes > 0);
+        toast(
+          withRoom.length > 0
+            ? `Ruimte bij: ${formatCapacityList(withRoom)}`
+            : 'Niemand heeft vandaag nog ruimte.',
+        );
+      } else {
+        toast(`Beschikbaar vandaag: ${capacity.map((c) => c.firstName).join(', ')}`);
+      }
+      navigate(example.href);
+      return;
+    }
+
+    // plan_spoedklus/verplaats_buitenwerk: geen bestaande actie om automatisch uit
+    // te voeren zonder een specifieke beurt/medewerker/tijd te kiezen — brengt je
+    // naar het scherm waar dat handmatig kan, geen kale simulatie van een resultaat.
     navigate(example.href);
   }
 
+  async function runFreeTextAiCommand(text: string) {
+    setIsRoutingAi(true);
+    try {
+      const commandId = await routeAiCommandAction(text);
+      const matched = AI_EXAMPLES.find((example) => example.id === commandId);
+      if (!matched) {
+        toast('Kon je verzoek niet herkennen — probeer een van de commando’s hieronder.');
+        return;
+      }
+      await runAiExample(matched);
+    } finally {
+      setIsRoutingAi(false);
+    }
+  }
+
   const navItems = visibleNavItems(role);
+  const trimmedQuery = query.trim();
 
   return (
     <>
@@ -184,6 +254,24 @@ export function CommandBar({ role, searchCustomersAction }: CommandBarProps) {
                 <Command.Empty className="text-text-muted px-3 py-8 text-center text-sm">
                   Geen resultaten voor “{query}”.
                 </Command.Empty>
+
+                {trimmedQuery.length >= 3 ? (
+                  <Command.Group
+                    heading="Vraag AI"
+                    className="text-text-muted [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium"
+                  >
+                    <Command.Item
+                      value={`vraag-ai-${trimmedQuery}`}
+                      disabled={isRoutingAi}
+                      onSelect={() => runFreeTextAiCommand(trimmedQuery)}
+                      className="data-[selected=true]:bg-surface text-text flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm"
+                    >
+                      <Sparkles aria-hidden className="text-primary size-4 shrink-0" />
+                      <span className="flex-1">Vraag AI: “{trimmedQuery}”</span>
+                      {isRoutingAi ? <span className="text-text-muted text-xs">Bezig…</span> : null}
+                    </Command.Item>
+                  </Command.Group>
+                ) : null}
 
                 <Command.Group
                   heading="AI-assistent"

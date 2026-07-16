@@ -1,7 +1,7 @@
 # 36 — Security & Privacy
 
 **Status:** DONE
-**Versie:** 2.0
+**Versie:** 2.1
 **Bron van waarheid:** `00_PRD.md` § 12.2, § 13 (Security/Privacy), § 10 (AVG WhatsApp) — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 **Relaties:** 22_Authenticatie.md, 23_Gebruikersrollen.md, 11_DatabaseConcept.md (RLS), 09_NietFunctioneleEisen.md (NFR-3xx/4xx), 35_Deployment.md.
@@ -103,6 +103,7 @@ Dit document beschrijft het **security- en privacybeleid**: multi-tenant isolati
 | 360dialog | WhatsApp BSP | DPA, EU-hosting |
 | E-mailprovider (Resend o.g.) | Transactionele e-mail | DPA, EU |
 | Weer-API | Forecast | Geen PII |
+| Anthropic (Claude API) | Command Bar intent-routing (ADR-014) — vrije tekst uit de Command Bar + de vaste commandolijst, geen klant-/bedrijfsdata nodig in de prompt | DPA nog te regelen vóór productiegebruik |
 
 Register bijgehouden (NFR-402); nieuwe verwerker → DPA vóór ingebruikname.
 
@@ -138,3 +139,4 @@ Geen open beslissingen. Een externe pentest en formele ISO/SOC-certificering zij
 |---|---|---|
 | 2026-07-06 | 1.0 | Placeholder met 5 maatregelen |
 | 2026-07-07 | 2.0 | Volledige uitwerking: tenant-isolatie, auth/autorisatie, transport/opslag, secrets, ASVS L2-appbeveiliging, AVG-grondslagen/rechten/retentie, verwerkersregister met DPA's, incidentrespons, security-testing |
+| 2026-07-16 | 2.1 | § 8 (Verwerkers) aangevuld met Anthropic (Claude API) — nieuwe verwerker voor Command Bar intent-routing (ADR-014). DPA nog te regelen vóór productiegebruik. |
