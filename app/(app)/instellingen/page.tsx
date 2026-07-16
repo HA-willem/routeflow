@@ -1,4 +1,4 @@
-import { ArrowRight, Sparkles, Users, Wrench } from 'lucide-react';
+import { ArrowRight, Lightbulb, Sparkles, Users, Wrench } from 'lucide-react';
 import Link from 'next/link';
 
 import { PageHeader } from '@/components/composed/PageHeader';
@@ -58,6 +58,27 @@ export default async function InstellingenPage() {
             </span>
             <span className="text-text-muted mt-1 block text-sm">
               Beheer je medewerkers, nodig om routes aan toe te wijzen.
+            </span>
+          </span>
+        </Link>
+
+        <Link
+          href="/instellingen/feature-requests"
+          className="group border-border bg-bg hover:border-primary/40 flex items-start gap-4 rounded-lg border p-5 transition-colors duration-150"
+        >
+          <span className="bg-surface text-text-muted group-hover:text-primary flex size-10 shrink-0 items-center justify-center rounded-lg transition-colors duration-150">
+            <Lightbulb aria-hidden className="size-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="text-text flex items-center gap-1 text-sm font-semibold">
+              Feature requests
+              <ArrowRight
+                aria-hidden
+                className="size-3.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+              />
+            </span>
+            <span className="text-text-muted mt-1 block text-sm">
+              Dien een verzoek in voor iets wat RouteFlow voor jou beter zou maken.
             </span>
           </span>
         </Link>

@@ -411,6 +411,67 @@ export type Database = {
           },
         ]
       }
+      feature_requests: {
+        Row: {
+          company_id: string
+          context: string | null
+          created_at: string
+          description: string
+          id: string
+          linked_proposal_id: string | null
+          status: Database["public"]["Enums"]["feature_request_status"]
+          submitted_by: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          context?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          linked_proposal_id?: string | null
+          status?: Database["public"]["Enums"]["feature_request_status"]
+          submitted_by?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          context?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          linked_proposal_id?: string | null
+          status?: Database["public"]["Enums"]["feature_request_status"]
+          submitted_by?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feature_requests_linked_proposal_id_fkey"
+            columns: ["linked_proposal_id"]
+            isOneToOne: false
+            referencedRelation: "platform_proposals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feature_requests_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_lines: {
         Row: {
           company_id: string
@@ -796,6 +857,74 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_admins: {
+        Row: {
+          created_at: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      platform_proposals: {
+        Row: {
+          alternatives_considered: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          linked_feature_request_ids: string[]
+          pr_url: string | null
+          risk_level: Database["public"]["Enums"]["proposal_risk_level"]
+          status: Database["public"]["Enums"]["platform_proposal_status"]
+          title: string
+          trigger_summary: string
+        }
+        Insert: {
+          alternatives_considered?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          linked_feature_request_ids?: string[]
+          pr_url?: string | null
+          risk_level?: Database["public"]["Enums"]["proposal_risk_level"]
+          status?: Database["public"]["Enums"]["platform_proposal_status"]
+          title: string
+          trigger_summary: string
+        }
+        Update: {
+          alternatives_considered?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          linked_feature_request_ids?: string[]
+          pr_url?: string | null
+          risk_level?: Database["public"]["Enums"]["proposal_risk_level"]
+          status?: Database["public"]["Enums"]["platform_proposal_status"]
+          title?: string
+          trigger_summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_proposals_decided_by_fkey"
+            columns: ["decided_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -1405,6 +1534,31 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      decide_platform_proposal: {
+        Args: {
+          p_proposal_id: string
+          p_status: Database["public"]["Enums"]["platform_proposal_status"]
+        }
+        Returns: {
+          alternatives_considered: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          linked_feature_request_ids: string[]
+          pr_url: string | null
+          risk_level: Database["public"]["Enums"]["proposal_risk_level"]
+          status: Database["public"]["Enums"]["platform_proposal_status"]
+          title: string
+          trigger_summary: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "platform_proposals"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
         | {
@@ -1537,6 +1691,7 @@ export type Database = {
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       gettransactionid: { Args: never; Returns: unknown }
+      is_platform_admin: { Args: never; Returns: boolean }
       longtransactionsenabled: { Args: never; Returns: boolean }
       mark_invoice_paid: {
         Args: { p_invoice_id: string }
@@ -1595,6 +1750,28 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "jobs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      mark_platform_proposal_merged: {
+        Args: { p_proposal_id: string }
+        Returns: {
+          alternatives_considered: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          linked_feature_request_ids: string[]
+          pr_url: string | null
+          risk_level: Database["public"]["Enums"]["proposal_risk_level"]
+          status: Database["public"]["Enums"]["platform_proposal_status"]
+          title: string
+          trigger_summary: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "platform_proposals"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -2379,6 +2556,13 @@ export type Database = {
       billing_timing: "advance" | "arrears"
       customer_type: "person" | "business"
       daypart: "morning" | "afternoon"
+      feature_request_status:
+        | "nieuw"
+        | "getrieerd"
+        | "voorgesteld"
+        | "afgewezen"
+        | "gepland"
+        | "gebouwd"
       frequency_type:
         | "weekly"
         | "biweekly"
@@ -2400,6 +2584,7 @@ export type Database = {
         | "rescheduling"
       object_location_status: "geocoded" | "manual" | "failed"
       object_type: "residence" | "commercial" | "complex" | "other"
+      platform_proposal_status: "open" | "approved" | "rejected" | "merged"
       pricing_type: "per_job" | "hourly" | "subscription" | "punch_card"
       proposal_approval_status:
         | "proposed"
@@ -2407,6 +2592,7 @@ export type Database = {
         | "rejected"
         | "expired"
         | "auto_executed"
+      proposal_risk_level: "normal" | "high_risk"
       proposal_severity: "info" | "attention" | "urgent"
       service_agreement_status: "active" | "paused" | "ended"
       subscription_tier: "starter" | "pro" | "enterprise"
@@ -2567,6 +2753,14 @@ export const Constants = {
       billing_timing: ["advance", "arrears"],
       customer_type: ["person", "business"],
       daypart: ["morning", "afternoon"],
+      feature_request_status: [
+        "nieuw",
+        "getrieerd",
+        "voorgesteld",
+        "afgewezen",
+        "gepland",
+        "gebouwd",
+      ],
       frequency_type: [
         "weekly",
         "biweekly",
@@ -2590,6 +2784,7 @@ export const Constants = {
       ],
       object_location_status: ["geocoded", "manual", "failed"],
       object_type: ["residence", "commercial", "complex", "other"],
+      platform_proposal_status: ["open", "approved", "rejected", "merged"],
       pricing_type: ["per_job", "hourly", "subscription", "punch_card"],
       proposal_approval_status: [
         "proposed",
@@ -2598,6 +2793,7 @@ export const Constants = {
         "expired",
         "auto_executed",
       ],
+      proposal_risk_level: ["normal", "high_risk"],
       proposal_severity: ["info", "attention", "urgent"],
       service_agreement_status: ["active", "paused", "ended"],
       subscription_tier: ["starter", "pro", "enterprise"],

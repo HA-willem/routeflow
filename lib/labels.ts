@@ -4,6 +4,9 @@ import type { ServiceAgreementInput } from '@/lib/validation/service-agreement';
 import type { Database } from '@/types/database.types';
 
 type JobStatus = Database['public']['Enums']['job_status'];
+type FeatureRequestStatus = Database['public']['Enums']['feature_request_status'];
+type PlatformProposalStatus = Database['public']['Enums']['platform_proposal_status'];
+type ProposalRiskLevel = Database['public']['Enums']['proposal_risk_level'];
 
 /**
  * Nederlandse labels voor domein-enums — 12_Entiteiten.md. Voorheen per pagina/
@@ -67,3 +70,54 @@ export const JOB_STATUS_TONE: Record<JobStatus, 'success' | 'warning' | 'muted'>
   cancelled: 'muted',
   rescheduling: 'warning',
 };
+
+/** Feature request-status (46_PlatformAdmin.md § 2.3, FR-950/951). */
+export const FEATURE_REQUEST_STATUS_LABEL: Record<FeatureRequestStatus, string> = {
+  nieuw: 'Nieuw',
+  getrieerd: 'Getrieerd',
+  voorgesteld: 'Voorgesteld',
+  afgewezen: 'Afgewezen',
+  gepland: 'Gepland',
+  gebouwd: 'Gebouwd',
+};
+
+export const FEATURE_REQUEST_STATUS_TONE: Record<
+  FeatureRequestStatus,
+  'success' | 'warning' | 'muted'
+> = {
+  nieuw: 'muted',
+  getrieerd: 'muted',
+  voorgesteld: 'warning',
+  afgewezen: 'muted',
+  gepland: 'success',
+  gebouwd: 'success',
+};
+
+/** Product Agent-voorstelstatus (46_PlatformAdmin.md § 1.3/§ 4, BR-901). */
+export const PLATFORM_PROPOSAL_STATUS_LABEL: Record<PlatformProposalStatus, string> = {
+  open: 'Open',
+  approved: 'Goedgekeurd',
+  rejected: 'Afgewezen',
+  merged: 'Gemerged',
+};
+
+export const PLATFORM_PROPOSAL_STATUS_TONE: Record<
+  PlatformProposalStatus,
+  'success' | 'warning' | 'muted'
+> = {
+  open: 'warning',
+  approved: 'success',
+  rejected: 'muted',
+  merged: 'success',
+};
+
+export const PROPOSAL_RISK_LEVEL_LABEL: Record<ProposalRiskLevel, string> = {
+  normal: 'Normaal',
+  high_risk: 'High-risk',
+};
+
+export const PROPOSAL_RISK_LEVEL_TONE: Record<ProposalRiskLevel, 'success' | 'warning' | 'muted'> =
+  {
+    normal: 'muted',
+    high_risk: 'warning',
+  };

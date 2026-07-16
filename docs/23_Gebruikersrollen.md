@@ -1,10 +1,10 @@
 # 23 — Gebruikersrollen & Permissies
 
 **Status:** DONE
-**Versie:** 2.0
+**Versie:** 2.1
 **Bron van waarheid:** `00_PRD.md` § 14 (Gebruikersrollen & Autorisatie), § 4.3 — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
-**Relaties:** 22_Authenticatie.md (technische afdwinging), 11_DatabaseConcept.md (RLS), 09_NietFunctioneleEisen.md (NFR-306), 16_Facturatie.md, 29_MobieleApp.md.
+**Relaties:** 22_Authenticatie.md (technische afdwinging), 11_DatabaseConcept.md (RLS), 09_NietFunctioneleEisen.md (NFR-306), 16_Facturatie.md, 29_MobieleApp.md, 46_PlatformAdmin.md / docs/adr/ADR-013-platform-admin-product-agent.md (platform-admin — expliciet géén Bedrijfsrol, zie § 7).
 
 ---
 
@@ -54,6 +54,7 @@ Legenda: **C** create · **R** read · **U** update · **D** delete · **—** g
 | Interne notificaties | R | R | R | R | R◦ |
 | Rapportage/dashboard | R | R | R◦¹⁰ | R◦¹⁰ | — |
 | Audit-trail | R | R | — | R◦ | — |
+| Feature requests (§ 7) | C R U D | C R U | C R | R | — |
 
 **Voetnoten:**
 1. Medewerker ziet dienst-/afspraaknaam en instructies, **geen prijzen**.
@@ -111,9 +112,18 @@ Geen open beslissingen. Het klantportaal (eindklant-rol met inlog) is expliciet 
 
 ---
 
+## 7. Platform-admin (expliciet buiten deze matrix)
+
+**Platform-admin is geen Bedrijfsrol** en staat daarom buiten de rechtenmatrix in § 2 — een gebruiker heeft nooit "platform-admin" als rol-waarde bij een Bedrijf. Het is een aparte, orthogonale autorisatiedimensie (allowlist op `user_id`, geen `company_id`), uitsluitend bedoeld voor de platform-eigenaar zelf: overzicht over álle bedrijven, triage van Product Agent-voorstellen, cross-tenant operationele monitoring. Volledige uitwerking: `46_PlatformAdmin.md`, `docs/adr/ADR-013-platform-admin-product-agent.md`, `10_BusinessRules.md` § 11 (BR-900–904).
+
+Kernconsequentie voor deze matrix: **geen enkele combinatie van Bedrijfsrollen** (ook niet Eigenaar van meerdere/grote bedrijven) geeft ooit platform-toegang — dat zou P4 (Tenant-isolatie, § 3) en P5 (Least privilege) tegenspreken. Platform-toegang wordt uitsluitend handmatig toegekend (§ 1.1, `46_PlatformAdmin.md`).
+
+---
+
 ## Changelog
 
 | Datum | Versie | Wijziging |
 |---|---|---|
 | 2026-07-06 | 1.0 | Placeholder met grove 5×4-matrix |
 | 2026-07-07 | 2.0 | Volledige rechtenmatrix per resource × actie (CRUD) met voetnoten, 5 kernprincipes, afdwinging in 4 lagen, 6 edge cases |
+| 2026-07-16 | 2.1 | "Feature requests"-rij toegevoegd aan de rechtenmatrix (§ 2); nieuw § 7 "Platform-admin (expliciet buiten deze matrix)" toegevoegd — voortvloeiend uit ADR-013/`46_PlatformAdmin.md`/PRD § 19 A-23. |

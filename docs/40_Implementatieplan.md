@@ -1,10 +1,10 @@
-# 40 — Implementatieplan (Sprint 1–10)
+# 40 — Implementatieplan (Sprint 1–11)
 
 **Status:** DONE
-**Versie:** 1.2
+**Versie:** 1.3
 **Bron van waarheid:** `00_PRD.md` (scope § 5, architectuur § 12) + 33_Roadmap.md — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`. **Let op:** dit is een *plan*; er wordt in de documentatiefase nog **niets** gebouwd (CLAUDE.md).
-**Relaties:** 08_FunctioneleEisen.md (FR), 10_BusinessRules.md (BR), 11_DatabaseConcept.md (tabellen), 12_Entiteiten.md, 13_API_Specificatie.md, 14_RoutingEngine.md, 15_AIPlanner.md, 26_ComponentLibrary.md, 31_Testplan.md, 33_Roadmap.md, `docs/adr/ADR-011-human-in-the-loop-ai.md` en `43_AI_Agents.md` (agent-architectuur relevant voor Sprint 7).
+**Relaties:** 08_FunctioneleEisen.md (FR), 10_BusinessRules.md (BR), 11_DatabaseConcept.md (tabellen), 12_Entiteiten.md, 13_API_Specificatie.md, 14_RoutingEngine.md, 15_AIPlanner.md, 26_ComponentLibrary.md, 31_Testplan.md, 33_Roadmap.md, `docs/adr/ADR-011-human-in-the-loop-ai.md` en `43_AI_Agents.md` (agent-architectuur relevant voor Sprint 7), `docs/adr/ADR-013-platform-admin-product-agent.md` en `46_PlatformAdmin.md` (Sprint 11).
 
 ---
 
@@ -17,6 +17,8 @@ Dit document verdeelt de bouw van RouteFlow in **10 sprints** (indicatief ~2 wek
 | 1–5 | **MVP** | Glazenwasser gooit wijkboekje weg (planning + uitvoering + e-mailfactuur) |
 | 6–9 | **V1** | Commercieel product (Mollie, AI-herplan, WhatsApp, PWA+) |
 | 10 | **V1-hardening → V2-prep** | Kwaliteit, schaal, security, rapportage |
+
+**Sprint 11 valt buiten deze fase-tabel:** Platform Admin & Product Agent (ADR-013, `46_PlatformAdmin.md`) is platform-tooling voor de platform-eigenaar, geen klant-gerichte MVP/V1/V2-functionaliteit (PRD § 5.2/§ 19 A-23) — vergelijkbaar met hoe `41_CodingStandards.md` ook geen fase heeft. Niet tijdgebonden aan "na Sprint 10"; kan parallel of op elk moment na Sprint 1 (fundament/auth) ingepland worden, in overleg met de platform-eigenaar.
 
 **Volgorde-principe:** fundament vóór features; niets uit een latere fase vervroegen (MASTER_PROMPT § 3). Elke sprint eindigt met groene tests (31) en een demo.
 
@@ -343,6 +345,51 @@ Rapportage-grafieken (dataviz-richtlijn), DateRangePicker, export (CSV), a11y-ve
 
 ---
 
+## Sprint 11 — Platform Admin & Product Agent (fundament)
+
+**Architectuurcontext (ADR-013, `46_PlatformAdmin.md`, PRD § 19 A-23):** dit sprint bouwt uitsluitend het **fundament** — platform-admin-autorisatie, tenant-zijde feature-request-indiening, en het Platform Admin-portal met **alleen handmatige** goedkeuring. De geautomatiseerde Product Agent-triage zelf (FR-951, geplande agent-run die PR's opent) is bewust uitgesteld naar "Sprint 11-vervolg" hieronder — zelfde motivatie als de Replanning Agent-deferral in Sprint 7 (PRD § 19 A-22): eerst het fundament bewijzen (RLS-scheiding, portal, handmatige flow) vóórdat een agent zelfstandig code-PR's mag openen.
+
+**Migratienummers:** de volgende drie migraties gebruiken het eerstvolgende vrije nummer **op het moment van bouwen** — niet hier vast vooringevuld. Reden: Sprint 7/7-vervolg heeft al aangetoond dat geplande nummers in dit document verschuiven zodra sprints in een andere volgorde gebouwd worden dan hier gepland (PRD § 19 A-22 punt 5); controleer `/supabase/migrations` op het hoogst bestaande nummer vóór het aanmaken van deze drie.
+
+### Doelen
+- Platform-admin-allowlist + autorisatiegrens, orthogonaal aan tenant-RLS (BR-900, 46 § 1.1).
+- Tenant-zijde: feature request indienen + eigen-status-overzicht (FR-950).
+- Platform Admin-portal: cross-tenant operationeel overzicht (FR-953) + voorstellenlijst met **handmatige** goedkeuringsactie (FR-952) — "goedkeuren" registreert alleen dat een PR gemerged mag worden, de merge blijft een losse git-actie (BR-901).
+- Nog **niet** in dit sprint: de geplande Product Agent-run die zelf PR's opent (FR-951) — zie Sprint 11-vervolg.
+
+### Bestanden
+- `/lib/platform-admin/{guard,queries}.ts` — allowlist-check (los van `/lib/auth/*`-rolmodel), cross-tenant read-queries.
+- `/app/platform-admin/**` — eigen routegroep, buiten `(app)`, eigen layout/guard (46 § 1.2).
+- `/app/(app)/instellingen/feature-requests/**` — indienformulier + eigen-status-lijst (FR-950).
+- `/components/domain/platform-admin/{ProposalCard,OperationalOverview}.tsx` — hergebruikt het bestaande `WhyExplanation`-patroon (26 § 4) voor het voorstel-contract (BR-903).
+- `/components/domain/{FeatureRequestForm,FeatureRequestList}.tsx` — tenant-zijde.
+
+### Database-migraties
+- `platform_admins` — `user_id` (PK), geen `company_id`; RLS: uitsluitend leesbaar door zichzelf via de app-laag, schrijven uitsluitend via SQL Editor/Dashboard (46 § 1.1, geen applicatie-schrijfpad).
+- `feature_requests` — standaard tenant-model: `company_id` RLS, FK naar `users` (indiener), status-enum (`nieuw/getrieerd/voorgesteld/afgewezen/gepland/gebouwd`, 46 § 2.3).
+- `platform_proposals` — platform-admin-only leesbaar; velden voor het BR-903-contract (titel, PR-link, trigger, risicoclassificatie, gekoppelde `feature_request_id[]`); in dit sprint alleen handmatig aan te maken (geen agent-schrijfpad — dat komt in Sprint 11-vervolg).
+
+### Componenten
+FeatureRequestForm, FeatureRequestList (statusbadges), ProposalCard (platform-admin-portal), OperationalOverview (agent-rungezondheid geaggregeerd, hergebruikt bestaande `agent_runs`-data uit Sprint 7).
+
+### Testcases
+- Unit: platform-admin-guard geeft nooit toegang op basis van een tenant-rol, uitsluitend op basis van de allowlist (BR-900).
+- Integratie: RLS — `feature_requests` nooit cross-tenant leesbaar (BR-904, negatieve test: bedrijf A queryt bedrijf B's requests); `platform_admins`/`platform_proposals` alleen leesbaar met geldige allowlist-vlag.
+- E2E: tenant dient feature request in → status "nieuw" in eigen omgeving → platform-eigenaar ziet 'm in portal → handmatig een test-voorstel aanmaken en goedkeuren → geen "auto-merge"-knop bestaat in de UI (BR-901, expliciet negatief getest: er is geen endpoint dat merget).
+- BR: **BR-904** (geen cross-tenant zichtbaarheid); **BR-900/901** (autorisatie- en merge-scheiding).
+
+---
+
+## Sprint 11-vervolg (nog te plannen) — Product Agent-triage inschakelen
+
+Expliciet uitgesteld tijdens Sprint 11 (analoog aan het Sprint 7-vervolg-precedent), niet vergeten:
+
+- **Geplande Product Agent-run** (FR-951, 46 § 3): leest `feature_requests` + `agent_runs`-foutpatronen, clustert over tenants, opent zelfstandig branch + PR, schrijft naar `platform_proposals`. Draait als geplande Claude Code-agent (bestaande `schedule`-capaciteit), geen nieuwe Edge-Function-infrastructuur.
+- **High-risk-classificatielogica** (BR-902): welke bestandspaden/migratie-patronen automatisch als high-risk gelden — vereist een expliciete lijst (migraties, RLS-policy-bestanden, auth-/betalingscode, Vault-gerelateerde code) vóór de eerste geautomatiseerde run.
+- Pas inschakelen zodra Sprint 11's fundament (handmatige flow) minstens één sprint stabiel heeft gedraaid — geen harde regel, maar een expliciete aanbeveling (vergelijkbaar met hoe Organizational Memory's leeskant pas ná het schrijfpad kwam, PRD § 19 A-22 punt 7).
+
+---
+
 ## Afhankelijkheden-overzicht
 
 ```
@@ -356,6 +403,8 @@ S1 fundament ─▶ S2 klanten/geocoding ─▶ S3 afspraken/beurt-gen ─▶ S4
 ```
 
 **Kritieke koppelingen:** routing-engine (S4) blokkeert AI-herplan (S7); messaging-adapter (S8) hergebruikt e-mail-fundament (S5); betalingen (S6) vereisen facturen (S5).
+
+**Sprint 11** staat buiten dit diagram: enige harde afhankelijkheid is S1 (auth/RLS-fundament, voor de platform-admin-allowlist en `feature_requests`-RLS) — verder onafhankelijk van S2–S10, in te plannen op elk gewenst moment na S1.
 
 ---
 
@@ -376,3 +425,4 @@ S1 fundament ─▶ S2 klanten/geocoding ─▶ S3 afspraken/beurt-gen ─▶ S4
 | 2026-07-07 | 1.0 | Implementatieplan Sprint 1–10 opgesteld: per sprint doelen, bestanden, DB-migraties, componenten, testcases; afhankelijkheden-diagram; DoD per sprint. Gebaseerd op 33_Roadmap en de complete docset. |
 | 2026-07-12 | 1.1 | Sprint 7 aangevuld met architectuurcontext vanuit ADR-011 (Human-in-the-Loop AI, `43_AI_Agents.md`) — Sprint 7 bouwt de Replanning/Weather/Capacity Agents; geen wijziging aan bestaande sprintdoelen, alleen expliciete koppeling aan de nieuwe agent-architectuur. |
 | 2026-07-13 | 1.2 | Sprint 7 herzien ná strategische review (PRD § 19 A-22) en gebouwd: Replanning Agent vervangen door Optimization Agent-formalisering (kleinere scope, sluit het grootste zichtbare "voorbeeldweergave"-gat); gedeelde Execution Pipeline (ADR-012 § 2) als herbruikbare `lib/agents/`-modules i.p.v. per-agent-explainability; Capacity/Weather Agent nieuw gebouwd. Replanning Agent + geografische clustering expliciet verschoven naar een nieuwe "Sprint 7-vervolg"-sectie. Migratienummers gecorrigeerd (`022`–`024`, de geplande `019`–`021` waren al door Sprint 5 gebruikt). |
+| 2026-07-16 | 1.3 | Sprint 11 (Platform Admin & Product Agent — fundament) toegevoegd, voortvloeiend uit ADR-013/`46_PlatformAdmin.md`/PRD § 19 A-23: platform-admin-allowlist, tenant-zijde feature requests (FR-950), portal met alleen handmatige goedkeuring (FR-952/953). Geautomatiseerde Product Agent-triage (FR-951) expliciet uitgesteld naar nieuwe "Sprint 11-vervolg"-sectie, analoog aan het Sprint 7-vervolg-precedent. Sprint 11 expliciet buiten de MVP/V1/V2-fase-tabel geplaatst (§ "Doel & uitgangspunten") en buiten het afhankelijkheden-diagram (enige harde afhankelijkheid: Sprint 1). |

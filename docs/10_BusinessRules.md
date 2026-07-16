@@ -1,7 +1,7 @@
 # 10 — Business Rules
 
 **Status:** DONE
-**Versie:** 1.6
+**Versie:** 1.7
 **Bron van waarheid:** `00_PRD.md` § 15 — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 
@@ -510,14 +510,69 @@ Deze vier gewichten zijn relatief aan elkaar en worden bij wijziging door het sy
 
 ---
 
+## 11. Platform Administration & Product Agent-regels (BR-900 t/m BR-904)
+
+Nieuwe serie (ADR-013, Platform Admin & Product Agent — `docs/adr/ADR-013-platform-admin-product-agent.md`, `46_PlatformAdmin.md`). Deze regels gelden **buiten** de tenant-Bedrijf-scope (§ 1 Conventies blijft voor alle andere series ongewijzigd van toepassing binnen een Bedrijf) — het gaat hier om de autorisatiegrens tussen platform en tenants, en om de codebase zelf.
+
+### BR-900 (Hard): Platform-admin-autorisatie staat los van tenant-rollen
+
+> Platform-brede toegang (het Platform Admin-portal, `46_PlatformAdmin.md` § 1) wordt uitsluitend bepaald door een expliciete allowlist (`platform_admins`, op `user_id`) — nooit door een Bedrijfsrol, ook niet Eigenaar van het grootste of oudste account.
+
+**Reden:** een orthogonale autorisatiedimensie naast `company_id`-RLS (ADR-003/004) voorkomt dat een wijziging in het tenant-rollenmodel (23_Gebruikersrollen.md) ooit per ongeluk platform-toegang meebrengt, en omgekeerd.
+
+**Implementatie:** ADR-013 § 1; mutaties op `platform_admins` uitsluitend handmatig via Supabase SQL Editor/Dashboard, nooit via een applicatie-endpoint met eigen schrijfrechten hierop (zelfde behandeling als een secret).
+
+---
+
+### BR-901 (Hard): Product Agent mergt, deployt of pusht nooit zelf naar productie
+
+> De Product Agent (`46_PlatformAdmin.md` § 3) mag uitsluitend een branch openen en een Pull Request aanmaken. Mergen naar `main`, deployen naar productie, of rechtstreeks pushen zonder PR is nooit toegestaan, ongeacht confidence of hoe triviaal de wijziging lijkt.
+
+**Reden:** directe toepassing van het BR-702-principe (Human Approval) op de codebase, bewust **strenger**: een codewijziging raakt bij het mergen per definitie alle tenants tegelijk, in tegenstelling tot zelfs de zwaarste BR-702-actie (die raakt één bedrijf). Dit is een permanent ontwerpprincipe, geen tijdelijke voorzichtigheidsmaatregel die later "opschaalt" naarmate het model beter wordt (ADR-013 "Waarom deze keuze toekomstbestendig is").
+
+**Implementatie:** ADR-013 § 4; de Product Agent draait onder dezelfde Git Safety Protocol die al voor elke sessie geldt (nooit `--force`/`--no-verify`, altijd een nieuwe commit/branch).
+
+---
+
+### BR-902 (Hard): High-risk-codewijzigingen nooit automatisch getriggerd
+
+> Een Product Agent-voorstel dat migraties, RLS-policies, authenticatie, betalingen (Mollie) of secrets/Vault raakt, is verplicht "high-risk"-gelabeld en wordt nooit op de automatische (geplande) cadans getriggerd — uitsluitend on-demand, expliciet gestart door de platform-eigenaar.
+
+**Reden:** deze categorieën zijn precies de plekken waar een subtiele fout het grootste, moeilijkst te detecteren schadepotentieel heeft (bv. een verzwakte RLS-policy) — een classificatiefout hier weegt zwaarder dan bij een gewone feature-PR. Bij twijfel geldt high-risk, nooit andersom (ADR-013 "Mitigaties").
+
+**Implementatie:** ADR-013 § 4, `46_PlatformAdmin.md` § 3.4/§ 4.
+
+---
+
+### BR-903 (Soft): Elk Product Agent-voorstel bevat het volledige why/trigger/risico-contract
+
+> Analoog aan BR-703 (AI Explainability): elk Product Agent-voorstel bevat een titel + PR-link, de trigger (welke feature request(s)/welk operationeel signaal), gekoppelde feature requests (incl. aantal bedrijven indien van toepassing), risicoclassificatie, en overwogen alternatieven.
+
+**Reden:** zonder dit contract kan de platform-eigenaar een voorstel niet verantwoord beoordelen — zelfde onderliggende motivatie als BR-703, nu toegepast op codewijzigingen i.p.v. planningsvoorstellen.
+
+**Implementatie:** `46_PlatformAdmin.md` § 3.3.
+
+---
+
+### BR-904 (Hard): Feature requests zijn nooit cross-tenant zichtbaar
+
+> Een door een tenant ingediende feature request (`feature_requests`, RLS op `company_id`, standaard tenant-model ongewijzigd) is uitsluitend zichtbaar voor het eigen bedrijf en de platform-eigenaar (platform-admin-bypass) — nooit voor andere tenants. Clustering van vergelijkbare requests door de Product Agent (§ BR-903) gebeurt platform-zijdig; een tenant ziet nooit dát of wélke andere bedrijven een vergelijkbaar verzoek indienden.
+
+**Reden:** voorkomt dat dit een publiek, cross-tenant zichtbaar roadmap-bord wordt (bewust afgewezen alternatief, ADR-013 § "Alternatieven") — een expliciete keuze, geen impliciete beperking.
+
+**Implementatie:** standaard RLS-model (ADR-003/004), geen uitzondering nodig; `46_PlatformAdmin.md` § 2.2.
+
+---
+
 ## Relaties met andere documenten
 
-- **00_PRD.md**: § 15 (business rules samenvatting) & § 8 (AI Planner scoring), § 19 A-15 (ADR-011)
-- **08_FunctioneleEisen.md**: FR-xxx implementeren deze regels, incl. FR-900 (Morning Briefing)
+- **00_PRD.md**: § 15 (business rules samenvatting) & § 8 (AI Planner scoring), § 19 A-15 (ADR-011), § 19 A-23 (ADR-013)
+- **08_FunctioneleEisen.md**: FR-xxx implementeren deze regels, incl. FR-900 (Morning Briefing), FR-950–953 (Platform Admin/Product Agent)
 - **11_DatabaseConcept.md**: constraints die regels afdwingen
 - **31_Testplan.md**: test-cases per regel
 - **43_AI_Agents.md**, **docs/adr/ADR-011-human-in-the-loop-ai.md**: BR-702/703 zijn de business-rule-vastlegging van ADR-011's Human Approval- en Explainability-eisen
 - **45_AgentMemory.md**: BR-704/705 zijn de business-rule-vastlegging van de Organizational Memory Human-Control- en privacy-eisen
+- **46_PlatformAdmin.md**, **docs/adr/ADR-013-platform-admin-product-agent.md**: BR-900–904 zijn de business-rule-vastlegging van ADR-013's platform-admin-autorisatie en Product Agent Human-Approval-grens
 
 ---
 
@@ -532,3 +587,4 @@ Deze vier gewichten zijn relatief aan elkaar en worden bij wijziging door het sy
 | 2026-07-12 | 1.4 | BR-702 (Human Approval) en BR-703 (AI Explainability) toegevoegd aan § 9, voortvloeiend uit ADR-011 (Human-in-the-Loop AI). |
 | 2026-07-12 | 1.5 | BR-306 (Hard) toegevoegd aan § 5: prioriteitsketen Job > Klant > Dienstafspraak > Dienst voor klant-specifieke prijs-overrides, voortvloeiend uit 18_Prijsafspraken.md § 7. |
 | 2026-07-12 | 1.6 | BR-704 (Human Control over geleerde voorkeuren) en BR-705 (privacy-uitsluitingen Organizational Memory) toegevoegd aan § 9, voortvloeiend uit `45_AgentMemory.md`. |
+| 2026-07-16 | 1.7 | § 11 (BR-900 t/m BR-904) toegevoegd: platform-admin-autorisatie los van tenant-rollen, Product Agent Human-Approval-grens (nooit zelf mergen/deployen, high-risk-PR's nooit automatisch), voorstel-contract, cross-tenant zichtbaarheidsverbod voor feature requests — voortvloeiend uit ADR-013/`46_PlatformAdmin.md`/PRD § 19 A-23. |

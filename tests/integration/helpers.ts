@@ -1,3 +1,6 @@
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+
 import { createClient } from '@supabase/supabase-js';
 
 import { requireEnv } from '@/lib/env';
@@ -86,6 +89,37 @@ export function adminClient() {
     process.env.SUPABASE_SERVICE_ROLE_KEY,
   );
   return createClient<Database>(SUPABASE_URL, serviceRoleKey);
+}
+
+const execFileAsync = promisify(execFile);
+
+/**
+ * Zet een testgebruiker op de platform-admin-allowlist (027_platform_admins.sql,
+ * BR-900) — uitsluitend voor testfixtures. `platform_admins` heeft bewust GEEN
+ * enkele INSERT/UPDATE-grant aan `service_role`/`authenticated` (ADR-013 §1.1:
+ * mutaties uitsluitend handmatig via de SQL Editor) — deze helper simuleert
+ * precies dat pad door rechtstreeks als de Postgres-superuser (`psql` in de
+ * lokale db-container) te schrijven, in plaats van via PostgREST/adminClient()
+ * zoals de overige helpers hier. Er wordt geen grant toegevoegd/gewijzigd; de
+ * productie-garantie (geen applicatie-schrijfpad) blijft volledig intact.
+ * Vereist lokaal: de Supabase db-container onder de naam `supabase_db_routeflow`
+ * (`supabase start`-default).
+ */
+export async function seedPlatformAdmin(userId: string): Promise<void> {
+  await execFileAsync('docker', [
+    'exec',
+    '-i',
+    'supabase_db_routeflow',
+    'psql',
+    '-U',
+    'postgres',
+    '-d',
+    'postgres',
+    '-v',
+    'ON_ERROR_STOP=1',
+    '-c',
+    `insert into public.platform_admins (user_id, note) values ('${userId}', 'integration-test') on conflict (user_id) do nothing;`,
+  ]);
 }
 
 /** Maakt een bevestigde gebruiker met een gekozen rol binnen een bestaand bedrijf en logt in. */

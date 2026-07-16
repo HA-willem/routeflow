@@ -1,7 +1,7 @@
 # 08 — Functionele Eisen
 
 **Status:** DONE
-**Versie:** 1.4
+**Versie:** 1.5
 **Bron van waarheid:** `00_PRD.md` § 7 — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 
@@ -631,15 +631,65 @@ Elk AI-voorstel in de Morning Briefing (FR-900) heeft een feedback-actie naast a
 
 ---
 
+## 9. FR-serie 950+: Platform Administration & Product Agent
+
+Nieuwe serie (ADR-013, Platform Admin & Product Agent — `docs/adr/ADR-013-platform-admin-product-agent.md`, `46_PlatformAdmin.md`). Genummerd vanaf 950, direct volgend op de AI Agents-serie (900+) waar dit conceptueel bij aansluit (Human-Approval-principe, Explainability-contract), maar staat — net als de architectuur zelf — **buiten** de tenant-Bedrijf-scope en buiten de MVP/V1/V2-scopetabel (00_PRD.md § 5.2). FR-950 is tenant-zijde (klant-gerichte UI); FR-951–953 zijn platform-zijde (uitsluitend platform-eigenaar).
+
+### FR-950: Feature request indienen (tenant-zijde)
+**Fase:** los van MVP/V1/V2 (platformbrede tooling, sprintplaatsing via `40_Implementatieplan.md`) | **Prio:** Should
+
+Een tenant-gebruiker kan vanuit de eigen bedrijfsomgeving een feature request indienen: titel, beschrijving, optioneel context (pagina/flow).
+
+**Acceptatiecriteria:**
+1. Rolrechten volgens `23_Gebruikersrollen.md` § 2 ("Feature requests"-rij).
+2. Request is uitsluitend zichtbaar voor het eigen bedrijf en de platform-eigenaar — nooit voor andere tenants (BR-904).
+3. Indiener ziet de status van het eigen request terugkomen: `nieuw → getrieerd → voorgesteld → afgewezen/gepland/gebouwd` (`46_PlatformAdmin.md` § 2.3), zonder platformbrede clustering-details (bv. andere bedrijven) te tonen.
+4. Lege staat (nog geen requests ingediend) toont een uitnodigende call-to-action, geen kaal scherm (consistent met 24_UI_UX.md § 4).
+
+### FR-951: Product Agent-triage & voorstellen (platform-zijde)
+**Fase:** los van MVP/V1/V2 | **Prio:** Could
+
+De Product Agent trieert binnengekomen feature requests (geclusterd over tenants) en operationele signalen (`agent_runs`-foutpatronen) tot concrete codewijzigingsvoorstellen (branch + Pull Request) — `46_PlatformAdmin.md` § 3.
+
+**Acceptatiecriteria:**
+1. Elk voorstel bevat het verplichte contract: titel + PR-link, trigger/waarom, gekoppelde feature requests (incl. aantal bedrijven), risicoclassificatie, overwogen alternatieven (analoog BR-703).
+2. Draait als geplande agent-run (geen nieuwe Edge-Function-infrastructuur), nooit op verzoek van een tenant rechtstreeks.
+3. Genereert **nooit** automatisch een high-risk-PR (migraties/RLS/auth/betalingen/secrets) — die vereisen een expliciete, on-demand trigger door de platform-eigenaar (BR-902).
+4. De Product Agent mergt, deployt of pusht nooit zelf naar `main`/productie (BR-901) — uitsluitend het openen van de branch/PR.
+
+### FR-952: Platform Admin-portal — overzicht & goedkeuring
+**Fase:** los van MVP/V1/V2 | **Prio:** Must (voorwaarde voor FR-951 productiegebruik)
+
+De platform-eigenaar ziet in een eigen portal alle Product Agent-voorstellen en feature requests, en keurt voorstellen goed of af.
+
+**Acceptatiecriteria:**
+1. Toegang uitsluitend via de platform-admin-allowlist (`46_PlatformAdmin.md` § 1.1) — geen enkele tenant-rol (Eigenaar incluis) heeft hier automatisch toegang.
+2. Overzicht toont per voorstel het volledige contract uit FR-951 §1, plus status (open/goedgekeurd/afgewezen/gemerged).
+3. "Goedkeuren" registreert uitsluitend dat de PR gemerged mag worden — de merge zelf is een aparte, handmatige actie buiten het portal (BR-901; § 4 `46_PlatformAdmin.md`).
+4. Lege allowlist toont een expliciete waarschuwing ("geen platform-admins geconfigureerd"), nooit stilzwijgend open of stilzwijgend dicht (PA-05, `46_PlatformAdmin.md` § 5).
+
+### FR-953: Cross-tenant operationeel overzicht (platform-zijde)
+**Fase:** los van MVP/V1/V2 | **Prio:** Should
+
+De platform-eigenaar ziet agent-rungezondheid (`agent_runs`-foutpercentages) geaggregeerd over alle bedrijven, om problemen zoals een verlopen service-role-secret proactief te signaleren in plaats van pas bij een tenant-melding.
+
+**Acceptatiecriteria:**
+1. Overzicht hergebruikt bestaande `agent_runs`-data (Sprint 7) — geen nieuwe telemetrie-infrastructuur.
+2. Weergave per bedrijf én geaggregeerd platformbreed.
+3. Uitsluitend zichtbaar binnen het platform-admin-portal (FR-952-toegangseis).
+
+---
+
 ## Relaties met andere documenten
 
-- **00_PRD.md**: § 7 (functional requirements overzicht), § 19 A-15 (ADR-011)
+- **00_PRD.md**: § 7 (functional requirements overzicht), § 19 A-15 (ADR-011), § 19 A-23 (ADR-013)
 - **07_UserStories.md**: user stories per FR
 - **32_Acceptatiecriteria.md**: uitgebreide acceptatie-scenario's
-- **10_BusinessRules.md**: domeinregels ondersteunend aan FR's, incl. BR-702/703
+- **10_BusinessRules.md**: domeinregels ondersteunend aan FR's, incl. BR-702/703, BR-900–904
 - **31_Testplan.md**: test-cases per FR
 - **43_AI_Agents.md**, **docs/adr/ADR-011-human-in-the-loop-ai.md**: architectuur/agents achter FR-900
 - **45_AgentMemory.md**: architectuur achter FR-901/902 (Organizational Memory, feedback-loop)
+- **46_PlatformAdmin.md**, **docs/adr/ADR-013-platform-admin-product-agent.md**: architectuur achter FR-950–953 (Platform Admin, Product Agent)
 
 ---
 
@@ -652,3 +702,4 @@ Elk AI-voorstel in de Morning Briefing (FR-900) heeft een feedback-actie naast a
 | 2026-07-12 | 1.2 | FR-serie 900+ toegevoegd: FR-900 (Morning Briefing), voortvloeiend uit ADR-011 (Human-in-the-Loop AI). |
 | 2026-07-12 | 1.3 | FR-900 uitgebreid: Morning Briefing expliciet vastgelegd als primair startscherm (niet los overzicht); acceptatiecriteria aangevuld met de per-wijziging wat/waarom/regels/voordeel/impact-structuur en de volledige actieset (alles/individueel accepteren, aanpassen, afwijzen, doorklikken naar planner), conform de uitgebreide ADR-011 § 1. |
 | 2026-07-12 | 1.4 | FR-901 (Organizational Memory bekijken/beheren) en FR-902 (AI-feedback per voorstel) toegevoegd aan FR-serie 900+, voortvloeiend uit `45_AgentMemory.md`. |
+| 2026-07-16 | 1.5 | FR-serie 950+ toegevoegd: FR-950 (feature request indienen, tenant-zijde), FR-951 (Product Agent-triage & voorstellen), FR-952 (Platform Admin-portal), FR-953 (cross-tenant operationeel overzicht), voortvloeiend uit ADR-013/`46_PlatformAdmin.md`/PRD § 19 A-23. |

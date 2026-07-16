@@ -22,6 +22,7 @@ Dit is het register van architectuurbeslissingen voor RouteFlow. Elke ADR legt e
 | [ADR-010](ADR-010-ai-planner-architecture.md) | AI Planner — drielagen-architectuur | Accepted |
 | [ADR-011](ADR-011-human-in-the-loop-ai.md) | Human-in-the-Loop AI — Agent-orchestratie & Morning Briefing | Accepted |
 | [ADR-012](ADR-012-ai-execution-pipeline.md) | AI Execution Pipeline — runtime-samenwerking tussen agents | Accepted |
+| [ADR-013](ADR-013-platform-admin-product-agent.md) | Platform Admin & Product Agent — zelfverbeterend product met menselijke goedkeuring | Accepted |
 
 ## Relaties
 
@@ -29,3 +30,4 @@ Dit is het register van architectuurbeslissingen voor RouteFlow. Elke ADR legt e
 - Productbeslissingen A-04 t/m A-08 (`../00_PRD.md` § 19) zijn hier architecturaal uitgewerkt (ADR-005, ADR-006).
 - ADR-011 generaliseert ADR-010 naar een meervoudige agent-architectuur; `../43_AI_Agents.md` is de operationele uitwerking per agent.
 - ADR-012 specificeert de technische runtime-mechaniek (orchestratie, execution pipeline, kosten, failure handling) waarmee ADR-011's agents daadwerkelijk uitvoeren — de *hoe*-laag onder ADR-011's *wat/waarom*.
+- ADR-013 past hetzelfde Human-Approval-principe (ADR-011 § 4) toe op de codebase zelf — een orthogonale autorisatiedimensie (platform-admin) los van de tenant-RLS-grens (ADR-003/004); `../46_PlatformAdmin.md` is de operationele uitwerking.
