@@ -69,22 +69,18 @@ describe('employees/availability/routes RLS (NFR-301)', () => {
     it('weigert een dubbele beschikbaarheidsrij voor dezelfde medewerker/dag (DB-constraint)', async () => {
       const { data: employee } = await createEmployee(clientA, companyAId);
       const employeeId = requireId(employee?.id);
-      await clientA
-        .from('availability')
-        .insert({
-          company_id: companyAId,
-          employee_id: employeeId,
-          date: '2026-08-05',
-          status: 'leave',
-        });
-      const { error } = await clientA
-        .from('availability')
-        .insert({
-          company_id: companyAId,
-          employee_id: employeeId,
-          date: '2026-08-05',
-          status: 'sick',
-        });
+      await clientA.from('availability').insert({
+        company_id: companyAId,
+        employee_id: employeeId,
+        date: '2026-08-05',
+        status: 'leave',
+      });
+      const { error } = await clientA.from('availability').insert({
+        company_id: companyAId,
+        employee_id: employeeId,
+        date: '2026-08-05',
+        status: 'sick',
+      });
       expect(error).not.toBeNull();
       expect(error?.code).toBe('23505');
     });

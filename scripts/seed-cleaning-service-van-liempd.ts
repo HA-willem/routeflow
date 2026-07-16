@@ -151,6 +151,9 @@ interface Wijk {
   aantal: number;
   postcodePrefix: string;
   straten: string[];
+  /** Wijk-centrum — objecten krijgen een deterministische jitter hieromheen. */
+  lat: number;
+  lng: number;
 }
 
 // Som = 400 (exacte doelstelling), realistische Arnhemse postcode-prefixen.
@@ -160,50 +163,78 @@ const WIJKEN: Wijk[] = [
     aantal: 60,
     postcodePrefix: '6821',
     straten: ['Apeldoornseweg', 'Velperweg', 'Amsterdamseweg', 'Bakenbergseweg'],
+    lat: 51.99,
+    lng: 5.9,
   },
   {
     naam: 'Arnhem Zuid',
     aantal: 60,
     postcodePrefix: '6832',
     straten: ['Groningensingel', 'Rijksweg', 'Huissensedijk', 'Zuidelijke Parallelweg'],
+    lat: 51.955,
+    lng: 5.93,
   },
   {
     naam: 'Presikhaaf',
     aantal: 55,
     postcodePrefix: '6826',
     straten: ['Bakenbergseweg', 'Ir. J.P. van Muijlwijkstraat', 'Bernhardstraat'],
+    lat: 51.99,
+    lng: 5.95,
   },
   {
     naam: 'Elden',
     aantal: 50,
     postcodePrefix: '6836',
     straten: ['Eldenseweg', 'Elderveld', 'Schaapsdrift'],
+    lat: 51.955,
+    lng: 5.87,
   },
   {
     naam: 'Schuytgraaf',
     aantal: 50,
     postcodePrefix: '6846',
     straten: ['Schuytgraaf', 'Marga Klompélaan', 'Anne Frankstraat'],
+    lat: 51.94,
+    lng: 5.83,
   },
   {
     naam: 'Malburgen',
     aantal: 50,
     postcodePrefix: '6841',
     straten: ['Malburgse Bandijk', 'Hussenstraat', 'Frombergstraat'],
+    lat: 51.965,
+    lng: 5.92,
   },
   {
     naam: 'Klarendal',
     aantal: 40,
     postcodePrefix: '6822',
     straten: ['Klarendalseweg', 'Diependalseweg', 'Burgemeesterswijk'],
+    lat: 51.99,
+    lng: 5.92,
   },
   {
     naam: 'Rijkerswoerd',
     aantal: 35,
     postcodePrefix: '6835',
     straten: ['Rijkerswoerdsestraat', 'Beemdstraat'],
+    lat: 51.94,
+    lng: 5.9,
   },
 ];
+
+/**
+ * Deterministische coördinaat rond het wijk-centrum (±~400m) — zelfde
+ * motivatie als in seed-demo.ts (QA-audit 2026-07-16): zonder locatie is elk
+ * object onplaatsbaar voor de routing-laag en test de demo-omgeving
+ * stilzwijgend de helft van het product niet.
+ */
+function objectLocation(wijk: Wijk, seed: number): string {
+  const latJitter = (((seed * 2654435761) % 800) - 400) / 100000;
+  const lngJitter = (((seed * 40503) % 800) - 400) / 100000;
+  return `SRID=4326;POINT(${(wijk.lng + lngJitter).toFixed(6)} ${(wijk.lat + latJitter).toFixed(6)})`;
+}
 
 const DIENSTEN = [
   {
@@ -362,7 +393,14 @@ async function main() {
   await admin.auth.admin.updateUserById(ownerUser.id, {
     user_metadata: { company_id: companyId },
   });
-  await admin
+  // Via de owner-client + sessie-refresh, niet via de service-rol (geen
+  // UPDATE-grant op companies) — zelfde patroon en reden als seed-demo.ts
+  // (QA-audit 2026-07-16: stil-mislukte config-update = geen depot_location
+  // = route-optimize/route-move-job/agent-weather weigeren).
+  const { error: refreshError } = await ownerClient.auth.refreshSession();
+  if (refreshError) throw new Error(`sessie verversen mislukt: ${refreshError.message}`);
+
+  const { error: configError } = await ownerClient
     .from('companies')
     .update({
       config_json: {
@@ -377,6 +415,18 @@ async function main() {
       },
     })
     .eq('id', companyId);
+  if (configError) {
+    throw new Error(`companies.config_json bijwerken mislukt: ${configError.message}`);
+  }
+  const { data: configCheck } = await admin
+    .from('companies')
+    .select('config_json')
+    .eq('id', companyId)
+    .single();
+  const savedConfig = configCheck?.config_json as { depot_location?: unknown } | null;
+  if (!savedConfig?.depot_location) {
+    throw new Error('config_json is niet opgeslagen (depot_location ontbreekt na update)');
+  }
   log(
     `Bedrijf aangemaakt: ${COMPANY_NAME} (${companyId}), KVK ${KVK_NUMBER}, eigenaar ${OWNER_EMAIL} / ${DEMO_PASSWORD}`,
   );
@@ -489,6 +539,8 @@ async function main() {
           city: 'Arnhem',
           type: isBusiness ? 'commercial' : o === 0 ? 'residence' : 'complex',
           access_notes: o === 0 ? undefined : 'Bel aan bij de hoofdingang.',
+          location: objectLocation(wijk, globalIndex * 7 + o),
+          location_status: 'geocoded',
         });
 
         const dienst = pick(DIENSTEN, globalIndex + o);

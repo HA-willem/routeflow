@@ -150,6 +150,9 @@ interface Wijk {
   aantal: number;
   postcodePrefix: string;
   straten: string[];
+  /** Wijk-centrum — objecten krijgen een deterministische jitter hieromheen. */
+  lat: number;
+  lng: number;
 }
 
 const WIJKEN: Wijk[] = [
@@ -158,44 +161,72 @@ const WIJKEN: Wijk[] = [
     aantal: 10,
     postcodePrefix: '6541',
     straten: ['Voorstadslaan', 'Griftdijk', 'Broodkorf', 'Weezenhof'],
+    lat: 51.855,
+    lng: 5.845,
   },
   {
     naam: 'Nijmegen Oost',
     aantal: 10,
     postcodePrefix: '6522',
     straten: ['Berg en Dalseweg', 'Gerard Noodtstraat', 'Groesbeekseweg', 'Hatertseweg'],
+    lat: 51.845,
+    lng: 5.875,
   },
   {
     naam: 'Nijmegen Zuid',
     aantal: 10,
     postcodePrefix: '6535',
     straten: ['Malderburchtstraat', 'Wolfskuilseweg', 'Sint Annastraat', 'Heijendaalseweg'],
+    lat: 51.82,
+    lng: 5.84,
   },
   {
     naam: 'Bottendaal',
     aantal: 5,
     postcodePrefix: '6511',
     straten: ['Bijleveldsingel', 'Berkelstraat', 'Regulierstraat'],
+    lat: 51.838,
+    lng: 5.858,
   },
   {
     naam: 'Lent',
     aantal: 5,
     postcodePrefix: '6663',
     straten: ['Pijlpuntstraat', 'Dorpsstraat', 'Veerstraat'],
+    lat: 51.87,
+    lng: 5.86,
   },
   {
     naam: 'Hatert',
     aantal: 5,
     postcodePrefix: '6533',
     straten: ['Voorstenkampstraat', 'Slotemaker de Bruïneweg'],
+    lat: 51.805,
+    lng: 5.83,
   },
   {
     naam: 'Dukenburg',
     aantal: 5,
     postcodePrefix: '6537',
     straten: ['Meijhorst', 'Aldenhof', 'Malvert'],
+    lat: 51.81,
+    lng: 5.79,
   },
 ];
+
+/**
+ * Deterministische coördinaat rond het wijk-centrum (±~400m). Zonder locatie
+ * kan de routing-laag niets met een object (optimizer markeert elke beurt als
+ * onplaatsbaar → BR-202-afwijzing bij herplannen, QA-audit 2026-07-16) — een
+ * demo-omgeving zonder coördinaten test dus stilzwijgend de helft van het
+ * product niet. EWKT-string: PostGIS/PostgREST accepteert dit direct voor een
+ * geometry(Point,4326)-kolom.
+ */
+function objectLocation(wijk: Wijk, seed: number): string {
+  const latJitter = (((seed * 2654435761) % 800) - 400) / 100000;
+  const lngJitter = (((seed * 40503) % 800) - 400) / 100000;
+  return `SRID=4326;POINT(${(wijk.lng + lngJitter).toFixed(6)} ${(wijk.lat + latJitter).toFixed(6)})`;
+}
 
 const DIENSTEN = [
   {
@@ -348,7 +379,20 @@ async function main() {
     await admin.auth.admin.updateUserById(ownerUser.id, {
       user_metadata: { company_id: companyId },
     });
-    await admin
+    // Via de owner-client (RLS: "owners and admins can update own company"),
+    // niet via de service-rol — die heeft bewust geen UPDATE-grant op
+    // companies (auto_expose_new_tables uit, PRD § 19 A-22 punt 6). Eerst de
+    // sessie verversen: current_company_id() leest de company_id-claim uit de
+    // JWT (003_rls_baseline.sql) en die zit pas ná updateUserById + refresh in
+    // het token — zonder refresh matcht de RLS-update stil 0 rijen. Daarom ook
+    // een expliciete readback-assert: een stil-mislukte config-update
+    // betekende eerder een bedrijf zonder depot_location, waardoor
+    // route-optimize/route-move-job/agent-weather allemaal weigerden
+    // (QA-audit 2026-07-16).
+    const { error: refreshError } = await ownerClient.auth.refreshSession();
+    if (refreshError) throw new Error(`sessie verversen mislukt: ${refreshError.message}`);
+
+    const { error: configError } = await ownerClient
       .from('companies')
       .update({
         config_json: {
@@ -363,6 +407,18 @@ async function main() {
         },
       })
       .eq('id', companyId);
+    if (configError) {
+      throw new Error(`companies.config_json bijwerken mislukt: ${configError.message}`);
+    }
+    const { data: configCheck } = await admin
+      .from('companies')
+      .select('config_json')
+      .eq('id', companyId)
+      .single();
+    const savedConfig = configCheck?.config_json as { depot_location?: unknown } | null;
+    if (!savedConfig?.depot_location) {
+      throw new Error('config_json is niet opgeslagen (depot_location ontbreekt na update)');
+    }
     log(
       `Bedrijf aangemaakt: ${COMPANY_NAME} (${companyId}), eigenaar ${OWNER_EMAIL} / ${DEMO_PASSWORD}`,
     );
@@ -466,15 +522,13 @@ async function main() {
         .eq('date', sickDate)
         .maybeSingle();
       if (!existingAvail) {
-        await admin
-          .from('availability')
-          .insert({
-            company_id: companyId,
-            employee_id: employeeId,
-            date: sickDate,
-            status: 'sick',
-            reason: 'Griep',
-          });
+        await admin.from('availability').insert({
+          company_id: companyId,
+          employee_id: employeeId,
+          date: sickDate,
+          status: 'sick',
+          reason: 'Griep',
+        });
       }
     }
 
@@ -553,6 +607,8 @@ async function main() {
               city: 'Nijmegen',
               type: isBusiness ? 'commercial' : o === 0 ? 'residence' : 'complex',
               access_notes: o === 0 ? undefined : 'Bel aan bij de hoofdingang.',
+              location: objectLocation(wijk, globalIndex * 7 + o),
+              location_status: 'geocoded',
             })
             .select('id')
             .single();
