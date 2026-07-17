@@ -1,7 +1,7 @@
 # 36 — Security & Privacy
 
 **Status:** DONE
-**Versie:** 2.1
+**Versie:** 2.2
 **Bron van waarheid:** `00_PRD.md` § 12.2, § 13 (Security/Privacy), § 10 (AVG WhatsApp) — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 **Relaties:** 22_Authenticatie.md, 23_Gebruikersrollen.md, 11_DatabaseConcept.md (RLS), 09_NietFunctioneleEisen.md (NFR-3xx/4xx), 35_Deployment.md.
@@ -107,6 +107,8 @@ Dit document beschrijft het **security- en privacybeleid**: multi-tenant isolati
 
 Register bijgehouden (NFR-402); nieuwe verwerker → DPA vóór ingebruikname.
 
+**EU AI Act:** de AI Act-classificatie van alle RouteFlow-onderdelen (incl. de Anthropic-keten en de Annex III 4(b)-grenzen rond taakallocatie/werknemersdata) is vastgelegd in `47_AIAct_Compliance.md` — het compliance-zusterdocument van dit securitydocument. BR-706/707 zijn de bijbehorende harde regels.
+
 ---
 
 ## 9. Incidentrespons
@@ -140,3 +142,4 @@ Geen open beslissingen. Een externe pentest en formele ISO/SOC-certificering zij
 | 2026-07-06 | 1.0 | Placeholder met 5 maatregelen |
 | 2026-07-07 | 2.0 | Volledige uitwerking: tenant-isolatie, auth/autorisatie, transport/opslag, secrets, ASVS L2-appbeveiliging, AVG-grondslagen/rechten/retentie, verwerkersregister met DPA's, incidentrespons, security-testing |
 | 2026-07-16 | 2.1 | § 8 (Verwerkers) aangevuld met Anthropic (Claude API) — nieuwe verwerker voor Command Bar intent-routing (ADR-014). DPA nog te regelen vóór productiegebruik. |
+| 2026-07-17 | 2.2 | § 8: verwijzing naar `47_AIAct_Compliance.md` (nieuw) — de volledige EU AI Act-classificatie en de BR-706/707-grenzen rond taakallocatie/werknemersdata. |

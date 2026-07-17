@@ -1,7 +1,7 @@
 # 45 — Agent Memory (Organizational Memory)
 
 **Status:** DONE
-**Versie:** 1.0
+**Versie:** 1.1
 **Bron van waarheid:** `docs/adr/ADR-011-human-in-the-loop-ai.md` (Human-in-the-Loop AI), `docs/adr/ADR-012-ai-execution-pipeline.md` § 6 (Explanation Generator) — dit document mag geen van beide tegenspreken; het breidt de agent-architectuur uit met een geheugenlaag, zonder de bestaande Human-Approval-grens (BR-702) of het explainability-contract (BR-703) te verzwakken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 **Relaties:** `43_AI_Agents.md` (agents die het geheugen lezen/schrijven), `44_MorningBriefing_UX.md` (waar geleerde voorkeuren zichtbaar worden — § 8 Explainable AI), `10_BusinessRules.md` § 9 (BR-700–705), `08_FunctioneleEisen.md` FR-serie 900+ (FR-901/902), `36_Security.md` § 7 (AVG-kader waarbinnen dit geheugen moet blijven), `12_Entiteiten.md`/`11_DatabaseConcept.md` (bestaande expliciete voorkeurvelden die dit document expliciet niet dupliceert — zie § 2), `23_Gebruikersrollen.md` (wie voorkeuren mag beheren, § 10).
@@ -65,6 +65,8 @@ Gekoppeld aan een `employees`-rij. Voorbeelden:
 - Ervaring (aantal jaar, aantal uitgevoerde beurten van een dienst-type).
 - Gemiddelde snelheid per dienst-type (afwijking t.o.v. `estimated_duration_minutes` — leert de Optimization Agent realistischere tijdsinschattingen per medewerker).
 - Klantfeedback (geaggregeerd, nooit een los, individueel klantcitaat — § 9 Privacy).
+
+> **AI Act-grens (BR-706/707, `47_AIAct_Compliance.md` § 5.3):** per-medewerker-gedragsafgeleide gegevens (m.n. de gemiddelde snelheid) mogen uitsluitend dienen als stille schattingscorrectie van beurt-duur — nooit als allocatiecriterium, prestatiebeoordeling, monitoring of ranglijst. De sprint die de leeskant van dit geheugen bouwt is gebonden aan een voorafgaande, gedocumenteerde AI Act-pre-check; zonder die check wordt deze data niet gelezen.
 
 ### Company Memory
 Gekoppeld aan `companies` (bedrijfsbreed, geen sub-scope). Voorbeelden:
@@ -178,6 +180,8 @@ Organizational Memory leert uitsluitend **operationele planningspatronen** — e
 
 Dit is een harde grens, vastgelegd als BR-705 (nieuw, zie `10_BusinessRules.md`-wijziging) — geen agent-implementatie mag hier omheen, ongeacht hoe nuttig het patroon zou lijken.
 
+Aanvullend geldt sinds de AI Act-inrichting (2026-07-17): geleerde per-medewerker-gegevens worden nooit gebruikt voor prestatiebeoordeling, monitoring of HR-besluiten (BR-707, `47_AIAct_Compliance.md` § 5.3) — een gebruiks-, niet alleen een opslagbeperking.
+
 ### 9.2 Bewaartermijnen
 
 Consistent met het bestaande AVG-kader (`36_Security.md` § 7.3, NFR-405):
@@ -248,4 +252,5 @@ Concreet datamodel (conceptueel, geen migratie — werk voor de bouwende sprint)
 
 | Datum | Versie | Wijziging |
 |---|---|---|
+| 2026-07-17 | 1.1 | AI Act-grens toegevoegd (BR-706/707, `47_AIAct_Compliance.md` § 5.3): Employee Memory-gedragsdata uitsluitend als stille duur-schattingscorrectie, nooit voor allocatie/beoordeling/monitoring; leeskant-sprint gebonden aan verplichte AI Act-pre-check. |
 | 2026-07-12 | 1.0 | Eerste volledige versie: visie, vijf geheugensoorten (Planner/Customer/Object/Employee/Company — expliciet afgebakend t.o.v. bestaande schemavelden zoals `preferred_day`/`access_notes`), expliciet-vs-impliciet leren, vier confidence-niveaus, explainability-schema, Human Control (BR-704), agent-learning-tabel voor alle acht bestaande agents, feedback-loop (👍/👎/✏️), privacy-uitsluitingen (BR-705) en bewaartermijnen, governance (audittrail/versiebeheer/rollen/export/verwijdering), koppeling aan toekomstige agents, architectuur (geen nieuwe infrastructuur — hergebruik van Edge Functions/Event Bus/RLS/Explanation Generator), gevolgen. Geschreven als uitbreiding op `ADR-011`/`ADR-012`, voorafgaand aan verdere implementatie. |

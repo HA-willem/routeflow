@@ -1,7 +1,7 @@
 # 10 — Business Rules
 
 **Status:** DONE
-**Versie:** 1.8
+**Versie:** 1.9
 **Bron van waarheid:** `00_PRD.md` § 15 — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 
@@ -445,6 +445,26 @@ Deze vier gewichten zijn relatief aan elkaar en worden bij wijziging door het sy
 
 ---
 
+### BR-706 (Hard): Taakallocatie nooit op individueel gedrag of persoonskenmerken
+
+> Het toewijzen van beurten aan Medewerkers (door welke agent of welk algoritme dan ook) gebruikt uitsluitend objectief-operationele criteria — geografie/wijk, beschikbaarheid (BR-201), werkdaglimiet (BR-202), clustering (BR-204), klantvoorkeuren (BR-205) en harde bevoegdheidseisen (certificering) — en nooit individueel gedrag, persoonlijkheidskenmerken of prestatiescores van een Medewerker.
+
+**Reden:** EU AI Act Annex III 4(b) merkt taakallocatie op basis van individueel gedrag of persoonskenmerken aan als hoog-risico-AI. RouteFlows huidige niet-hoog-risico-classificatie (`47_AIAct_Compliance.md` § 5) steunt mede op deze grens; een feature die haar doorbreekt verandert stilzwijgend de wettelijke categorie van het hele platform. Wijziging van deze regel vereist daarom altijd een PRD-revisie mét herclassificatie en juridische toets (47 § 7).
+
+**Implementatie:** `47_AIAct_Compliance.md` § 5.1/5.2; bestaande allocatielogica (15_AIPlanner.md, agent-replanning) voldoet al — deze regel bevriest dat.
+
+---
+
+### BR-707 (Hard): Geleerde per-medewerker-gegevens nooit voor beoordeling of monitoring
+
+> Door Organizational Memory geleerde gegevens over een individuele Medewerker (waaronder de in `45_AgentMemory.md` § 2 voorziene "gemiddelde snelheid per dienst-type") worden nooit gebruikt voor prestatiebeoordeling, gedragsmonitoring of enig HR-besluit, en nooit als beoordeling of ranglijst gepresenteerd — het enige toegestane gebruik is stille schattingscorrectie van beurt-duur, en ook dat pas na de verplichte AI Act-pre-check (`47_AIAct_Compliance.md` § 5.3).
+
+**Reden:** het monitoren/evalueren van prestaties en gedrag van werkenden is de tweede poot van Annex III 4(b) (zie BR-706). Duur-kalibratie is operationeel waardevol en verdedigbaar; alles daarbuiten maakt Employee Memory een werknemersmonitoringssysteem — een categorie waar RouteFlow bewust buiten blijft.
+
+**Implementatie:** `47_AIAct_Compliance.md` § 5.3 (bindende randvoorwaarden voor de Memory-leeskant-sprint); `45_AgentMemory.md` § 2 (Employee Memory) en § 9.1 verwijzen hiernaar.
+
+---
+
 ## 10. Edge Cases & Uitzonderingen (BR-800+)
 
 ### BR-800: Adres niet geocodeerbaar (E-01 PRD)
@@ -589,3 +609,4 @@ Nieuwe serie (ADR-013, Platform Admin & Product Agent — `docs/adr/ADR-013-plat
 | 2026-07-12 | 1.6 | BR-704 (Human Control over geleerde voorkeuren) en BR-705 (privacy-uitsluitingen Organizational Memory) toegevoegd aan § 9, voortvloeiend uit `45_AgentMemory.md`. |
 | 2026-07-16 | 1.7 | § 11 (BR-900 t/m BR-904) toegevoegd: platform-admin-autorisatie los van tenant-rollen, Product Agent Human-Approval-grens (nooit zelf mergen/deployen, high-risk-PR's nooit automatisch), voorstel-contract, cross-tenant zichtbaarheidsverbod voor feature requests — voortvloeiend uit ADR-013/`46_PlatformAdmin.md`/PRD § 19 A-23. |
 | 2026-07-16 | 1.8 | BR-902-implementatieverwijzing uitgebreid met `46_PlatformAdmin.md` § 3.5 (nieuw) — de concrete, toetsbare bestandspaden/SQL-patronen per high-risk-categorie, voorwaarde vóór Sprint 11-vervolg (FR-951) gebouwd wordt. |
+| 2026-07-17 | 1.9 | BR-706 (taakallocatie nooit op individueel gedrag/persoonskenmerken) en BR-707 (geleerde per-medewerker-gegevens nooit voor beoordeling/monitoring) toegevoegd aan § 9 — de AI Act Annex III 4(b)-grenzen uit `47_AIAct_Compliance.md` § 5. |
