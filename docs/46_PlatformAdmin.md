@@ -1,7 +1,7 @@
 # 46 — Platform Admin & Product Agent
 
 **Status:** DONE
-**Versie:** 1.2
+**Versie:** 1.3
 **Bron van waarheid:** `ADR-013` (Platform Admin & Product Agent) en `00_PRD.md` § 19 A-23. Dit document mag geen van beide tegenspreken; het is de **operationele uitwerking** van ADR-013 (analoog aan hoe `43_AI_Agents.md` de uitwerking is van ADR-011).
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 **Relaties:** `docs/adr/ADR-013-platform-admin-product-agent.md` (architectuurbeslissing), `docs/adr/ADR-011-human-in-the-loop-ai.md` (Human-Approval-principe, hier hergebruikt en verstrengd), `docs/adr/ADR-012-ai-execution-pipeline.md` (Explainability-contract hergebruikt), `43_AI_Agents.md` (bestaande domein-agents — Product Agent is er bewust géén negende), `23_Gebruikersrollen.md` (platform-admin staat expliciet buiten de tenant-rollenmatrix), `10_BusinessRules.md` § 12 (BR-900–904), `08_FunctioneleEisen.md` FR-serie 950+, `41_CodingStandards.md` (Git Safety Protocol waar de Product Agent aan gebonden is), `40_Implementatieplan.md` (sprintplaatsing).
@@ -22,7 +22,7 @@ Platform-admin is geen Bedrijfsrol (23_Gebruikersrollen.md § 1 blijft ongewijzi
 
 ### 1.2 Locatie & afscherming
 
-Eigen routegroep, los van de bestaande `(app)`-tenant-routegroep (bv. `/platform-admin`) — geen `company_id` in de request-context, wel een guard die de platform-admin-vlag controleert op elke laag (database-RLS, Server Action/Edge-Function-guard, UI-routing) — defense-in-depth, zelfde principe als 23_Gebruikersrollen.md § 4, nu toegepast op een andere autorisatiedimensie.
+Eigen routegroep, los van de bestaande `(app)`-tenant-routegroep (`/admin`, `app/admin/**` — de map heet nog `platform-admin` in `lib/`/`components/domain/`, alleen de URL is verkort) — geen `company_id` in de request-context, wel een guard die de platform-admin-vlag controleert op elke laag (database-RLS, Server Action/Edge-Function-guard, UI-routing) — defense-in-depth, zelfde principe als 23_Gebruikersrollen.md § 4, nu toegepast op een andere autorisatiedimensie.
 
 ### 1.3 Inhoud van het portal
 
@@ -142,6 +142,7 @@ Analoog aan ADR-011 § 4 (BR-702, domeindata) maar **strenger**, omdat een codew
 | 2026-07-15 | 1.0 | Nieuw document: Platform Admin-portal en Product Agent (feature-request-triage, code-voorstellen via PR, strengere Human-Approval-grens dan BR-702), voortvloeiend uit ADR-013/PRD § 19 A-23. |
 | 2026-07-16 | 1.1 | § 1.3/§ 1.4: AI-tokengebruik-dashboard toegevoegd (ADR-014, `032_ai_usage_tracking.sql`) — kostenobservabiliteit per Bedrijf voor de Command Bar-intentherkenning. |
 | 2026-07-16 | 1.2 | § 3.5 (nieuw): concrete high-risk-classificatielijst voor BR-902 — koppelt de vier BR-902-categorieën (migraties/RLS/betalingen/secrets) aan toetsbare bestandspaden/SQL-patronen, plus een aanbevolen vijfde categorie (de eigen platform-admin-governance-grens). Vereiste stap vóór Sprint 11-vervolg (FR-951) daadwerkelijk gebouwd wordt — zie `40_Implementatieplan.md`. |
+| 2026-07-17 | 1.3 | § 1.2: URL verkort van `/platform-admin` naar `/admin` (`app/admin/**`) — puur cosmetisch, interne module-mappen (`lib/platform-admin/`, `components/domain/platform-admin/`) ongewijzigd, geen wijziging aan de allowlist/guard zelf. |
 
 ---
 

@@ -34,7 +34,7 @@ export async function decidePlatformProposal(
     });
   }
 
-  revalidatePath('/platform-admin');
+  revalidatePath('/admin');
   return actionSuccess(null);
 }
 
@@ -55,7 +55,7 @@ export async function markPlatformProposalMerged(proposalId: string): Promise<Ac
     });
   }
 
-  revalidatePath('/platform-admin');
+  revalidatePath('/admin');
   return actionSuccess(null);
 }
 
@@ -96,7 +96,7 @@ export async function createPlatformProposal(
     });
   }
 
-  revalidatePath('/platform-admin');
+  revalidatePath('/admin');
   return actionSuccess({ id: data.id });
 }
 
@@ -118,7 +118,7 @@ export async function rejectFeatureRequest(featureRequestId: string): Promise<Ac
     });
   }
 
-  revalidatePath('/platform-admin');
+  revalidatePath('/admin');
   return actionSuccess(null);
 }
 
@@ -146,6 +146,6 @@ export async function acceptFeatureRequest(featureRequestId: string): Promise<Ac
     });
   }
 
-  revalidatePath('/platform-admin');
+  revalidatePath('/admin');
   return actionSuccess(null);
 }

@@ -1,7 +1,7 @@
 # 40 — Implementatieplan (Sprint 1–11)
 
 **Status:** DONE
-**Versie:** 1.7
+**Versie:** 1.8
 **Bron van waarheid:** `00_PRD.md` (scope § 5, architectuur § 12) + 33_Roadmap.md — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`. **Let op:** dit is een *plan*; er wordt in de documentatiefase nog **niets** gebouwd (CLAUDE.md).
 **Relaties:** 08_FunctioneleEisen.md (FR), 10_BusinessRules.md (BR), 11_DatabaseConcept.md (tabellen), 12_Entiteiten.md, 13_API_Specificatie.md, 14_RoutingEngine.md, 15_AIPlanner.md, 26_ComponentLibrary.md, 31_Testplan.md, 33_Roadmap.md, `docs/adr/ADR-011-human-in-the-loop-ai.md` en `43_AI_Agents.md` (agent-architectuur relevant voor Sprint 7), `docs/adr/ADR-013-platform-admin-product-agent.md` en `46_PlatformAdmin.md` (Sprint 11).
@@ -361,7 +361,7 @@ Rapportage-grafieken (dataviz-richtlijn), DateRangePicker, export (CSV), a11y-ve
 
 ### Bestanden
 - `/lib/platform-admin/{guard,queries}.ts` — allowlist-check (los van `/lib/auth/*`-rolmodel), cross-tenant read-queries.
-- `/app/platform-admin/**` — eigen routegroep, buiten `(app)`, eigen layout/guard (46 § 1.2).
+- `/app/admin/**` — eigen routegroep, buiten `(app)`, eigen layout/guard (46 § 1.2). URL is `/admin`; interne module-mappen (`lib/platform-admin/`, `components/domain/platform-admin/`) behielden hun naam bij de URL-verkorting (2026-07-17).
 - `/app/(app)/instellingen/feature-requests/**` — indienformulier + eigen-status-lijst (FR-950).
 - `/components/domain/platform-admin/{ProposalCard,OperationalOverview}.tsx` — hergebruikt het bestaande `WhyExplanation`-patroon (26 § 4) voor het voorstel-contract (BR-903).
 - `/components/domain/{FeatureRequestForm,FeatureRequestList}.tsx` — tenant-zijde.
@@ -450,3 +450,4 @@ S1 fundament ─▶ S2 klanten/geocoding ─▶ S3 afspraken/beurt-gen ─▶ S4
 | 2026-07-16 | 1.5 | Sprint 7-vervolg bijgewerkt: Planning Agent gemarkeerd als gebouwd en live geverifieerd (`planning-generate` service-rol-pad + incrementele-detectie-fix, nieuwe `agent-planning`-Edge-Function, orchestrator-koppeling als eerste stap). Geografische clustering blijft open, nu niet meer geblokkeerd op de formalisering. |
 | 2026-07-16 | 1.6 | Sprint 7-vervolg bijgewerkt: Invoice Agent gemarkeerd als gebouwd en live geverifieerd — bleek bij de bouw uitsluitend signalering nodig te hebben (conceptfactuur-aanmaak was al `complete_job()`, Sprint 5); geen Mollie/betaalverzoek-link meegenomen in deze stap (aparte, latere uitbreiding op `sendInvoice`). |
 | 2026-07-16 | 1.7 | Sprint 11-vervolg formeel uitgewerkt (scope, bestanden, database-migraties, componenten, testcases — zelfde diepte als reguliere sprintsecties), incl. verwijzing naar de nieuwe high-risk-classificatielijst (`46_PlatformAdmin.md` § 3.5). Uitdrukkelijk **planning, geen vrijgave om te bouwen**: de startvoorwaarde ("minstens één sprint stabiel gedraaid" sinds Sprint 11-fundament, 2026-07-16) is nog niet vervuld. |
+| 2026-07-17 | 1.8 | Sprint 11 § Bestanden: URL verkort van `/platform-admin` naar `/admin` (`app/admin/**`), zie `46_PlatformAdmin.md` § 1.2/changelog 1.3. |
