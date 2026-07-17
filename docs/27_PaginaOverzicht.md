@@ -1,7 +1,7 @@
 # 27 — Pagina-Overzicht
 
 **Status:** DONE
-**Versie:** 2.1
+**Versie:** 2.2
 **Bron van waarheid:** `00_PRD.md` § 7, § 11 — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 **Relaties:** 30_Navigatie.md (routes/IA), 26_ComponentLibrary.md (componenten), 28_Dashboard.md, 29_MobieleApp.md, 08_FunctioneleEisen.md (FR per pagina), 23_Gebruikersrollen.md (toegang), `docs/adr/ADR-011-human-in-the-loop-ai.md` en `43_AI_Agents.md` (FR-900 Morning Briefing, § 1.1).
@@ -27,8 +27,10 @@ Splitsing volgt PRD § 11.8: **desktop = regie**, **mobiel (PWA) = uitvoering**.
 ### 1.2 Planning `/planning`
 - **Doel:** week-/dagplanning maken en corrigeren.
 - **Primaire actie:** "Plan (opnieuw)".
-- **Componenten:** RouteBoard (drag-and-drop), JobCard, MapView, capaciteitsindicatie, WhyExplanation.
+- **Componenten:** RouteBoard (drag-and-drop, kolom per medewerker/dag) of WeekBoard (kolom per dag, alleen bij één actieve medewerker — § "ZZP-weekgrid" hieronder), JobCard, MapView, capaciteitsindicatie, WhyExplanation, ProposalList (AI-voorstellen binnen de zichtbare week/dag, zie 1.1).
 - **Subweergaven:** Week (default), Dag, Kaart.
+- **ZZP-weekgrid (2026-07-17):** heeft het bedrijf precies één actieve medewerker, dan toont de Week-subweergave een echte weekgrid — 7 dagkolommen naast elkaar, drag-and-drop verplaatst een beurt tussen dagen (niet alleen tussen medewerkers). Bij meerdere medewerkers blijft Week het bestaande kolom-per-medewerker/dagchip-model (RouteBoard.tsx-doc-comment: een volledige medewerker×dag-weekgrid is een grotere, niet-gevraagde UI-uitbreiding).
+- **AI-voorstellen op Planning (2026-07-17):** dezelfde open voorstellen als de Morning Briefing (1.1), maar gefilterd tot de zichtbare week/dag i.p.v. "vandaag t/m horizon" — geen `aiPreview`-demo-fallback (Planning is een operationeel scherm, geen showcase); bij nul open voorstellen toont de sectie zichzelf niet.
 - **FR:** FR-020…028. **Rollen:** Eigenaar/Admin/Planner.
 
 ### 1.3 Herplan-wachtrij `/planning/wachtrij`
@@ -153,3 +155,4 @@ Elke datagedreven pagina implementeert loading/empty/error/loaded (26 § 5). Leg
 | 2026-07-06 | 1.0 | Placeholder met 5 pagina's |
 | 2026-07-07 | 2.0 | Volledige sitemap: 12 desktop-pagina's + 3 PWA-schermen + globale overlays, elk met doel/primaire actie/componenten/FR/rollen; boomstructuur |
 | 2026-07-12 | 2.1 | § 1.1 Dashboard aangevuld met FR-900 (Morning Briefing, ADR-011) — geen wijziging aan componenten/rollen, alleen de architecturale herkomst expliciet gemaakt. |
+| 2026-07-17 | 2.2 | § 1.2 Planning: ZZP-weekgrid (WeekBoard, alleen bij 1 actieve medewerker) en AI-voorstellen (ProposalList, gefilterd tot de zichtbare week/dag) toegevoegd — voortvloeiend uit gebruikersverzoek, geen PRD-conflict (FR-020…028 blijven ongewijzigd van toepassing). |

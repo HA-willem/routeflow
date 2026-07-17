@@ -1,7 +1,7 @@
 # 26 — Component Library
 
 **Status:** DONE
-**Versie:** 2.0
+**Versie:** 2.2
 **Bron van waarheid:** `00_PRD.md` § 11, § 12.1 (Next.js/React, Tailwind) — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 **Relaties:** 25_DesignSystem.md (tokens), 24_UI_UX.md (gedrag), 27_PaginaOverzicht.md (waar gebruikt), 29_MobieleApp.md (mobiele varianten).
@@ -66,7 +66,8 @@ Button, Input, Modal…      Toolbar, DataTable, Form…      JobCard, RouteBoar
 | Component | Beschrijving | Kernvelden/gedrag | Ref |
 |---|---|---|---|
 | **JobCard** | Één beurt (planning of PWA) | Klant, adres, dienst, tijd, status-badge; sleepbaar (tenzij locked → anker-icoon) | FR-022/040 |
-| **RouteBoard** | Week-/dagrooster: kolommen per medewerker, drag-and-drop | Live herberekening bij drop; capaciteitsindicatie | FR-021/022/027 |
+| **RouteBoard** | Dagrooster: kolommen per medewerker, drag-and-drop | Live herberekening bij drop; capaciteitsindicatie | FR-021/022/027 |
+| **WeekBoard** | Weekrooster voor één medewerker (ZZP): kolommen per dag, drag-and-drop tussen dagen | Route lazy aangemaakt bij eerste drop op een lege dag (`moveJobToDate`); zelfde capaciteitsindicatie als RouteBoard | FR-021/022/027, 27 § 1.2 |
 | **RouteStopList** | Geordende stops van een route | Volgorde, reistijd tussen stops, verwachte tijden | 14 § 4.4 |
 | **ReplanDiff** | Herplan-voorstel als diff | Beurt · van → naar · extra reistijd; "Accepteren"/"Aanpassen" | FR-024, 15 § 7 |
 | **WhyExplanation** | "Waarom?"-uitleg bij voorstel | Reden, datum-delta, cluster, score | PRD § 8.5, BR-700 |
@@ -116,9 +117,25 @@ PWA-medewerkercomponenten (29_MobieleApp.md) zijn eigen varianten, geen geschaal
 
 ---
 
+## 9. Externe UI-inspiratie (backlog-kandidaten, nog niet ingepland)
+
+Screenshots van CACAO (healthcare platform, door de platform-eigenaar aangedragen 2026-07-17) leverden drie overdraagbare **patronen** op — niet de visuele identiteit zelf: RouteFlow's eigen kleuren/typografie/merk (25_DesignSystem.md) blijven leidend, dit document neemt geen huisstijl van een ander product over. Nog niet toegewezen aan een sprint (40_Implementatieplan.md); vermeld hier zodat het patroon niet verloren gaat vóórdat er een geschikt moment is.
+
+| Patroon (bron: CACAO) | Wat het is | Mogelijke toepassing in RouteFlow |
+|---|---|---|
+| **Avatar-stack met overflow-teller** | Overlappende cirkel-avatars (initialen) van teamleden op een kaart, met een `+N`-badge voor de rest die niet past | Uitbreiding van het bestaande **Avatar**-primitief (§ 2): op een klant-/route-kaart de betrokken medewerkers tonen zonder een volledige naamlijst te printen |
+| **"Aankomende taken"-zijpaneel met "Te laat"-badge** | Compacte lijst: rode "Te laat"-pil + taaknaam + context (klant/werkruimte) + toegewezene-avatar + vervaldatum, rechts op het dashboard | Sluit aan bij de bestaande Vandaag-waarschuwingen ("3 verzonden facturen zijn over de vervaldatum", `lib/briefing/get-briefing.ts`) — zou een generiek `TaskListWidget`-domeincomponent kunnen worden i.p.v. losse tekstregels, herbruikbaar voor openstaande facturen én onplaatsbare beurten |
+| **Topbar-identiteitsblok** | Naam + rol + organisatie in twee regels naast de avatar, rechtsboven | RouteFlow toont nu alleen "Ingelogd als [naam]" (`app/(app)/layout.tsx`) — rol eronder tonen (Eigenaar/Admin/Planner) kost niets extra (al bekend uit `profile.role`) en verduidelijkt direct waarom iemand wel/geen actie ziet (23_Gebruikersrollen.md) |
+
+**Bewust niet overgenomen:** het blauwe gradient-inlogscherm en het CACAO-merk/logo — RouteFlow's eigen auth-schermen (22_Authenticatie.md) en design tokens (25 § 1) zijn hier leidend, dit is puur patroon-inspiratie.
+
+---
+
 ## Changelog
 
 | Datum | Versie | Wijziging |
 |---|---|---|
 | 2026-07-06 | 1.0 | Placeholder met opsomming |
 | 2026-07-07 | 2.0 | Volledige uitwerking: lagenmodel, primitieven, samengestelde + domeincomponenten met refs, verplichte 4 staten, mobiele varianten, toegankelijkheid, governance |
+| 2026-07-17 | 2.1 | § 4: RouteBoard-beschrijving verduidelijkt naar "dagrooster" (was al zo geïmplementeerd, nooit een echte weekgrid); WeekBoard toegevoegd — nieuwe weekrooster-variant voor eenmanszaken (27 § 1.2). |
+| 2026-07-17 | 2.2 | § 9 (nieuw): drie UI-patronen uit een extern voorbeeld (CACAO healthcare platform) vastgelegd als backlog-kandidaat — avatar-stack met overflow-teller, "aankomende taken"-widget met "Te laat"-badge, topbar-identiteitsblok met rol. Geen huisstijl/merk overgenomen, nog niet ingepland. |

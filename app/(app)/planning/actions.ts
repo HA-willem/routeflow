@@ -67,6 +67,56 @@ export async function moveJob(params: {
   return actionSuccess(data);
 }
 
+/**
+ * Verplaatst een beurt naar een (medewerker, datum)-combinatie i.p.v. een
+ * bekende `targetRouteId` — nodig voor de ZZP-weekweergave (WeekBoard) waar
+ * een dagkolom nog geen route heeft zolang er niets naartoe gesleept is
+ * (`routes` heeft dan gewoonweg nog geen rij, RLS: alleen owner/admin/planner
+ * mag er een aanmaken, 003_rls_baseline.sql-precedent). Maakt de route lazy
+ * aan via het gewone RLS-pad (niet de service-rol) en hergebruikt daarna
+ * exact dezelfde `moveJob` — geen tweede uitvoerpad naast route-move-job.
+ */
+export async function moveJobToDate(params: {
+  jobId: string;
+  employeeId: string;
+  targetDate: string;
+  position: number;
+}): Promise<ActionResult<MoveJobResult>> {
+  const { profile } = await requireOnboardedUser();
+  const supabase = await createClient();
+
+  const { data: existingRoute } = await supabase
+    .from('routes')
+    .select('id')
+    .eq('company_id', profile.company_id)
+    .eq('employee_id', params.employeeId)
+    .eq('route_date', params.targetDate)
+    .maybeSingle();
+
+  let targetRouteId = existingRoute?.id ?? null;
+  if (!targetRouteId) {
+    const { data: created, error: createError } = await supabase
+      .from('routes')
+      .insert({
+        company_id: profile.company_id,
+        employee_id: params.employeeId,
+        route_date: params.targetDate,
+      })
+      .select('id')
+      .single();
+    if (createError || !created) {
+      logger.error('moveJobToDate: route aanmaken mislukt', { message: createError?.message });
+      return actionError({
+        code: createError?.code ?? 'route_create_failed',
+        message: 'Kon geen route aanmaken voor deze dag. Probeer het opnieuw.',
+      });
+    }
+    targetRouteId = created.id;
+  }
+
+  return moveJob({ jobId: params.jobId, targetRouteId, position: params.position });
+}
+
 export async function optimizeEmployeeDay(params: {
   employeeId: string;
   date: string;

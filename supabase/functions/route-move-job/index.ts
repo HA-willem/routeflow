@@ -294,9 +294,19 @@ Deno.serve(async (req) => {
   const sourceRouteId = job.route_id;
 
   // Verplaats de beurt eerst (§ 6.1 stap 1), herbereken daarna beide routes.
+  // `scheduled_date` volgt altijd de doelroute mee — bij een gelijke-dag-move
+  // (bestaande RouteBoard) is dat een no-op (target-route-datum == huidige
+  // datum), maar bij een cross-day-move (WeekBoard, ZZP-weekgrid) voorkomt dit
+  // dat een beurt aan de juiste route hangt terwijl elke andere query
+  // (facturatie, Vandaag-tellingen, PWA-dagroute) 'm nog op de oude datum
+  // zoekt — gevonden tijdens QA-verificatie van de weekgrid (2026-07-17).
   const { error: moveError } = await supabase
     .from('jobs')
-    .update({ route_id: body.target_route_id, sequence: body.position + 1 })
+    .update({
+      route_id: body.target_route_id,
+      sequence: body.position + 1,
+      scheduled_date: targetRoute.route_date,
+    })
     .eq('id', body.job_id);
   if (moveError) {
     log('error', 'route-move-job: kon beurt niet koppelen aan doelroute', { code: moveError.code });

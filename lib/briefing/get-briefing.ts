@@ -4,29 +4,10 @@ import type { Database } from '@/types/database.types';
 
 import { buildDemoProposals, buildDemoSummary, buildDemoWeather } from './demo';
 import { deriveConfidence, deriveMorningMode } from './mode';
+import { toAgentProposal } from './proposals';
 
 import type { DemoDayFacts } from './demo';
-import type { AgentProposal, BriefingConfidence, BriefingWarning, MorningBriefing } from './types';
-
-type AgentProposalRow = Database['public']['Tables']['agent_proposals']['Row'];
-
-function toAgentProposal(row: AgentProposalRow): AgentProposal {
-  return {
-    id: row.id,
-    agent: row.agent,
-    title: row.title,
-    summary: row.summary,
-    reasoning: row.reasoning,
-    dataSources: (row.data_sources ?? []) as string[],
-    businessRules: (row.business_rules ?? []) as unknown as AgentProposal['businessRules'],
-    confidence: row.confidence,
-    impact: row.impact,
-    expectedGain: row.expected_gain,
-    alternatives: row.alternatives,
-    severity: row.severity,
-    payload: row.payload as AgentProposal['payload'],
-  };
-}
+import type { BriefingConfidence, BriefingWarning, MorningBriefing } from './types';
 
 type UserProfile = Database['public']['Tables']['users']['Row'];
 
