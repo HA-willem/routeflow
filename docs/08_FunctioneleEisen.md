@@ -1,7 +1,7 @@
 # 08 — Functionele Eisen
 
 **Status:** DONE
-**Versie:** 1.5
+**Versie:** 1.6
 **Bron van waarheid:** `00_PRD.md` § 7 — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 
@@ -629,6 +629,17 @@ Elk AI-voorstel in de Morning Briefing (FR-900) heeft een feedback-actie naast a
 3. Feedback is altijd gekoppeld aan het specifieke voorstel én de specifieke onderliggende voorkeur(en) — nooit een contextloze, losse beoordeling.
 4. Elke feedback-gebeurtenis wordt gelogd (audittrail, `45_AgentMemory.md` § 10).
 
+### FR-903: AI-transparantie & -geletterdheid
+
+**Fase:** los van MVP/V1/V2 (compliance-fundament, sprintplaatsing via `40_Implementatieplan.md`) | **Prio:** Must
+
+De gebruiker kan op elk moment in begrijpelijke taal nalezen welke onderdelen van RouteFlow een taalmodel gebruiken en welke niet, wie uiteindelijk beslist, en wat AI bij RouteFlow nooit doet — EU AI Act Art. 4 (AI-geletterdheid) en Art. 50(1) (transparantie bij AI-interactie), `47_AIAct_Compliance.md` § 6.1/6.2.
+
+**Acceptatiecriteria:**
+1. Een vaste, vindbare pagina (`/instellingen/over-ai`) legt uit: welk onderdeel echt een taalmodel gebruikt (Command Bar-vrije-tekst, ADR-014) en welke data daarbij wel/niet meegaat; dat de overige "AI Agents" deterministische regels zijn, geen lerend model; dat geen enkel voorstel zonder menselijke goedkeuring wordt uitgevoerd (BR-702); en een expliciete lijst van wat AI bij RouteFlow nooit doet (incl. BR-706/707: nooit taakallocatie op gedrag/persoonskenmerken, nooit prestatiebeoordeling).
+2. Elke interactie met het taalmodel in de UI is expliciet gelabeld (bestaand: "Vraag AI" in de Command Bar, ADR-014) — geen verborgen of impliciete AI-interactie.
+3. De pagina-inhoud volgt de architectuur (ADR-014, `43_AI_Agents.md`-implementatiestatus) — wijzigingen daaraan die de classificatie raken (`47_AIAct_Compliance.md` § 7) vereisen een bijwerking van deze pagina in dezelfde wijziging, niet later.
+
 ---
 
 ## 9. FR-serie 950+: Platform Administration & Product Agent
@@ -703,3 +714,4 @@ De platform-eigenaar ziet agent-rungezondheid (`agent_runs`-foutpercentages) gea
 | 2026-07-12 | 1.3 | FR-900 uitgebreid: Morning Briefing expliciet vastgelegd als primair startscherm (niet los overzicht); acceptatiecriteria aangevuld met de per-wijziging wat/waarom/regels/voordeel/impact-structuur en de volledige actieset (alles/individueel accepteren, aanpassen, afwijzen, doorklikken naar planner), conform de uitgebreide ADR-011 § 1. |
 | 2026-07-12 | 1.4 | FR-901 (Organizational Memory bekijken/beheren) en FR-902 (AI-feedback per voorstel) toegevoegd aan FR-serie 900+, voortvloeiend uit `45_AgentMemory.md`. |
 | 2026-07-16 | 1.5 | FR-serie 950+ toegevoegd: FR-950 (feature request indienen, tenant-zijde), FR-951 (Product Agent-triage & voorstellen), FR-952 (Platform Admin-portal), FR-953 (cross-tenant operationeel overzicht), voortvloeiend uit ADR-013/`46_PlatformAdmin.md`/PRD § 19 A-23. |
+| 2026-07-17 | 1.6 | FR-903 toegevoegd aan § 8: AI-transparantie & -geletterdheid (`/instellingen/over-ai`), voortvloeiend uit `47_AIAct_Compliance.md` § 6.1/6.2 (EU AI Act Art. 4/50). Gebouwd. |

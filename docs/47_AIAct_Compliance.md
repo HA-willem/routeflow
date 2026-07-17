@@ -1,7 +1,7 @@
 # 47 — EU AI Act-compliance
 
 **Status:** DONE
-**Versie:** 1.0
+**Versie:** 1.1
 **Bron van waarheid:** Verordening (EU) 2024/1689 (AI Act) zoals gewijzigd door het Digital Omnibus inzake AI (definitief aangenomen: Europees Parlement 16 juni 2026, Raad 29 juni 2026; in werking juli 2026). Binnen de docset: `00_PRD.md` § 19 A-26 registreert de aannames; dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 **Relaties:** `docs/adr/ADR-010` (deterministische planner — de kern van de classificatie), `docs/adr/ADR-011`/`ADR-012` (Human Approval/Explainability — de kern van het toezichtmodel), `docs/adr/ADR-013`/`46_PlatformAdmin.md` (Product Agent), `docs/adr/ADR-014` (Command Bar-LLM — het enige AI-systeem in productie), `43_AI_Agents.md` (agent-inventaris), `45_AgentMemory.md` (Organizational Memory — grensgeval, § 5.3), `10_BusinessRules.md` § 9 (BR-700–707), `36_Security.md` § 8 (verwerkers/DPA).
@@ -160,7 +160,7 @@ Zou S1 of S3 ooit tóch als hoog-risico (her)geclassificeerd worden — door fea
 |---|---|---|---|
 | 1 | DPA met Anthropic sluiten (36 § 8) | Vóór productiegebruik Command Bar-AI | Platform-eigenaar |
 | 2 | Juridische review van § 4/§ 5-classificaties | Vóór eerste betalende klant (QA-rapport § 6) | Platform-eigenaar + externe jurist |
-| 3 | Hulptekst "Hoe RouteFlow AI gebruikt" (Art. 4, § 6.2) | Vóór eerste betalende klant | Product |
+| 3 | ~~Hulptekst "Hoe RouteFlow AI gebruikt" (Art. 4, § 6.2)~~ | ✅ Gebouwd 2026-07-17 (`/instellingen/over-ai`, FR-903, `08_FunctioneleEisen.md` § 8) | Product |
 | 4 | AI Act-pre-check bij bouw Memory-leeskant (§ 5.3) | Bij die sprint | Bouwende sessie (bindend) |
 | 5 | Herclassificatie-triggers naleven (§ 7) | Doorlopend; jaarlijkse review ≤ juli 2027 | Platform-eigenaar |
 
@@ -182,6 +182,7 @@ Zou S1 of S3 ooit tóch als hoog-risico (her)geclassificeerd worden — door fea
 | Datum | Versie | Wijziging |
 |---|---|---|
 | 2026-07-17 | 1.0 | Eerste volledige versie: tijdlijn na Digital Omnibus (hoog-risico → 2 dec 2027, Art. 50 blijft 2 aug 2026), rolverdeling, systeeminventaris, classificatie per systeem (agents geen AI-systeem; Command Bar beperkt risico; Memory grensgeval met bindende randvoorwaarden; Product Agent intern), Annex III 4(b)-analyse met nieuwe BR-706/707, verplichtingen-matrix met implementatiestatus, what-if-tabel Art. 8–15, openstaande acties, edge cases. |
+| 2026-07-17 | 1.1 | Actiepunt § 8.3 gebouwd: AI-transparantiepagina `/instellingen/over-ai` (FR-903, `08_FunctioneleEisen.md` § 8) — legt Art. 4/50-conform uit welk onderdeel echt een taalmodel gebruikt, dat de "AI Agents" deterministisch zijn, en wat AI bij RouteFlow nooit doet (incl. BR-706/707). |
 
 ---
 
