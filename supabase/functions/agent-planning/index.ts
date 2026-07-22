@@ -25,7 +25,7 @@ interface RequestBody {
 }
 
 interface PlanningGenerateResponse {
-  generated_jobs: Array<{ service_agreement_id: string; dates: string[] }>;
+  generated_jobs: Array<{ service_agreement_id: string; dates: string[]; clustered: boolean }>;
   skipped_agreements: Array<{ service_agreement_id: string; reason: string }>;
 }
 
@@ -118,6 +118,7 @@ Deno.serve(async (req) => {
     agreementResults: result.generated_jobs.map((g) => ({
       serviceAgreementId: g.service_agreement_id,
       datesGenerated: g.dates.length,
+      clustered: g.clustered,
     })),
     skippedCount: result.skipped_agreements.length,
   });

@@ -9,7 +9,7 @@
 
 ## Doel van dit document
 
-Dit document articuleert de **langetermijnvisie, strategische context en kernprincipes** van RouteFlow. Het fungeert als kompas voor product-beslissingen: elke keuze over scope, feature-design en prioriteit moet aligneren met de visie hieronder. 
+Dit document articuleert de **langetermijnvisie, strategische context en kernprincipes** van ServOps. Het fungeert als kompas voor product-beslissingen: elke keuze over scope, feature-design en prioriteit moet aligneren met de visie hieronder. 
 
 Dit document is *niet* functioneel-specification (dat is 08_FunctioneleEisen.md). Het is het antwoord op "waarom bouwen we dit?" en "in welke wereld willen we deze software loslaten?".
 
@@ -17,7 +17,7 @@ Dit document is *niet* functioneel-specification (dat is 08_FunctioneleEisen.md)
 
 ## 1. Visie in één zin
 
-> **RouteFlow wordt de mooiste, snelste en slimste bedrijfssoftware voor servicebedrijven met terugkerende werkzaamheden.**
+> **ServOps wordt de mooiste, snelste en slimste bedrijfssoftware voor servicebedrijven met terugkerende werkzaamheden.**
 
 ### Toelichting
 
@@ -64,7 +64,7 @@ Concurrenten (zie 04_Concurrentieanalyse.md) adresseren sommige pijnpunten, maar
 - **Versnipperd:** klantbeheer hier, planning daar, facturatie ergens anders — geen geïntegreerde flow
 - **Niet premiumvoel:** tools voelen 'functioneel-utilair', niet 'lovely to use'
 
-**RouteFlow vult dit gat:** premium UX + domeindiepgang (AI planning, automatische facturatie, geïntegreerde communicatie) in één systeem.
+**ServOps vult dit gat:** premium UX + domeindiepgang (AI planning, automatische facturatie, geïntegreerde communicatie) in één systeem.
 
 ---
 
@@ -86,9 +86,9 @@ Concurrenten (zie 04_Concurrentieanalyse.md) adresseren sommige pijnpunten, maar
 
 6. **Verticalisatie is voorbij.** Generieke platformen werken; specificaties gebeuren via templates en configuratie.
 
-### 3.2 RouteFlow's rol in 2031
+### 3.2 ServOps' rol in 2031
 
-Over 5 jaar zou RouteFlow:
+Over 5 jaar zou ServOps:
 
 - **De standaardplatform** voor Nederlandse servicebedrijven ≤ 50 medewerkers
 - **Verticaal onafhankelijk:** glazenwassers, schoonmakers, hoveniers, installateurs — dezelfde engine
@@ -96,7 +96,7 @@ Over 5 jaar zou RouteFlow:
 - **Predictive:** algorithms voorspellen churn bij eindklanten, optimale facturatiecycli, vraagschommelingen
 - **Een platform met 5.000+ actieve bedrijven** (conservatieve schatting)
 
-Het product zal RouteFlow nog steeds voelen als v1.0, maar onder de motorkap: jarenlange iteratie op algoritmen, UX-verfijning en feature-depth.
+Het product zal ServOps nog steeds voelen als v1.0, maar onder de motorkap: jarenlange iteratie op algoritmen, UX-verfijning en feature-depth.
 
 ---
 
@@ -109,7 +109,7 @@ Zes principes sturen alle architectuur-, design- en scope-beslissingen. Bij conf
 > Alles draait om de vraag: *wie doet wat, waar, wanneer?* Elke feature versterkt dit.
 
 **Wat dit betekent:**
-- RouteFlow is niet "een CRM met planning" of "boekhouden met een kaartje". Het is primair een planningsengine.
+- ServOps is niet "een CRM met planning" of "boekhouden met een kaartje". Het is primair een planningsengine.
 - Features die niet bijdragen aan planning (of support van planning) zijn verdacht.
 - User stories voor medewerkers of administratie moeten traceerbaar teruggaan naar: "dit maakt planning beter".
 
@@ -244,13 +244,13 @@ Bij twijfel in architecture-call: welke princiep helpt? Bv., "moeten we roles vo
 
 ---
 
-## 5. Wat RouteFlow niet is (v1)
+## 5. Wat ServOps niet is (v1)
 
 Scoping is kritisch. Dit beperkt scope en stelt verwachtingen. Alles hieronder mag in V2+, maar niet in MVP/V1.
 
 ### 5.1 Geen boekhoudpakket
 
-RouteFlow genereert en verstuurt facturen, toont openstaande bedragen, waarschuwt voor oninbare bedragen — maar:
+ServOps genereert en verstuurt facturen, toont openstaande bedragen, waarschuwt voor oninbare bedragen — maar:
 - Geen dubbelboeking, geen cost-center allocatie, geen asset-management.
 - Boekhoudkundige exports naar Mollie/e-Boekhouden/Moneybird zijn V2 (backlog item).
 - V1 exporteert CSV ("factuurnummer, klant, bedrag, datum"); klant voert handmatig in boekhouding in.
@@ -259,7 +259,7 @@ RouteFlow genereert en verstuurt facturen, toont openstaande bedragen, waarschuw
 
 ### 5.2 Geen urenregistratie / salarissysteem
 
-RouteFlow registreert wat een medewerker *deed* (beurten afgemaakt), niet *hoeveel uren* hij werkte (geen clockin/out).
+ServOps registreert wat een medewerker *deed* (beurten afgemaakt), niet *hoeveel uren* hij werkte (geen clockin/out).
 - De beuurtuitsvoering neemt aan dat geplande duur = werkelijke duur (edge case: duuroverschrijding in V2).
 - Geen salarisadmin, geen jaargeheimen, geen loonslips.
 
@@ -267,7 +267,7 @@ RouteFlow registreert wat een medewerker *deed* (beurten afgemaakt), niet *hoeve
 
 ### 5.3 Geen uitzendbureau / matching-marktplaats
 
-RouteFlow is *not* een platform tussen klanten en bedrijven (anders dan Uber/TaskRabbit).
+ServOps is *not* een platform tussen klanten en bedrijven (anders dan Uber/TaskRabbit).
 - Klant is intern: bedrijf beheert zijn eigen klantenkring.
 - Geen "klanten zoeken buschauffeur op marktplaats" volgend.
 
@@ -275,7 +275,7 @@ RouteFlow is *not* een platform tussen klanten en bedrijven (anders dan Uber/Tas
 
 ### 5.4 Geen voorraad- of materiaalbeheersysteem
 
-RouteFlow toont "*diensten*" (wat gedaan wordt), niet "materialen" of "voorraden" (wat nodig is voor diensten).
+ServOps toont "*diensten*" (wat gedaan wordt), niet "materialen" of "voorraden" (wat nodig is voor diensten).
 - Een dienst kan hebben: "Glasrein 500ml per beurt", maar dit is notatie, geen inventory-tracking.
 - Automatische aanvulorders: nee. Manual materiaalkosten in factuurbalkbovenst: V2.
 
@@ -293,7 +293,7 @@ De PWA werkt *offline-tolerant* (optimistic UI, retry-queue), maar volledige off
 
 ### 6.1 Wat meten?
 
-RouteFlow's succes reduceert zich tot **drie vragen**:
+ServOps' succes reduceert zich tot **drie vragen**:
 
 1. **Activatie:** zien gebruikers (snel) waarde?  
    *Doel:* ≥ 60% van signups plannen hun eerste week automatisch binnen 24 uur.
@@ -301,7 +301,7 @@ RouteFlow's succes reduceert zich tot **drie vragen**:
 2. **Retentie:** houden bedrijven het product?  
    *Doel:* ≥ 85% betaalde bedrijven zijn wekelijks actief (min. 1× plan/week).
 
-3. **Impact:** reduceert RouteFlow echt problemen?  
+3. **Impact:** reduceert ServOps echt problemen?  
    *Doel:* ≥ 15% reductie in reistijd (zelfgerapporteerd + berekend uit routes) per bedrijf na 3 maanden.
 
 ### 6.2 Secondary metrics (volgtijden)
@@ -316,7 +316,7 @@ RouteFlow's succes reduceert zich tot **drie vragen**:
 
 ### 6.3 Waarom niet "omzet" of "users"?
 
-Vanity-metrics (veel users, revenue) zijn lagging-indicators. De drie vragen hierboven zijn *leading*: ze voorspellen of RouteFlow een succesvolle business wordt. 
+Vanity-metrics (veel users, revenue) zijn lagging-indicators. De drie vragen hierboven zijn *leading*: ze voorspellen of ServOps een succesvolle business wordt. 
 - Als 60% niet snel activeren → product is niet intuïtief genoeg.
 - Als 85% niet wekelijks actief → product lost geen echt probleem.
 - Als < 15% reistijdwinst → planner is niet slim genoeg; unique value-prop vervangen.

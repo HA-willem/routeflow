@@ -9,7 +9,7 @@
 
 ## Doel van dit document
 
-Dit document bevat het **logische en fysieke database-design** van RouteFlow:
+Dit document bevat het **logische en fysieke database-design** van ServOps:
 - Architectuur-principes (PostgreSQL, RLS, PostGIS)
 - Entity-Relationship Diagram (ERD)
 - Tabel-overzicht met constraints
@@ -370,12 +370,14 @@ erDiagram
 | `created_at` | TIMESTAMP | ✓ | UTC |
 | `updated_at` | TIMESTAMP | ✓ | UTC |
 | `sent_at` | TIMESTAMP | ✗ | Verzending-moment |
+| `parent_invoice_id` | UUID | ✗ | FK → `invoices` (self); gezet op een creditfactuur, verwijst naar de gecorrigeerde factuur (FR-068, Sprint 9, `035_invoice_credit_notes.sql`). NULL voor een gewone factuur. |
 
 **Constraints:**
 - PK: `id`
-- FK: `company_id`, `customer_id`
+- FK: `company_id`, `customer_id`, `parent_invoice_id` (self)
 - UNIQUE: (`company_id`, `invoice_number`) WHERE invoice_number IS NOT NULL
-- INDEX: (`company_id`, `status`, `due_date`)
+- INDEX: (`company_id`, `status`, `due_date`); (`parent_invoice_id`) WHERE NOT NULL
+- CHECK: `total_amount_cents`/`total_tax_cents` ≥ 0 wanneer `parent_invoice_id IS NULL`, ≤ 0 wanneer gezet (creditfactuur = negatief totaal, FR-068)
 
 ---
 
@@ -641,6 +643,54 @@ De ERD (§ 2) en 12_Entiteiten.md § 1 tonen `teams` als conceptuele relatie omd
 
 ---
 
+### 3.10 Sprint 9 — Abonnementsfacturatie & CSV-import (aanvullende tabellen)
+
+#### `subscription_invoice_periods` (FR-066/BR-304, idempotentie-bewaking)
+| Kolom | Type | Vereist | Opmerkingen |
+|---|---|---|---|
+| `id` | UUID | ✓ | PK |
+| `company_id` | UUID | ✓ | FK, RLS |
+| `service_agreement_id` | UUID | ✓ | FK → `service_agreements` |
+| `period_start` / `period_end` | DATE | ✓ | Eerste/laatste dag van de gefactureerde kalendermaand |
+| `invoice_id` | UUID | ✓ | FK → `invoices` |
+| `created_at` | TIMESTAMPTZ | ✓ | UTC |
+
+**Constraints:** PK `id`; FK `company_id`/`service_agreement_id`/`invoice_id`; UNIQUE(`service_agreement_id`, `period_start`) — voorkomt dat `generate_subscription_invoices()` (`034_subscription_billing.sql`) dezelfde maand twee keer factureert bij een herstart van de cron. RLS: SELECT voor owner/admin/planner/administration binnen eigen bedrijf; alleen door de `SECURITY DEFINER`-functie geschreven (geen INSERT/UPDATE-policy voor gebruikers).
+
+#### `import_jobs` (FR-006, rapportagelog van een CSV-import)
+| Kolom | Type | Vereist | Opmerkingen |
+|---|---|---|---|
+| `id` | UUID | ✓ | PK |
+| `company_id` | UUID | ✓ | FK, RLS |
+| `status` | ENUM(running, completed, failed) | ✓ | default `running` |
+| `total_rows` / `success_count` / `error_count` | INT | ✓ | default 0 |
+| `error_log` | JSONB | ✓ | Array van `{row, message}`; default `[]` |
+| `created_by` | UUID | ✗ | FK → `users` |
+| `created_at` / `finished_at` | TIMESTAMPTZ | ✓ resp. ✗ | UTC |
+
+**Constraints:** PK `id`; FK `company_id`/`created_by`; RLS `company_id = current_company_id()`, owner/admin/planner CRU. Bewust **geen** staging-tabel voor ruwe CSV-rijen — parsen/mappen/valideren (incl. geocoding) gebeurt in de app-laag (`lib/import/csv.ts`) vóórdat deze tabel iets ziet; de wizard houdt gevalideerde rijen in client-state tussen de validatie- en bevestigingsstap.
+
+---
+
+### 3.11 Sprint 10 — Correctie-logging (V2-voorbereiding)
+
+#### `correction_log` (15_AIPlanner.md § 10, alleen schrijfpad — PRD § 19 A-30)
+| Kolom | Type | Vereist | Opmerkingen |
+|---|---|---|---|
+| `id` | UUID | ✓ | PK |
+| `company_id` | UUID | ✓ | FK, RLS |
+| `job_id` | UUID | ✗ | FK → `jobs`, `on delete set null` |
+| `correction_type` | ENUM(moved, rejected_proposal) | ✓ | `locked` bewust niet meegenomen — geen bestaand "vergrendel-een-bestaande-beurt"-schrijfpad |
+| `old_value` / `new_value` | JSONB | ✗ | Vrije vorm per `correction_type` (bv. `{route_id, sequence}` bij `moved`) |
+| `created_by` | UUID | ✗ | FK → `users`, `on delete set null` |
+| `created_at` | TIMESTAMPTZ | ✓ | UTC |
+
+**Constraints:** PK `id`; FK `company_id`/`job_id`/`created_by`; RLS-leeskant beperkt tot owner/admin (analytics-adjacent, zelfde grens als Rapportage); schrijfkant owner/admin/planner/administration. Gehaakt in `moveJob()` (`app/(app)/planning/actions.ts`) en `decideProposal()`-reject-pad (`app/(app)/briefing-actions.ts`) — best-effort, non-blocking (een loggingfout mag de eigenlijke actie nooit laten falen). Geen leeskant/patroonherkenning dit sprint.
+
+Rapportage-queries (§ Sprint 10) hergebruiken bestaande tabellen (`invoices`/`routes`/`jobs`) zonder nieuwe kolommen — alleen twee nieuwe indexen (`037_reporting_indexes.sql`, § 4).
+
+---
+
 ## 4. Indexering-strategie
 
 ### Performance-kritieke queries
@@ -767,3 +817,4 @@ CREATE TABLE audit_log (
 | 2026-07-08 | 1.2 | Sprint 1-fix: `users.role`-enum gecorrigeerd van `(owner, admin, planner, support)` naar `(owner, admin, planner, administration, employee)` — uitgelijnd op de canonieke rollenlijst in 23_Gebruikersrollen.md § 1 (miste voorheen de Medewerker-rol volledig). 22_Authenticatie.md § 7 in dezelfde commit meegecorrigeerd. |
 | 2026-07-08 | 1.3 | Sprint 2-kickoff (PRD § 19 A-10): `objects.location` nullable gemaakt (was NOT NULL) — Sprint 2 bouwt bewust geen kaart-UI/Mapbox-geocoding-adapter; objecten worden adres-only aangemaakt. `location_status` default `manual`. |
 | 2026-07-13 | 1.4 | Sprint 7 (PRD § 19 A-22): `agent_runs`/`agent_proposals` toegevoegd aan § 3.9 (ADR-012 § 6/§ 8-schema, `022_agent_pipeline.sql`) + bijbehorende index. `weerdata_cache` was al gespecificeerd (1.1) en is ongewijzigd — Sprint 7 bouwt exact naar dat schema. |
+| 2026-07-20 | 1.5 | Sprint 9 (PRD § 19 A-29): `invoices.parent_invoice_id` toegevoegd (FR-068, `035_invoice_credit_notes.sql`) + aangepaste check-constraints (creditfactuur = negatief totaal). Nieuwe § 3.10 met `subscription_invoice_periods` (FR-066, idempotentie-bewaking `034_subscription_billing.sql`) en `import_jobs` (FR-006, rapportagelog `036_import_jobs.sql`). |

@@ -34,7 +34,7 @@ describe('passwordSchema (22_Authenticatie.md § 4)', () => {
 
 describe('loginSchema', () => {
   it('accepteert een geldig e-mailadres en niet-leeg wachtwoord', () => {
-    expect(loginSchema.safeParse({ email: 'frans@routeflow.test', password: 'x' }).success).toBe(
+    expect(loginSchema.safeParse({ email: 'frans@servops.test', password: 'x' }).success).toBe(
       true,
     );
   });
@@ -44,7 +44,7 @@ describe('loginSchema', () => {
   });
 
   it('weigert een leeg wachtwoord', () => {
-    expect(loginSchema.safeParse({ email: 'frans@routeflow.test', password: '' }).success).toBe(
+    expect(loginSchema.safeParse({ email: 'frans@servops.test', password: '' }).success).toBe(
       false,
     );
   });
@@ -53,7 +53,7 @@ describe('loginSchema', () => {
 describe('registerSchema', () => {
   const valid = {
     fullName: 'Frans de Haan',
-    email: 'frans@routeflow.test',
+    email: 'frans@servops.test',
     password: 'Testwachtwoord123',
     passwordConfirmation: 'Testwachtwoord123',
   };
@@ -80,7 +80,7 @@ describe('registerSchema', () => {
 
 describe('forgotPasswordSchema', () => {
   it('vereist een geldig e-mailadres', () => {
-    expect(forgotPasswordSchema.safeParse({ email: 'frans@routeflow.test' }).success).toBe(true);
+    expect(forgotPasswordSchema.safeParse({ email: 'frans@servops.test' }).success).toBe(true);
     expect(forgotPasswordSchema.safeParse({ email: '' }).success).toBe(false);
   });
 });

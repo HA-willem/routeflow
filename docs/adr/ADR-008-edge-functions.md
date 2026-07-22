@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Datum:** 2026-07-07
-- **Beslisser:** Chief Software Architect (RouteFlow)
+- **Beslisser:** Chief Software Architect (ServOps)
 - **Bron van waarheid:** `00_PRD.md` § 12.2 (domeinlogica server-side, nooit in de client)
 - **Gerelateerd:** ADR-002 (Supabase), ADR-001 (Next.js), ADR-007 (Provider Adapter Pattern); 13_API_Specificatie.md § 4, 14_RoutingEngine.md § 7, 35_Deployment.md
 
@@ -10,7 +10,7 @@
 
 ## Context
 
-RouteFlow bevat zware, gevoelige of tijdgebonden server-side operaties: planning genereren, routes optimaliseren, PDF's genereren, webhook-verwerking (Mollie/WhatsApp), en geplande taken (aankondigingen, herinneringen). PRD § 12.2 is expliciet: *"planningsgeneratie en factuurjobs draaien server-side (scheduled edge functions / pg_cron), nooit in de client."* Deze logica moet dicht bij de database draaien, secrets veilig bewaren, en binnen strikte performancebudgetten blijven (14 § 7, 37).
+ServOps bevat zware, gevoelige of tijdgebonden server-side operaties: planning genereren, routes optimaliseren, PDF's genereren, webhook-verwerking (Mollie/WhatsApp), en geplande taken (aankondigingen, herinneringen). PRD § 12.2 is expliciet: *"planningsgeneratie en factuurjobs draaien server-side (scheduled edge functions / pg_cron), nooit in de client."* Deze logica moet dicht bij de database draaien, secrets veilig bewaren, en binnen strikte performancebudgetten blijven (14 § 7, 37).
 
 ## Probleem
 
@@ -54,7 +54,7 @@ Waar draait domeinlogica die (a) niet in de client mag/kan (security, secrets, z
 
 ## Waarom deze keuze toekomstbestendig is
 
-Door domeinlogica achter stabiele RPC-contracten (13_API_Specificatie.md § 4) te plaatsen — en niet rechtstreeks te verweven met een specifieke runtime — blijft de *architectuur* onafhankelijk van waar de code precies draait. Mocht Edge Functions bij extreme schaal (38) tegen limieten aanlopen, dan is de exit-strategie een verplaatsing van specifieke functies naar een dedicated workerproces, met behoud van dezelfde interfaces en RLS-discipline. Voor de fase waarin RouteFlow zich bevindt (MVP → V1 → V2, 33_Roadmap.md) geeft deze keuze de snelste, veiligste route naar een werkend, schaalbaar systeem met minimale infrastructuurlast.
+Door domeinlogica achter stabiele RPC-contracten (13_API_Specificatie.md § 4) te plaatsen — en niet rechtstreeks te verweven met een specifieke runtime — blijft de *architectuur* onafhankelijk van waar de code precies draait. Mocht Edge Functions bij extreme schaal (38) tegen limieten aanlopen, dan is de exit-strategie een verplaatsing van specifieke functies naar een dedicated workerproces, met behoud van dezelfde interfaces en RLS-discipline. Voor de fase waarin ServOps zich bevindt (MVP → V1 → V2, 33_Roadmap.md) geeft deze keuze de snelste, veiligste route naar een werkend, schaalbaar systeem met minimale infrastructuurlast.
 
 ## Referenties
 

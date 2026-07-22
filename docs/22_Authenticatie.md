@@ -130,7 +130,7 @@ CREATE POLICY "users see own company" ON customers
 ## 7. Autorisatie (Rollen & Permissies)
 
 **Rollen** (canoniek: 23_Gebruikersrollen.md § 1, inclusief volledige rechtenmatrix):
-- Owner (Eigenaar): all permissions + RouteFlow-abonnement/billing
+- Owner (Eigenaar): all permissions + ServOps-abonnement/billing
 - Admin: all except billing
 - Planner: planning, routing, klantbeheer (geen facturatie-mutaties)
 - Administration (Administratie): facturatie en debiteuren, incl. create/update op facturen — géén planning-mutaties

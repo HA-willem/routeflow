@@ -10,7 +10,7 @@
 
 ## Doel van dit document
 
-RouteFlow's agents (`43_AI_Agents.md`) analyseren vandaag elke cyclus **stateless** — elke ochtend opnieuw, zonder te onthouden wat er gisteren, vorige week of vorig jaar is besloten. Dit document ontwerpt de **Organizational Memory**: een gecontroleerde, transparante geheugenlaag waarmee agents leren van historische beslissingen, klantvoorkeuren en bedrijfskennis, zodat voorstellen na verloop van tijd beter aansluiten bij hoe dit specifieke bedrijf werkt — zonder ooit de Human-in-the-Loop-garanties van ADR-011 te ondermijnen.
+ServOps' agents (`43_AI_Agents.md`) analyseren vandaag elke cyclus **stateless** — elke ochtend opnieuw, zonder te onthouden wat er gisteren, vorige week of vorig jaar is besloten. Dit document ontwerpt de **Organizational Memory**: een gecontroleerde, transparante geheugenlaag waarmee agents leren van historische beslissingen, klantvoorkeuren en bedrijfskennis, zodat voorstellen na verloop van tijd beter aansluiten bij hoe dit specifieke bedrijf werkt — zonder ooit de Human-in-the-Loop-garanties van ADR-011 te ondermijnen.
 
 **Uitgangspunt (letterlijk, niet-onderhandelbaar):** agents onthouden geen willekeurige informatie. Het geheugen is een **gecontroleerd** bedrijfsgeheugen — elke opgeslagen voorkeur is gescoped, herkomstig, confidence-gewaardeerd en te allen tijde door de gebruiker te bekijken, aan te passen of te verwijderen (§ 6).
 
@@ -18,9 +18,9 @@ RouteFlow's agents (`43_AI_Agents.md`) analyseren vandaag elke cyclus **stateles
 
 ## 1. Visie
 
-RouteFlow wordt niet beter door "meer GPT" — een groter of duurder taalmodel maakt een voorstel niet relevanter als het model niets weet over *dit specifieke bedrijf*: welke medewerker bij welke klant hoort, welke route de planner altijd zelf aanpast, welk object een lastige parkeerplek heeft. Die kennis zit vandaag alleen in de hoofden van de planner en de medewerkers, en gaat verloren zodra iemand met vakantie is, vertrekt, of het simpelweg vergeet.
+ServOps wordt niet beter door "meer GPT" — een groter of duurder taalmodel maakt een voorstel niet relevanter als het model niets weet over *dit specifieke bedrijf*: welke medewerker bij welke klant hoort, welke route de planner altijd zelf aanpast, welk object een lastige parkeerplek heeft. Die kennis zit vandaag alleen in de hoofden van de planner en de medewerkers, en gaat verloren zodra iemand met vakantie is, vertrekt, of het simpelweg vergeet.
 
-Organizational Memory is RouteFlow's antwoord: **de AI wordt slimmer doordat het bedrijf steeds beter begrepen wordt**, niet doordat het onderliggende model groter wordt. Dit is dezelfde filosofie als ADR-010's expliciete afwijzing van "black-box ML" (Alternatieven-tabel) — leren gebeurt via **transparante, herleidbare patronen** (§ 3–5), niet via een ondoorzichtig model dat stilzwijgend gedrag aanpast.
+Organizational Memory is ServOps' antwoord: **de AI wordt slimmer doordat het bedrijf steeds beter begrepen wordt**, niet doordat het onderliggende model groter wordt. Dit is dezelfde filosofie als ADR-010's expliciete afwijzing van "black-box ML" (Alternatieven-tabel) — leren gebeurt via **transparante, herleidbare patronen** (§ 3–5), niet via een ondoorzichtig model dat stilzwijgend gedrag aanpast.
 
 Het geheugen ondersteunt drie doelgroepen tegelijk:
 
@@ -174,7 +174,7 @@ Feedback is altijd gekoppeld aan het specifieke voorstel én de specifieke onder
 Organizational Memory leert uitsluitend **operationele planningspatronen** — expliciet buiten scope, ongeacht confidence-niveau of bron:
 
 - Wachtwoorden, sessietokens, of andere authenticatiegegevens.
-- Betaalgegevens (kaartnummers, IBAN — deze lopen sowieso al buiten RouteFlow's eigen opslag via Mollie, ADR-... Mollie-adapter).
+- Betaalgegevens (kaartnummers, IBAN — deze lopen sowieso al buiten ServOps' eigen opslag via Mollie, ADR-... Mollie-adapter).
 - Medische informatie (een ziekmelding triggert de Replanning Agent, § 7, maar de **reden** van de ziekmelding wordt nooit opgeslagen of geleerd — alleen "afwezig", nooit "waarom").
 - Privécommunicatie (de inhoud van WhatsApp/e-mail-berichten tussen medewerker/klant/planner wordt niet in het geheugen opgenomen — alleen het **afgeleide, geaggregeerde signaal**, bv. "klant reageert doorgaans binnen een uur op WhatsApp", nooit de berichttekst zelf).
 

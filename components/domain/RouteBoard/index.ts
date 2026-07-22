@@ -8,3 +8,14 @@ export {
 export { PlanningBoard } from './PlanningBoard';
 export { WeekBoard, type MoveJobToDateAction, type WeekColumn } from './WeekBoard';
 export { PlanningWeekBoard } from './PlanningWeekBoard';
+export {
+  AddJobDialog,
+  type AddManualJobAction,
+  type GetCustomerObjectsAction,
+  type SearchCustomersAction,
+} from './AddJobDialog';
+export {
+  FillDayDialog,
+  type FillDayAction,
+  type GetFillDayCandidatesAction,
+} from './FillDayDialog';

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Datum:** 2026-07-07
-- **Beslisser:** Chief Software Architect (RouteFlow)
+- **Beslisser:** Chief Software Architect (ServOps)
 - **Bron van waarheid:** `00_PRD.md` § 12.1 (vastgestelde stack)
 - **Gerelateerd:** ADR-003 (PostgreSQL + RLS), ADR-004 (Multi-tenancy), ADR-008 (Edge Functions); 11_DatabaseConcept.md, 13_API_Specificatie.md, 22_Authenticatie.md, 35_Deployment.md
 
@@ -10,7 +10,7 @@
 
 ## Context
 
-RouteFlow moet snel naar de markt met een klein team, maar tegelijk voldoen aan stevige eisen: multi-tenant isolatie (NFR-301), EU-datalocatie/AVG (NFR-401), realtime planning-updates, bestandsopslag (foto's/PDF's), authenticatie en server-side domeinlogica (PRD § 12). We willen geen zelfgebouwde, te onderhouden backend-infrastructuur.
+ServOps moet snel naar de markt met een klein team, maar tegelijk voldoen aan stevige eisen: multi-tenant isolatie (NFR-301), EU-datalocatie/AVG (NFR-401), realtime planning-updates, bestandsopslag (foto's/PDF's), authenticatie en server-side domeinlogica (PRD § 12). We willen geen zelfgebouwde, te onderhouden backend-infrastructuur.
 
 ## Probleem
 

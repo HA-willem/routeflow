@@ -449,7 +449,7 @@ Deze vier gewichten zijn relatief aan elkaar en worden bij wijziging door het sy
 
 > Het toewijzen van beurten aan Medewerkers (door welke agent of welk algoritme dan ook) gebruikt uitsluitend objectief-operationele criteria — geografie/wijk, beschikbaarheid (BR-201), werkdaglimiet (BR-202), clustering (BR-204), klantvoorkeuren (BR-205) en harde bevoegdheidseisen (certificering) — en nooit individueel gedrag, persoonlijkheidskenmerken of prestatiescores van een Medewerker.
 
-**Reden:** EU AI Act Annex III 4(b) merkt taakallocatie op basis van individueel gedrag of persoonskenmerken aan als hoog-risico-AI. RouteFlows huidige niet-hoog-risico-classificatie (`47_AIAct_Compliance.md` § 5) steunt mede op deze grens; een feature die haar doorbreekt verandert stilzwijgend de wettelijke categorie van het hele platform. Wijziging van deze regel vereist daarom altijd een PRD-revisie mét herclassificatie en juridische toets (47 § 7).
+**Reden:** EU AI Act Annex III 4(b) merkt taakallocatie op basis van individueel gedrag of persoonskenmerken aan als hoog-risico-AI. ServOps' huidige niet-hoog-risico-classificatie (`47_AIAct_Compliance.md` § 5) steunt mede op deze grens; een feature die haar doorbreekt verandert stilzwijgend de wettelijke categorie van het hele platform. Wijziging van deze regel vereist daarom altijd een PRD-revisie mét herclassificatie en juridische toets (47 § 7).
 
 **Implementatie:** `47_AIAct_Compliance.md` § 5.1/5.2; bestaande allocatielogica (15_AIPlanner.md, agent-replanning) voldoet al — deze regel bevriest dat.
 
@@ -459,7 +459,7 @@ Deze vier gewichten zijn relatief aan elkaar en worden bij wijziging door het sy
 
 > Door Organizational Memory geleerde gegevens over een individuele Medewerker (waaronder de in `45_AgentMemory.md` § 2 voorziene "gemiddelde snelheid per dienst-type") worden nooit gebruikt voor prestatiebeoordeling, gedragsmonitoring of enig HR-besluit, en nooit als beoordeling of ranglijst gepresenteerd — het enige toegestane gebruik is stille schattingscorrectie van beurt-duur, en ook dat pas na de verplichte AI Act-pre-check (`47_AIAct_Compliance.md` § 5.3).
 
-**Reden:** het monitoren/evalueren van prestaties en gedrag van werkenden is de tweede poot van Annex III 4(b) (zie BR-706). Duur-kalibratie is operationeel waardevol en verdedigbaar; alles daarbuiten maakt Employee Memory een werknemersmonitoringssysteem — een categorie waar RouteFlow bewust buiten blijft.
+**Reden:** het monitoren/evalueren van prestaties en gedrag van werkenden is de tweede poot van Annex III 4(b) (zie BR-706). Duur-kalibratie is operationeel waardevol en verdedigbaar; alles daarbuiten maakt Employee Memory een werknemersmonitoringssysteem — een categorie waar ServOps bewust buiten blijft.
 
 **Implementatie:** `47_AIAct_Compliance.md` § 5.3 (bindende randvoorwaarden voor de Memory-leeskant-sprint); `45_AgentMemory.md` § 2 (Employee Memory) en § 9.1 verwijzen hiernaar.
 

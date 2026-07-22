@@ -10,7 +10,7 @@ import { updateCustomer } from '../../actions';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Klant bewerken — RouteFlow',
+  title: 'Klant bewerken — ServOps',
 };
 
 export default async function KlantBewerkenPage({ params }: { params: Promise<{ id: string }> }) {

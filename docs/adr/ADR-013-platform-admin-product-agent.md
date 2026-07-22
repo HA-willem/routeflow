@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Datum:** 2026-07-15
-- **Beslisser:** Chief Software Architect (RouteFlow) i.o.v. platform-eigenaar
+- **Beslisser:** Chief Software Architect (ServOps) i.o.v. platform-eigenaar
 - **Bron van waarheid:** `00_PRD.md` § 19 A-23 — deze ADR formaliseert die aanname tot architectuur.
 - **Gerelateerd:** ADR-011 (Human-in-the-Loop AI — hetzelfde Human-Approval-principe, hier toegepast op de *codebase* i.p.v. de *planning*), ADR-012 (AI Execution Pipeline — Explainability-patroon hergebruikt), ADR-008 (Edge Functions), ADR-004 (Multi-tenancy/RLS — dit ADR introduceert de eerste autorisatiegrens die daar bewust *buiten* valt); `46_PlatformAdmin.md` (operationele uitwerking), `10_BusinessRules.md` § 12 (nieuw BR-900–904), `08_FunctioneleEisen.md` FR-serie 950+ (nieuw), `23_Gebruikersrollen.md` (platform-admin expliciet buiten de tenant-rollenmatrix).
 
@@ -10,12 +10,12 @@
 
 ## Context
 
-RouteFlow's bestaande AI-architectuur (ADR-011/012) laat agents voorstellen doen **binnen** een Bedrijf: een route herplannen, een factuur voorbereiden, een capaciteitsprobleem signaleren. Al die agents werken binnen de RLS-tenantgrens (`company_id`) en raken nooit de RouteFlow-codebase zelf.
+ServOps' bestaande AI-architectuur (ADR-011/012) laat agents voorstellen doen **binnen** een Bedrijf: een route herplannen, een factuur voorbereiden, een capaciteitsprobleem signaleren. Al die agents werken binnen de RLS-tenantgrens (`company_id`) en raken nooit de ServOps-codebase zelf.
 
 De platform-eigenaar (niet een tenant-gebruiker) wil twee dingen die buiten dat model vallen:
 
 1. Een **eigen beheeromgeving**, los van enige Bedrijf, met overzicht over het hele platform (alle tenants).
-2. Een **Product Agent**: een AI-agent die de RouteFlow-*codebase* zelf mag analyseren en verbetervoorstellen mag doen — inclusief daadwerkelijke code-wijzigingen — op basis van (a) operationele signalen (foutpatronen, agent-run-gezondheid) en (b) **feature requests die tenants zelf indienen** vanuit hun eigen bedrijfsomgeving.
+2. Een **Product Agent**: een AI-agent die de ServOps-*codebase* zelf mag analyseren en verbetervoorstellen mag doen — inclusief daadwerkelijke code-wijzigingen — op basis van (a) operationele signalen (foutpatronen, agent-run-gezondheid) en (b) **feature requests die tenants zelf indienen** vanuit hun eigen bedrijfsomgeving.
 
 Dit is een fundamenteel ander risicoprofiel dan alle bestaande agents: een voorstel om een route te verplaatsen raakt één bedrijf, foutief; een voorstel om code te wijzigen raakt **alle tenants tegelijk** zodra het gemerged wordt. De bestaande Human-Approval-grens (BR-702) is hiervoor niet automatisch toereikend — die gaat over *domeindata-acties*, niet over *codewijzigingen*.
 
@@ -27,7 +27,7 @@ Hoe ontwerpen we (a) een autorisatiegrens voor platform-brede toegang die princi
 
 ### 1. Platform-admin: een autorisatiedimensie, geen rol
 
-Platform-admin is **geen rol binnen een Bedrijf** (23_Gebruikersrollen.md § 1: "een gebruiker heeft één rol per bedrijf" blijft ongewijzigd voor tenant-rollen). Het is een orthogonale vlag op het Supabase Auth-account zelf: een expliciete allowlist (nieuwe tabel `platform_admins`, `user_id` prim. sleutel, geen RLS op `company_id` — dit is de eerste plek in RouteFlow die bewust **buiten** het tenant-RLS-model valt en dus een eigen, even strenge autorisatiecontrole nodig heeft op elke laag: database (RLS-policy die uitsluitend eigen rij mag lezen, geen "alle bedrijven"-query zonder deze vlag), Edge-Function-guards, én UI-routing).
+Platform-admin is **geen rol binnen een Bedrijf** (23_Gebruikersrollen.md § 1: "een gebruiker heeft één rol per bedrijf" blijft ongewijzigd voor tenant-rollen). Het is een orthogonale vlag op het Supabase Auth-account zelf: een expliciete allowlist (nieuwe tabel `platform_admins`, `user_id` prim. sleutel, geen RLS op `company_id` — dit is de eerste plek in ServOps die bewust **buiten** het tenant-RLS-model valt en dus een eigen, even strenge autorisatiecontrole nodig heeft op elke laag: database (RLS-policy die uitsluitend eigen rij mag lezen, geen "alle bedrijven"-query zonder deze vlag), Edge-Function-guards, én UI-routing).
 
 Consequenties:
 - Geen enkele bestaande tenant-rol (Eigenaar incluis) krijgt hierdoor platform-toegang — expliciet loskoppelen voorkomt de meest voor de hand liggende fout ("Eigenaar van het grootste account is toch wel vertrouwd?").
@@ -68,7 +68,7 @@ Dit is **geen** klant-gerichte feature en staat daarom los van de MVP/V1/V2-scop
 | Alternatief | Waarom niet |
 |---|---|
 | **Platform-admin als extra waarde op de bestaande `role`-kolom (`platform_admin` naast Eigenaar/Admin/…)** | Vermengt twee orthogonale concepten (tenant-rol vs. platform-toegang) in één kolom; een bug in tenant-rol-logica zou dan per ongeluk platform-toegang kunnen raken. Een aparte allowlist-tabel maakt de scheiding expliciet en makkelijk te auditen (één query: "wie heeft platform-toegang"). |
-| **Publiek zichtbaar feature-request-bord (cross-tenant, zoals Canny/UserVoice)** | Introduceert een geheel nieuwe cross-tenant zichtbaarheidsklasse die nergens anders in RouteFlow bestaat (ADR-004: RLS-tenantisolatie is absoluut) en vereist eigen moderatie/spam-afweging — buiten de huidige scope; kan als latere, bewuste uitbreiding op `feature_requests` (zelfde tabel, extra `is_public`-kolom) zonder herontwerp. |
+| **Publiek zichtbaar feature-request-bord (cross-tenant, zoals Canny/UserVoice)** | Introduceert een geheel nieuwe cross-tenant zichtbaarheidsklasse die nergens anders in ServOps bestaat (ADR-004: RLS-tenantisolatie is absoluut) en vereist eigen moderatie/spam-afweging — buiten de huidige scope; kan als latere, bewuste uitbreiding op `feature_requests` (zelfde tabel, extra `is_public`-kolom) zonder herontwerp. |
 | **Product Agent als aparte Edge Function met eigen LLM-integratie/code-generatie-SDK** | Herhaalt exact het patroon dat ADR-011 § "Alternatieven" al afwees voor domein-agents ("extern agent framework... breekt met ADR-008's 'één samenhangend backend-platform'-keuze") — hier zou het bovendien een tweede, parallelle code-generatie-stack naast de bestaande ontwikkelomgeving betekenen. De geplande Claude Code-agent (§ 3) hergebruikt wat er al is. |
 | **Product Agent mag direct naar `main` mergen bij hoge confidence (analoog aan het "Volautomatisch"-niveau van de domein-agents)** | Het "Volautomatisch"-niveau (15_AIPlanner.md § 8) is zelf al begrensd door de zes BR-702-uitzonderingen; code die alle tenants tegelijk raakt hoort per definitie tot een hoger risiconiveau dan zelfs de zwaarste BR-702-actie (die raakt één bedrijf). Nooit-automatisch-mergen is hier bewust geen tijdelijke voorzichtigheid maar een permanent ontwerpprincipe. |
 

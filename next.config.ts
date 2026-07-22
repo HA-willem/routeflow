@@ -1,3 +1,5 @@
+import { withSentryConfig } from '@sentry/nextjs';
+
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
@@ -8,4 +10,14 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ['127.0.0.1'],
 };
 
-export default nextConfig;
+// Sprint 10 — observability-basis. Zonder SENTRY_AUTH_TOKEN slaat de
+// upload-plugin source-map-upload over (waarschuwing, geen build-fout) —
+// geverifieerd via een lokale `npm run build` (Turbopack). Geen
+// webpack-specifieke opties (disableLogger/automaticVercelMonitors) — dit
+// project bouwt met Turbopack, waar die opties toch genegeerd worden.
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: true,
+  widenClientFileUpload: true,
+});

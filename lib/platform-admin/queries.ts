@@ -140,3 +140,31 @@ export async function getFeatureRequestsForPortal(
 
   return data ?? [];
 }
+
+export interface CronJobStatus {
+  jobName: string;
+  lastStatus: string | null;
+  lastStartTime: string | null;
+  lastEndTime: string | null;
+  lastReturnMessage: string | null;
+}
+
+/**
+ * Cron-zichtbaarheid (Sprint 10, observability-basis) — laatste run per
+ * bekende pg_cron-job, via get_cron_job_status() (039_cron_job_status.sql,
+ * eigen platform-admin-check omdat cron.job_run_details niet via RLS te
+ * beveiligen is — het is geen public-schema-tabel).
+ */
+export async function getCronJobStatus(
+  supabase: SupabaseClient<Database>,
+): Promise<CronJobStatus[]> {
+  const { data } = await supabase.rpc('get_cron_job_status');
+
+  return (data ?? []).map((row) => ({
+    jobName: row.job_name,
+    lastStatus: row.last_status,
+    lastStartTime: row.last_start_time,
+    lastEndTime: row.last_end_time,
+    lastReturnMessage: row.last_return_message,
+  }));
+}

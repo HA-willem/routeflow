@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Datum:** 2026-07-07
-- **Beslisser:** Chief Software Architect (RouteFlow) — bekrachtigd door productbeslissing A-05
+- **Beslisser:** Chief Software Architect (ServOps) — bekrachtigd door productbeslissing A-05
 - **Bron van waarheid:** `00_PRD.md` § 19 (A-05: PWA i.p.v. native apps t/m V1), § 11.8
 - **Gerelateerd:** ADR-001 (Next.js), ADR-002 (Supabase); 20_PWA.md, 29_MobieleApp.md, 09_NietFunctioneleEisen.md (NFR-9xx)
 
@@ -10,7 +10,7 @@
 
 ## Context
 
-Medewerkers voeren hun dagroute uit op de mobiele telefoon: navigeren, afvinken, foto's, "niet thuis" (PRD § 7.3, § 11.8). Dit moet **mobile-first**, met grote tap-targets en duimzone-bediening (29), en robuust zijn tegen kortstondig netwerkverlies (FR-045). RouteFlow bouwt met een klein team en wil niet vanaf dag één twee losse native-codebases (iOS + Android) onderhouden.
+Medewerkers voeren hun dagroute uit op de mobiele telefoon: navigeren, afvinken, foto's, "niet thuis" (PRD § 7.3, § 11.8). Dit moet **mobile-first**, met grote tap-targets en duimzone-bediening (29), en robuust zijn tegen kortstondig netwerkverlies (FR-045). ServOps bouwt met een klein team en wil niet vanaf dag één twee losse native-codebases (iOS + Android) onderhouden.
 
 ## Probleem
 

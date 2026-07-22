@@ -13,7 +13,7 @@ import { LoginForm } from './login-form';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Inloggen — RouteFlow',
+  title: 'Inloggen — ServOps',
 };
 
 export default function LoginPage() {

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 
+import { ThemeToggle } from '@/components/composed/ThemeToggle';
 import { RegisterServiceWorker } from '@/components/pwa/RegisterServiceWorker';
 import { requireOnboardedUser } from '@/lib/auth/session';
 import { createClient } from '@/lib/supabase/server';
@@ -10,7 +11,7 @@ import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
-  title: 'RouteFlow — Medewerker',
+  title: 'ServOps — Medewerker',
   manifest: '/manifest.webmanifest',
 };
 
@@ -58,8 +59,11 @@ export default async function MobileLayout({ children }: { children: ReactNode }
     <div className="bg-bg text-text mx-auto flex min-h-dvh max-w-md flex-col md:max-w-2xl">
       <RegisterServiceWorker />
       <header className="border-border flex items-center justify-between border-b px-4 py-3">
-        <span className="text-sm font-semibold">RouteFlow</span>
-        <SyncIndicator />
+        <span className="text-sm font-semibold">ServOps</span>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <SyncIndicator />
+        </div>
       </header>
       <main className="flex-1 pb-24">{children}</main>
     </div>

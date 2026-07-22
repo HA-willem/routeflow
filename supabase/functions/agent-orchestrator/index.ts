@@ -126,6 +126,20 @@ Deno.serve(async (req) => {
     return errorResponse('not_found', 'Bedrijf niet gevonden.', 404);
   }
 
+  // Automatiseringsniveau/confidence-drempel per agent (042_agent_settings.sql,
+  // "AI-assistent"-instellingenpagina) — ontbrekende rij = decideApproval()'s
+  // eigen default (proposal/0.7, lib/agents/approval-handler.ts).
+  const { data: agentSettingsRows } = await supabase
+    .from('agent_settings')
+    .select('agent, automation_level, confidence_threshold')
+    .eq('company_id', body.company_id);
+  const agentSettings = new Map(
+    (agentSettingsRows ?? []).map((row) => [
+      row.agent,
+      { automationLevel: row.automation_level, confidenceThreshold: row.confidence_threshold },
+    ]),
+  );
+
   const serviceRoleAuth = `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`;
   const functionsBaseUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1`;
   const today = todayIso();
@@ -318,10 +332,12 @@ Deno.serve(async (req) => {
       continue;
     }
 
+    const settings = agentSettings.get(candidate.agent);
     const approval = decideApproval({
       actionType: candidate.payload?.type ?? null,
-      automationLevel: 'proposal', // Sprint 7-scope: geen automatiseringsniveau-instellingen-UI (15_AIPlanner.md §8)
+      automationLevel: settings?.automationLevel ?? 'proposal',
       confidence: candidate.confidence,
+      confidenceThreshold: settings?.confidenceThreshold,
     });
 
     const { error: insertError } = await supabase.from('agent_proposals').insert({

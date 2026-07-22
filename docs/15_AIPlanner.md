@@ -1,7 +1,7 @@
 # 15 — AI Planner
 
 **Status:** DONE
-**Versie:** 2.2
+**Versie:** 2.3
 **Bron van waarheid:** `00_PRD.md` § 8 (De AI Planner) — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 **Relaties:** 14_RoutingEngine.md (dag-laag/routes), 10_BusinessRules.md (BR-001/101/200–205/700–703), 21_Notificaties.md (herplan-meldingen), 19_WhatsApp.md (klantberichten), 11_DatabaseConcept.md (jobs/routes), `docs/adr/ADR-011-human-in-the-loop-ai.md` en `43_AI_Agents.md` (dit document blijft de gedetailleerde uitwerking van de horizon-/dag-/reactieve-laag-algoritmes; ADR-011 generaliseert de architectuur eromheen naar meerdere samenwerkende agents — geen tegenspraak, een uitbreiding).
@@ -10,7 +10,7 @@
 
 ## Doel van dit document
 
-Dit document beschrijft het **kernalgoritme** van RouteFlow: hoe genereert de AI Planner automatisch voorgestelde beurten, verdeelt die over dagen/medewerkers, en herplant bij verstoringen — met de mens als eindredacteur (PRD § 8.1). De AI Planner is *conceptueel*; de concrete routeberekening delegeert hij aan de routing-engine (14).
+Dit document beschrijft het **kernalgoritme** van ServOps: hoe genereert de AI Planner automatisch voorgestelde beurten, verdeelt die over dagen/medewerkers, en herplant bij verstoringen — met de mens als eindredacteur (PRD § 8.1). De AI Planner is *conceptueel*; de concrete routeberekening delegeert hij aan de routing-engine (14).
 
 ---
 
@@ -153,13 +153,15 @@ Bij herplannen weegt "aantal wijzigingen t.o.v. bestaande planning" **zwaar** (P
 
 ## 8. Automatiseringsniveaus (per bedrijf instelbaar)
 
+**Status: ✅ gebouwd** (FR-904, 2026-07-21) — `/instellingen/ai-assistent`, per agent instelbaar (`042_agent_settings.sql`). Sprint 7 implementeerde de volledige beslisboom al (`lib/agents/approval-handler.ts::decideApproval()`) maar riep hem uitsluitend met de hardcoded default aan; de instellingen-UI ontbrak tot Sprint 7-vervolg (FR-904).
+
 | Niveau | Gedrag | Use-case |
 |---|---|---|
 | **Voorstel** (default) | AI genereert; planner keurt goed of wijzigt | Vertrouwen opbouwen |
 | **Semi-automatisch** | AI voert uit; planner kan binnen venster ongedaan maken; notificatie | Routine-herplanningen |
 | **Volautomatisch** | AI voert stil uit; alleen loggen | Alleen na expliciete opt-in; niet MVP |
 
-Geleidelijke automatisering is een vertrouwens-mitigatie (PRD § 18): begin bij Voorstel, schuif op naarmate de planner de kwaliteit vertrouwt.
+Geleidelijke automatisering is een vertrouwens-mitigatie (PRD § 18): begin bij Voorstel, schuif op naarmate de planner de kwaliteit vertrouwt. Ongeacht het niveau: een agent zonder uitvoerbare payload (Capacity/Weather/Invoice — informatieve signalering) heeft niets om automatisch uit te voeren, en een confidence-score onder de ingestelde drempel valt altijd terug op "Voorstel" (ADR-012 § 7).
 
 ---
 
@@ -218,3 +220,4 @@ De AI Planner kan verbeteren door te leren van wat de planner **handmatig corrig
 | 2026-07-07 | 2.0 | Verdieping: weer-beslislogica met drempels per type, herplan-diff-UX + stabiliteitsgewicht, automatiseringsniveaus toegelicht, sectie 10 "Leren van correcties" (V2) toegevoegd, sectie 11 "Edge cases & foutafhandeling" (8 cases) toegevoegd; relaties uitgebreid |
 | 2026-07-08 | 2.1 | Production Readiness Review-fix: § 4 expliciet aangewezen als enige bron van waarheid voor de scoring-gewichten (was inconsistent met BR-701 in 10_BusinessRules.md, dat een ander, niet-op-100%-som-uitkomend gewichtenstel vermeldde) |
 | 2026-07-12 | 2.2 | § 0 toegevoegd: plaatsbepaling t.o.v. ADR-011 (Human-in-the-Loop AI) en `43_AI_Agents.md` — dit document blijft leidend voor de algoritmische details van Planning/Optimization/Replanning-agent-logica, geen inhoudelijke wijziging aan de bestaande secties. |
+| 2026-07-21 | 2.3 | § 8 (automatiseringsniveaus) gemarkeerd als gebouwd (FR-904): `/instellingen/ai-assistent`, `042_agent_settings.sql`, `agent-orchestrator`/`agent-replanning` lezen nu per-bedrijf-instellingen i.p.v. de hardcoded default. `decideApproval()` zelf ongewijzigd. |

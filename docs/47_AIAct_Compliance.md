@@ -12,19 +12,19 @@
 
 ## Doel van dit document
 
-Vastleggen (1) welke onderdelen van RouteFlow wel en niet onder de AI Act vallen en waarom, (2) welke verplichtingen daaruit volgen en hoe die zijn geïmplementeerd, en (3) welke architectuurgrenzen bewaakt moeten worden zodat RouteFlow niet **stilzwijgend** in een zwaardere risicocategorie groeit. Dat laatste is het belangrijkste: de huidige classificatie is gunstig *omdat* de architectuur bewuste keuzes maakte (deterministische agents, human approval, geen gedragsprofilering) — die keuzes zijn nu ook compliance-grenzen.
+Vastleggen (1) welke onderdelen van ServOps wel en niet onder de AI Act vallen en waarom, (2) welke verplichtingen daaruit volgen en hoe die zijn geïmplementeerd, en (3) welke architectuurgrenzen bewaakt moeten worden zodat ServOps niet **stilzwijgend** in een zwaardere risicocategorie groeit. Dat laatste is het belangrijkste: de huidige classificatie is gunstig *omdat* de architectuur bewuste keuzes maakte (deterministische agents, human approval, geen gedragsprofilering) — die keuzes zijn nu ook compliance-grenzen.
 
 ---
 
 ## 1. Wettelijk kader & tijdlijn (na Digital Omnibus, stand juli 2026)
 
-| Verplichting | Van kracht | Relevantie voor RouteFlow |
+| Verplichting | Van kracht | Relevantie voor ServOps |
 |---|---|---|
-| Verboden praktijken (Art. 5) | 2 feb 2025 (van kracht) | Geen enkele RouteFlow-functie raakt een verboden praktijk (§ 4) |
+| Verboden praktijken (Art. 5) | 2 feb 2025 (van kracht) | Geen enkele ServOps-functie raakt een verboden praktijk (§ 4) |
 | AI-geletterdheid (Art. 4) | 2 feb 2025 (van kracht) | Actiepunt: instructiemateriaal (§ 8) |
-| GPAI-modelverplichtingen (Art. 53 e.v.) | 2 aug 2025 (van kracht) | Liggen bij Anthropic als modelaanbieder; RouteFlow is afnemer |
+| GPAI-modelverplichtingen (Art. 53 e.v.) | 2 aug 2025 (van kracht) | Liggen bij Anthropic als modelaanbieder; ServOps is afnemer |
 | **Transparantie (Art. 50)** | **2 aug 2026** | **Direct relevant — geïmplementeerd, § 6.1** |
-| Hoog-risico Annex III (Art. 8–27) | **2 dec 2027** (uitgesteld door Omnibus; was 2 aug 2026) | RouteFlow classificeert als niet-hoog-risico (§ 5), maar de herbeoordelingsplicht (§ 7) loopt tot die datum extra scherp |
+| Hoog-risico Annex III (Art. 8–27) | **2 dec 2027** (uitgesteld door Omnibus; was 2 aug 2026) | ServOps classificeert als niet-hoog-risico (§ 5), maar de herbeoordelingsplicht (§ 7) loopt tot die datum extra scherp |
 | Hoog-risico Annex I (embedded in gereguleerde producten) | 2 aug 2028 | N.v.t. |
 
 Bronnen: [Consilium-persbericht 7 mei 2026](https://www.consilium.europa.eu/en/press/press-releases/2026/05/07/artificial-intelligence-council-and-parliament-agree-to-simplify-and-streamline-rules/), [Gibson Dunn — omnibus-analyse](https://www.gibsondunn.com/eu-ai-act-omnibus-agreement-postponed-high-risk-deadlines-and-other-key-changes/), [Freshfields — final Digital Omnibus on AI](https://www.freshfields.com/en/our-thinking/blogs/technology-quotient/eu-ai-act-unpacked-34-the-final-digital-omnibus-on-ai-key-amendments-to-the-a-102nber). Art. 50 is door het Omnibus **niet** uitgesteld.
@@ -35,9 +35,9 @@ Bronnen: [Consilium-persbericht 7 mei 2026](https://www.consilium.europa.eu/en/p
 
 | Partij | AI Act-rol | Gevolg |
 |---|---|---|
-| RouteFlow (platform-eigenaar) | **Aanbieder** (provider) van het platform richting Bedrijven; tevens **gebruiksverantwoordelijke** (deployer) van Claude (Anthropic API) voor de Command Bar | Draagt de Art. 50-transparantieplicht en de classificatieverantwoordelijkheid van dit document |
-| Bedrijf (tenant) | Gebruiksverantwoordelijke van RouteFlow; tevens **werkgever** van de Medewerkers | Zolang niets hoog-risico is: geen aanvullende AI Act-plichten. Zou een onderdeel ooit hoog-risico worden, dan geldt o.a. de werknemers-informatieplicht (Art. 26(7)) — reden te meer voor de grenzen in § 5.2 |
-| Anthropic | Aanbieder van een GPAI-model | Draagt de Art. 53-modelverplichtingen; RouteFlow's afspraken lopen via de DPA (36 § 8 — **nog te sluiten**, § 8) |
+| ServOps (platform-eigenaar) | **Aanbieder** (provider) van het platform richting Bedrijven; tevens **gebruiksverantwoordelijke** (deployer) van Claude (Anthropic API) voor de Command Bar | Draagt de Art. 50-transparantieplicht en de classificatieverantwoordelijkheid van dit document |
+| Bedrijf (tenant) | Gebruiksverantwoordelijke van ServOps; tevens **werkgever** van de Medewerkers | Zolang niets hoog-risico is: geen aanvullende AI Act-plichten. Zou een onderdeel ooit hoog-risico worden, dan geldt o.a. de werknemers-informatieplicht (Art. 26(7)) — reden te meer voor de grenzen in § 5.2 |
+| Anthropic | Aanbieder van een GPAI-model | Draagt de Art. 53-modelverplichtingen; ServOps' afspraken lopen via de DPA (36 § 8 — **nog te sluiten**, § 8) |
 
 ---
 
@@ -49,7 +49,7 @@ Bronnen: [Consilium-persbericht 7 mei 2026](https://www.consilium.europa.eu/en/p
 | S2 | Command Bar intent-routing (ADR-014) | LLM (Claude Haiku) kiest uit gesloten commandolijst | **Ja** — beperkt risico (§ 4.2) |
 | S3 | Organizational Memory (45_AgentMemory.md) | Tellers/confidence-niveaus; leeskant nog niet gebouwd | Grensgeval (§ 5.3) — guardrails vóór de bouw vastgelegd |
 | S4 | Product Agent (FR-951, nog niet actief) | Geplande Claude Code-agent, intern ontwikkelgereedschap | Ja, maar intern; geen besluiten over personen (§ 4.3) |
-| S5 | Routing (Mapbox), geocoding, weerdata (Open-Meteo) | Externe API's / berekeningen | Nee (rekendiensten, geen inferentie in Act-zin binnen RouteFlow) |
+| S5 | Routing (Mapbox), geocoding, weerdata (Open-Meteo) | Externe API's / berekeningen | Nee (rekendiensten, geen inferentie in Act-zin binnen ServOps) |
 
 ---
 
@@ -79,7 +79,7 @@ De (nog niet geactiveerde) Product Agent genereert codewijzigingsvoorstellen voo
 
 ## 5. Het kernrisico: Annex III 4(b) — taakallocatie en werknemersmonitoring
 
-Annex III punt 4(b) merkt als hoog-risico aan: AI-systemen voor besluiten over arbeidsvoorwaarden/-relaties, voor **taakallocatie op basis van individueel gedrag of persoonlijke eigenschappen**, of voor het **monitoren/evalueren van prestaties en gedrag** van werkenden. RouteFlow wijst beurten aan Medewerkers toe — dit is dus hét artikel waarlangs RouteFlow beoordeeld moet worden.
+Annex III punt 4(b) merkt als hoog-risico aan: AI-systemen voor besluiten over arbeidsvoorwaarden/-relaties, voor **taakallocatie op basis van individueel gedrag of persoonlijke eigenschappen**, of voor het **monitoren/evalueren van prestaties en gedrag** van werkenden. ServOps wijst beurten aan Medewerkers toe — dit is dus hét artikel waarlangs ServOps beoordeeld moet worden.
 
 ### 5.1 Waarom de huidige inrichting er niet onder valt
 
@@ -116,7 +116,7 @@ De enige plek waar een gebruiker met een AI-systeem interacteert is de Command B
 
 ### 6.2 Art. 4 — AI-geletterdheid — ⏳ actiepunt
 
-Verplicht sinds feb 2025 voor aanbieders én gebruiksverantwoordelijken. Voor een eenmansplatform met tenants betekent dit praktisch: (1) de platform-eigenaar onderhoudt aantoonbare basiskennis (dit document is daar onderdeel van), (2) tenant-gerichte uitleg over wat de AI-onderdelen wel/niet doen — de bestaande why-explanations en het ADR-011-vertrouwensmodel dekken dit inhoudelijk al grotendeels; een korte, vindbare hulptekst ("Hoe RouteFlow AI gebruikt") is het resterende actiepunt (§ 8).
+Verplicht sinds feb 2025 voor aanbieders én gebruiksverantwoordelijken. Voor een eenmansplatform met tenants betekent dit praktisch: (1) de platform-eigenaar onderhoudt aantoonbare basiskennis (dit document is daar onderdeel van), (2) tenant-gerichte uitleg over wat de AI-onderdelen wel/niet doen — de bestaande why-explanations en het ADR-011-vertrouwensmodel dekken dit inhoudelijk al grotendeels; een korte, vindbare hulptekst ("Hoe ServOps AI gebruikt") is het resterende actiepunt (§ 8).
 
 ### 6.3 Logging & verantwoording — ✅ (bestaand, nu ook compliance-functie)
 
@@ -126,7 +126,7 @@ Verplicht sinds feb 2025 voor aanbieders én gebruiksverantwoordelijken. Voor ee
 
 ### 6.4 GPAI-keten (Anthropic) — ⏳ DPA open
 
-De modelverplichtingen liggen bij Anthropic. RouteFlow's kant: (1) DPA sluiten vóór productiegebruik (reeds geregistreerd open punt, 36 § 8 en QA-rapport § 6), (2) geen klant-/bedrijfsdata in prompts (ADR-014-ontwerp: alleen de getypte zin + vaste commandolijst — geverifieerd in `lib/ai/anthropic-provider.ts`), (3) provider vervangbaar via het adapterpatroon (ADR-007) zodat een keten-/DPA-probleem nooit een architectuurprobleem wordt.
+De modelverplichtingen liggen bij Anthropic. ServOps' kant: (1) DPA sluiten vóór productiegebruik (reeds geregistreerd open punt, 36 § 8 en QA-rapport § 6), (2) geen klant-/bedrijfsdata in prompts (ADR-014-ontwerp: alleen de getypte zin + vaste commandolijst — geverifieerd in `lib/ai/anthropic-provider.ts`), (3) provider vervangbaar via het adapterpatroon (ADR-007) zodat een keten-/DPA-probleem nooit een architectuurprobleem wordt.
 
 ### 6.5 Verboden praktijken (Art. 5) — ✅ n.v.t.
 
@@ -160,7 +160,7 @@ Zou S1 of S3 ooit tóch als hoog-risico (her)geclassificeerd worden — door fea
 |---|---|---|---|
 | 1 | DPA met Anthropic sluiten (36 § 8) | Vóór productiegebruik Command Bar-AI | Platform-eigenaar |
 | 2 | Juridische review van § 4/§ 5-classificaties | Vóór eerste betalende klant (QA-rapport § 6) | Platform-eigenaar + externe jurist |
-| 3 | ~~Hulptekst "Hoe RouteFlow AI gebruikt" (Art. 4, § 6.2)~~ | ✅ Gebouwd 2026-07-17 (`/instellingen/over-ai`, FR-903, `08_FunctioneleEisen.md` § 8) | Product |
+| 3 | ~~Hulptekst "Hoe ServOps AI gebruikt" (Art. 4, § 6.2)~~ | ✅ Gebouwd 2026-07-17 (`/instellingen/over-ai`, FR-903, `08_FunctioneleEisen.md` § 8) | Product |
 | 4 | AI Act-pre-check bij bouw Memory-leeskant (§ 5.3) | Bij die sprint | Bouwende sessie (bindend) |
 | 5 | Herclassificatie-triggers naleven (§ 7) | Doorlopend; jaarlijkse review ≤ juli 2027 | Platform-eigenaar |
 
@@ -182,10 +182,10 @@ Zou S1 of S3 ooit tóch als hoog-risico (her)geclassificeerd worden — door fea
 | Datum | Versie | Wijziging |
 |---|---|---|
 | 2026-07-17 | 1.0 | Eerste volledige versie: tijdlijn na Digital Omnibus (hoog-risico → 2 dec 2027, Art. 50 blijft 2 aug 2026), rolverdeling, systeeminventaris, classificatie per systeem (agents geen AI-systeem; Command Bar beperkt risico; Memory grensgeval met bindende randvoorwaarden; Product Agent intern), Annex III 4(b)-analyse met nieuwe BR-706/707, verplichtingen-matrix met implementatiestatus, what-if-tabel Art. 8–15, openstaande acties, edge cases. |
-| 2026-07-17 | 1.1 | Actiepunt § 8.3 gebouwd: AI-transparantiepagina `/instellingen/over-ai` (FR-903, `08_FunctioneleEisen.md` § 8) — legt Art. 4/50-conform uit welk onderdeel echt een taalmodel gebruikt, dat de "AI Agents" deterministisch zijn, en wat AI bij RouteFlow nooit doet (incl. BR-706/707). |
+| 2026-07-17 | 1.1 | Actiepunt § 8.3 gebouwd: AI-transparantiepagina `/instellingen/over-ai` (FR-903, `08_FunctioneleEisen.md` § 8) — legt Art. 4/50-conform uit welk onderdeel echt een taalmodel gebruikt, dat de "AI Agents" deterministisch zijn, en wat AI bij ServOps nooit doet (incl. BR-706/707). |
 
 ---
 
 ## Volgende stap
 
-De openstaande acties uit § 8 zijn belegd; de eerstvolgende concrete bouwtaak die uit dit document volgt is actiepunt 3 (hulptekst "Hoe RouteFlow AI gebruikt") — klein genoeg om mee te nemen in de sprint die de instellingen-UI voor depot/facturatie bouwt (QA-rapport § 6-blocker), zodat beide klantgerichte go-live-voorwaarden in één sprint landen.
+De openstaande acties uit § 8 zijn belegd; de eerstvolgende concrete bouwtaak die uit dit document volgt is actiepunt 3 (hulptekst "Hoe ServOps AI gebruikt") — klein genoeg om mee te nemen in de sprint die de instellingen-UI voor depot/facturatie bouwt (QA-rapport § 6-blocker), zodat beide klantgerichte go-live-voorwaarden in één sprint landen.

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Datum:** 2026-07-07
-- **Beslisser:** Chief Software Architect (RouteFlow)
+- **Beslisser:** Chief Software Architect (ServOps)
 - **Bron van waarheid:** `00_PRD.md` § 8 (De AI Planner)
 - **Gerelateerd:** ADR-005 (Mapbox), ADR-007 (Provider Adapter Pattern), ADR-008 (Edge Functions); 14_RoutingEngine.md, 15_AIPlanner.md, 10_BusinessRules.md (BR-001/101/200-205/700)
 
@@ -10,7 +10,7 @@
 
 ## Context
 
-De AI Planner is het kernonderscheid van RouteFlow (PRD § 8): hij vertaalt terugkerende dienstafspraken naar concrete beurten, optimaliseert routes, en herplant automatisch bij verstoringen (ziekte, weer, niet-thuis). De planner moet **transparant** zijn ("waarom"-uitleg, BR-700), **nooit stilzwijgend muteren** (PRD § 8.5), en werken binnen strikte performancebudgetten (< 3s voor 60 stops, NFR-103). Tegelijk moet hij evolueren: van simpele heuristieken (MVP) naar geleerde voorkeuren (V2, 15 § 10).
+De AI Planner is het kernonderscheid van ServOps (PRD § 8): hij vertaalt terugkerende dienstafspraken naar concrete beurten, optimaliseert routes, en herplant automatisch bij verstoringen (ziekte, weer, niet-thuis). De planner moet **transparant** zijn ("waarom"-uitleg, BR-700), **nooit stilzwijgend muteren** (PRD § 8.5), en werken binnen strikte performancebudgetten (< 3s voor 60 stops, NFR-103). Tegelijk moet hij evolueren: van simpele heuristieken (MVP) naar geleerde voorkeuren (V2, 15 § 10).
 
 ## Probleem
 

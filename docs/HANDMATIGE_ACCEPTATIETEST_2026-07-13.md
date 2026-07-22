@@ -1,4 +1,4 @@
-# Handmatige Acceptatietest — RouteFlow (lokaal, vóór GitHub/Vercel-push)
+# Handmatige Acceptatietest — ServOps (lokaal, vóór GitHub/Vercel-push)
 
 **Datum:** 2026-07-13
 **Rollen bij het opstellen:** Senior QA Engineer, Product Owner, Principal Software Tester
@@ -40,7 +40,7 @@ Rapporteer deze drie punten **niet** als individuele testfouten — ze zijn hier
 5. **Testaccounts:**
    | Rol | E-mail | Wachtwoord | Toegang |
    |---|---|---|---|
-   | Eigenaar (desktop) | `demo@routeflow.nl` | `DemoWachtwoord123` | Volledige Morning Briefing, instellingen, facturen |
+   | Eigenaar (desktop) | `demo@servops.nl` | `DemoWachtwoord123` | Volledige Morning Briefing, instellingen, facturen |
    | Medewerker (PWA) | `jan@glashelder-demo.nl` | `DemoWachtwoord123` | `/m` — eigen dagroute |
    | Medewerker (PWA, alternatief) | `pieter@glashelder-demo.nl` / `tom@glashelder-demo.nl` / etc. | `DemoWachtwoord123` | idem |
 6. **De AI-agents draaien in productie nachtelijk (00:00–06:00, cron) — lokaal is er geen cron.** Om de Sprint 7-agents (Weather/Optimization/Capacity) te testen, roep je de orchestrator handmatig aan:
@@ -96,8 +96,8 @@ Aanbevolen oplossing: ___
 **Voorwaarden:** seed gedraaid.
 **Teststappen:**
 1. Ga naar `/login`.
-2. Log in met `demo@routeflow.nl` / `DemoWachtwoord123`.
-**Verwachte uitkomst:** redirect naar `/` (Morning Briefing, titel "Vandaag — RouteFlow"), begroeting toont voornaam.
+2. Log in met `demo@servops.nl` / `DemoWachtwoord123`.
+**Verwachte uitkomst:** redirect naar `/` (Morning Briefing, titel "Vandaag — ServOps"), begroeting toont voornaam.
 **Resultaat:** ☐ Geslaagd ☐ Niet geslaagd — Opmerkingen: __________
 
 ### TC-1.3 — Inloggen als Medewerker → automatische redirect naar PWA
@@ -711,7 +711,7 @@ Bij het uitwerken bleek de veronderstelde scope (conceptfactuur aanmaken) al vol
 **Bevinding (rapportagesjabloon):**
 ```
 Testnummer: TC-10.11
-Wat ging fout (exact): app/m/layout.tsx (PWA-shell) bevat in de header alleen "RouteFlow" +
+Wat ging fout (exact): app/m/layout.tsx (PWA-shell) bevat in de header alleen "ServOps" +
   SyncIndicator — geen uitlogknop/menu. Er bestaat geen /m/profiel-route (wel genoemd in
   41_CodingStandards.md § 1 bestandsstructuur: "/m/profiel/**"). De signOut-actie bestaat wel
   (lib/auth/actions.ts) en wordt gebruikt door de desktop-topbar, maar is nergens in de

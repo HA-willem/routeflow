@@ -62,7 +62,7 @@ export async function signUpAndConfirm(
 }
 
 export function uniqueTestEmail(label: string): string {
-  return `${label}-${crypto.randomUUID()}@routeflow.test`;
+  return `${label}-${crypto.randomUUID()}@servops.test`;
 }
 
 /**
@@ -78,7 +78,9 @@ export function uniqueTestEmail(label: string): string {
  * Vereist lokaal (niet gecommitteerd als migratie, bewust — zie de motivatie
  * hierboven): `GRANT SELECT, INSERT ON public.users TO service_role`,
  * `GRANT SELECT ON public.companies TO service_role`,
- * `GRANT SELECT, UPDATE ON public.invoices TO service_role` (`auto_expose_new_tables`
+ * `GRANT SELECT, UPDATE ON public.invoices TO service_role`,
+ * `GRANT SELECT, INSERT ON public.subscription_invoice_periods TO service_role`
+ * (Sprint 10-RLS-tests, `sprint9-invoicing-rls.test.ts`) (`auto_expose_new_tables`
  * staat uit, dus service_role krijgt anders geen enkele tabeltoegang — zie
  * `supabase/config.toml`). Na elke `supabase db reset` opnieuw uitvoeren via
  * `npx supabase db query --local "GRANT ..."`.

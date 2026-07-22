@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { DataTable } from '@/components/composed/DataTable';
 import { PageHeader } from '@/components/composed/PageHeader';
 import { InvoiceActions } from '@/components/domain/InvoiceActions';
@@ -9,7 +11,7 @@ import { markInvoicePaid, sendInvoice } from './actions';
 
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Facturen — RouteFlow' };
+export const metadata: Metadata = { title: 'Facturen — ServOps' };
 
 const STATUS_LABEL: Record<'draft' | 'sent' | 'paid', string> = {
   draft: 'Concept',
@@ -38,7 +40,17 @@ export default async function FacturenPage() {
         emptyTitle="Nog geen facturen."
         emptyDescription="Conceptfacturen verschijnen hier zodra een medewerker een beurt afrondt."
         columns={[
-          { header: 'Nummer', cell: (row) => row.invoice_number ?? '—' },
+          {
+            header: 'Nummer',
+            // Geen onRowHref (DataTable zou dan ook de Acties-kolom-knoppen in
+            // een <Link> wrappen — ongeldige button-in-anchor-nesting); alleen
+            // deze cel linkt naar de nieuwe factuur-detailpagina (FR-068).
+            cell: (row) => (
+              <Link href={`/facturen/${row.id}`} className="underline">
+                {row.invoice_number ?? 'Concept'}
+              </Link>
+            ),
+          },
           {
             header: 'Klant',
             cell: (row) => (row.customers as { name: string } | null)?.name ?? '—',

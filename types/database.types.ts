@@ -178,6 +178,38 @@ export type Database = {
           },
         ]
       }
+      agent_settings: {
+        Row: {
+          agent: Database["public"]["Enums"]["agent_name"]
+          automation_level: Database["public"]["Enums"]["automation_level"]
+          company_id: string
+          confidence_threshold: number
+          updated_at: string
+        }
+        Insert: {
+          agent: Database["public"]["Enums"]["agent_name"]
+          automation_level?: Database["public"]["Enums"]["automation_level"]
+          company_id: string
+          confidence_threshold?: number
+          updated_at?: string
+        }
+        Update: {
+          agent?: Database["public"]["Enums"]["agent_name"]
+          automation_level?: Database["public"]["Enums"]["automation_level"]
+          company_id?: string
+          confidence_threshold?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_usage_events: {
         Row: {
           company_id: string
@@ -274,9 +306,12 @@ export type Database = {
       companies: {
         Row: {
           archived_at: string | null
+          company_type: Database["public"]["Enums"]["company_type"] | null
           config_json: Json
           created_at: string
           id: string
+          industry: string | null
+          instant_invoice_on_complete: boolean
           max_employees: number
           name: string
           slug: string
@@ -285,9 +320,12 @@ export type Database = {
         }
         Insert: {
           archived_at?: string | null
+          company_type?: Database["public"]["Enums"]["company_type"] | null
           config_json?: Json
           created_at?: string
           id?: string
+          industry?: string | null
+          instant_invoice_on_complete?: boolean
           max_employees?: number
           name: string
           slug: string
@@ -296,9 +334,12 @@ export type Database = {
         }
         Update: {
           archived_at?: string | null
+          company_type?: Database["public"]["Enums"]["company_type"] | null
           config_json?: Json
           created_at?: string
           id?: string
+          industry?: string | null
+          instant_invoice_on_complete?: boolean
           max_employees?: number
           name?: string
           slug?: string
@@ -306,6 +347,61 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      correction_log: {
+        Row: {
+          company_id: string
+          correction_type: Database["public"]["Enums"]["correction_type"]
+          created_at: string
+          created_by: string | null
+          id: string
+          job_id: string | null
+          new_value: Json | null
+          old_value: Json | null
+        }
+        Insert: {
+          company_id: string
+          correction_type: Database["public"]["Enums"]["correction_type"]
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          job_id?: string | null
+          new_value?: Json | null
+          old_value?: Json | null
+        }
+        Update: {
+          company_id?: string
+          correction_type?: Database["public"]["Enums"]["correction_type"]
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          job_id?: string | null
+          new_value?: Json | null
+          old_value?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "correction_log_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correction_log_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "correction_log_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customers: {
         Row: {
@@ -520,6 +616,121 @@ export type Database = {
           },
         ]
       }
+      import_jobs: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          error_count: number
+          error_log: Json
+          finished_at: string | null
+          id: string
+          status: Database["public"]["Enums"]["import_job_status"]
+          success_count: number
+          total_rows: number
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          error_count?: number
+          error_log?: Json
+          finished_at?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["import_job_status"]
+          success_count?: number
+          total_rows?: number
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          error_count?: number
+          error_log?: Json
+          finished_at?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["import_job_status"]
+          success_count?: number
+          total_rows?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_jobs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_jobs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invites: {
+        Row: {
+          accepted_at: string | null
+          company_id: string
+          created_at: string
+          email: string
+          employee_id: string
+          expires_at: string
+          id: string
+          invited_by: string
+          role: Database["public"]["Enums"]["user_role"]
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          company_id: string
+          created_at?: string
+          email: string
+          employee_id: string
+          expires_at: string
+          id?: string
+          invited_by: string
+          role?: Database["public"]["Enums"]["user_role"]
+          token: string
+        }
+        Update: {
+          accepted_at?: string | null
+          company_id?: string
+          created_at?: string
+          email?: string
+          employee_id?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invites_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invites_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invites_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_lines: {
         Row: {
           company_id: string
@@ -635,6 +846,7 @@ export type Database = {
           invoice_number: string | null
           notes: string | null
           paid_at: string | null
+          parent_invoice_id: string | null
           sent_at: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           total_amount_cents: number
@@ -652,6 +864,7 @@ export type Database = {
           invoice_number?: string | null
           notes?: string | null
           paid_at?: string | null
+          parent_invoice_id?: string | null
           sent_at?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           total_amount_cents?: number
@@ -669,6 +882,7 @@ export type Database = {
           invoice_number?: string | null
           notes?: string | null
           paid_at?: string | null
+          parent_invoice_id?: string | null
           sent_at?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           total_amount_cents?: number
@@ -688,6 +902,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_parent_invoice_id_fkey"
+            columns: ["parent_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
             referencedColumns: ["id"]
           },
         ]
@@ -1284,6 +1505,58 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_invoice_periods: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          invoice_id: string
+          period_end: string
+          period_start: string
+          service_agreement_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          invoice_id: string
+          period_end: string
+          period_start: string
+          service_agreement_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          period_end?: string
+          period_start?: string
+          service_agreement_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_invoice_periods_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_invoice_periods_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_invoice_periods_service_agreement_id_fkey"
+            columns: ["service_agreement_id"]
+            isOneToOne: false
+            referencedRelation: "service_agreements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           archived_at: string | null
@@ -1499,6 +1772,29 @@ export type Database = {
         Returns: unknown
       }
       _st_within: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      accept_employee_invite: {
+        Args: { p_token: string }
+        Returns: {
+          archived_at: string | null
+          company_type: Database["public"]["Enums"]["company_type"] | null
+          config_json: Json
+          created_at: string
+          id: string
+          industry: string | null
+          instant_invoice_on_complete: boolean
+          max_employees: number
+          name: string
+          slug: string
+          subscription_tier: Database["public"]["Enums"]["subscription_tier"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "companies"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       addauth: { Args: { "": string }; Returns: boolean }
       addgeometrycolumn:
         | {
@@ -1540,6 +1836,33 @@ export type Database = {
       complete_job: {
         Args: { p_job_id: string; p_notes?: string }
         Returns: Json
+      }
+      create_credit_invoice: {
+        Args: { p_invoice_id: string; p_lines: Json; p_note?: string }
+        Returns: {
+          company_id: string
+          created_at: string
+          currency: string
+          customer_id: string
+          due_date: string
+          id: string
+          invoice_date: string
+          invoice_number: string | null
+          notes: string | null
+          paid_at: string | null
+          parent_invoice_id: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["invoice_status"]
+          total_amount_cents: number
+          total_tax_cents: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "invoices"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       current_company_id: { Args: never; Returns: string }
       current_user_role: {
@@ -1640,6 +1963,7 @@ export type Database = {
         | { Args: { table_name: string }; Returns: string }
       enablelongtransactions: { Args: never; Returns: string }
       equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      generate_subscription_invoices: { Args: never; Returns: number }
       geometry: { Args: { "": string }; Returns: unknown }
       geometry_above: {
         Args: { geom1: unknown; geom2: unknown }
@@ -1738,6 +2062,24 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_cron_job_status: {
+        Args: never
+        Returns: {
+          job_name: string
+          last_end_time: string
+          last_return_message: string
+          last_start_time: string
+          last_status: string
+        }[]
+      }
+      get_invite_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          company_name: string
+          email: string
+          valid: boolean
+        }[]
+      }
       gettransactionid: { Args: never; Returns: unknown }
       is_platform_admin: { Args: never; Returns: boolean }
       longtransactionsenabled: { Args: never; Returns: boolean }
@@ -1754,6 +2096,7 @@ export type Database = {
           invoice_number: string | null
           notes: string | null
           paid_at: string | null
+          parent_invoice_id: string | null
           sent_at: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           total_amount_cents: number
@@ -1832,9 +2175,12 @@ export type Database = {
         Args: { company_name: string; owner_full_name: string }
         Returns: {
           archived_at: string | null
+          company_type: Database["public"]["Enums"]["company_type"] | null
           config_json: Json
           created_at: string
           id: string
+          industry: string | null
+          instant_invoice_on_complete: boolean
           max_employees: number
           name: string
           slug: string
@@ -2599,10 +2945,13 @@ export type Database = {
         | "revenue"
         | "optimization"
       agent_run_result: "success" | "failed" | "partial"
+      automation_level: "proposal" | "semi_automatic" | "fully_automatic"
       availability_status: "available" | "sick" | "leave"
       billing_period: "per_job" | "weekly" | "monthly" | "quarterly"
       billing_preference: "email" | "whatsapp" | "post"
       billing_timing: "advance" | "arrears"
+      company_type: "zzp" | "mkb"
+      correction_type: "moved" | "rejected_proposal"
       customer_type: "person" | "business"
       daypart: "morning" | "afternoon"
       feature_request_status:
@@ -2620,6 +2969,7 @@ export type Database = {
         | "yearly"
         | "once"
         | "custom"
+      import_job_status: "running" | "completed" | "failed"
       invoice_status: "draft" | "sent" | "paid"
       job_photo_type: "before" | "after"
       job_status:
@@ -2796,10 +3146,13 @@ export const Constants = {
         "optimization",
       ],
       agent_run_result: ["success", "failed", "partial"],
+      automation_level: ["proposal", "semi_automatic", "fully_automatic"],
       availability_status: ["available", "sick", "leave"],
       billing_period: ["per_job", "weekly", "monthly", "quarterly"],
       billing_preference: ["email", "whatsapp", "post"],
       billing_timing: ["advance", "arrears"],
+      company_type: ["zzp", "mkb"],
+      correction_type: ["moved", "rejected_proposal"],
       customer_type: ["person", "business"],
       daypart: ["morning", "afternoon"],
       feature_request_status: [
@@ -2819,6 +3172,7 @@ export const Constants = {
         "once",
         "custom",
       ],
+      import_job_status: ["running", "completed", "failed"],
       invoice_status: ["draft", "sent", "paid"],
       job_photo_type: ["before", "after"],
       job_status: [

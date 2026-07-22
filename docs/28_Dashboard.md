@@ -10,7 +10,7 @@
 
 ## 0. Relatie met de Morning Briefing (FR-900, ADR-011)
 
-Dit dashboard **is** de Morning Briefing (FR-900, `08_FunctioneleEisen.md` § 8) — niet een los overzicht ernaast. ADR-011 § 1 legt vast dat de Morning Briefing het **primaire startscherm** van RouteFlow is: de gebruiker komt niet eerst op een KPI-schermpje of de planner terecht, maar landt hier direct, elke dag. Dit vervangt de "eigenaar opent 's ochtends RouteFlow"-belofte uit PRD § 3.1 niet, maar formaliseert hem tot het samengestelde overzicht van acht AI Agents (`43_AI_Agents.md`) in plaats van losse, statische KPI's.
+Dit dashboard **is** de Morning Briefing (FR-900, `08_FunctioneleEisen.md` § 8) — niet een los overzicht ernaast. ADR-011 § 1 legt vast dat de Morning Briefing het **primaire startscherm** van ServOps is: de gebruiker komt niet eerst op een KPI-schermpje of de planner terecht, maar landt hier direct, elke dag. Dit vervangt de "eigenaar opent 's ochtends ServOps"-belofte uit PRD § 3.1 niet, maar formaliseert hem tot het samengestelde overzicht van acht AI Agents (`43_AI_Agents.md`) in plaats van losse, statische KPI's.
 
 De bestaande layout (§ 1) blijft het structurele uitgangspunt (actiebanners, KPI's, "vandaag"-overzicht, snelle acties); ADR-011 stelt daarbovenop drie eisen die de bouwende sprint in de layout moet verwerken:
 
@@ -24,7 +24,7 @@ Dit document blijft de bron van waarheid voor de **layout**; ADR-011 is de bron 
 
 ## Doel van dit document
 
-Dit document specificeert het **dashboard** (`/`, FR-102, FR-900): de landingspagina die de eigenaar 's ochtends opent. Het realiseert de kernbelofte uit PRD § 3.1: *"De eigenaar opent 's ochtends RouteFlow en ziet in één oogopslag: wie werkt vandaag waar, welke routes rijden er, wat is er gefactureerd en wat staat open."*
+Dit document specificeert het **dashboard** (`/`, FR-102, FR-900): de landingspagina die de eigenaar 's ochtends opent. Het realiseert de kernbelofte uit PRD § 3.1: *"De eigenaar opent 's ochtends ServOps en ziet in één oogopslag: wie werkt vandaag waar, welke routes rijden er, wat is er gefactureerd en wat staat open."*
 
 Ontwerphouding: **rust + actiegerichtheid**. Geen dichte cockpit vol grafieken, maar enkele betekenisvolle signalen met een directe volgende actie (PRD § 11.1).
 
@@ -87,6 +87,8 @@ Compacte weergave van de dag: aantal beurten, actieve medewerkers, mini-kaart of
 ### 2.5 Omzetgrafiek
 Bar chart, 8 weken (PRD § 17). Rustige styling (25_DesignSystem.md), tabulaire waarden, toegankelijke tooltip. Volgt dataviz-richtlijn: één betekenisvolle reeks, geen chartjunk.
 
+**Verhouding tot `/rapportage` (Sprint 10):** dit is een compacte, altijd-zichtbare indicator op het dashboard zelf — geen vervanging van de volledige Rapportage-module (`/rapportage`, owner/admin, `40_Implementatieplan.md` § Sprint 10), die omzet over een zelf te kiezen periode toont naast route-efficiëntie en productiviteit, met CSV-export. "Snelle acties" (§ 2.6) kan hiernaartoe doorlinken voor verdieping.
+
 ### 2.6 Snelle acties
 Maximaal 3 knoppen; de meest waarschijnlijke ochtendactie eerst ("Plan deze week"). Wachtrij toont teller.
 
@@ -135,3 +137,4 @@ Op mobiel is het dashboard voor eigenaren een gestapelde, scrollbare versie (KPI
 | 2026-07-07 | 2.0 | Volledige uitwerking: layout-schets, 6 secties (banners/KPI's/vandaag/grafiek/acties), rol-afhankelijke inhoud, 4 staten, realtime/performance, mobiel |
 | 2026-07-12 | 2.1 | § 0 toegevoegd: formele koppeling tussen dit dashboard en FR-900 (Morning Briefing, ADR-011) — bestaande layout/secties blijven leidend, geen redesign, alleen de architecturale herkomst (acht AI Agents i.p.v. losse KPI's) expliciet gemaakt. |
 | 2026-07-12 | 2.2 | § 0 uitgebreid conform de verrijkte ADR-011 § 1: Morning Briefing expliciet als primair startscherm (niet een los overzicht), drie concrete eisen aan de layout (vóór-login-samenstelling, per-wijziging wat/waarom/regels/voordeel/impact, volledige actieset accepteren/aanpassen/afwijzen/doorklikken). Nog geen redesign van § 1 zelf — dat is werk voor de bouwende sprint. |
+| 2026-07-21 | 2.3 | § 2.5 aangevuld met de verhouding tot de nieuwe Rapportage-module (`/rapportage`, Sprint 10) — de dashboard-omzetgrafiek blijft de compacte indicator, `/rapportage` is de verdiepingsslag met zelf te kiezen periode + export. |

@@ -37,11 +37,11 @@ Eén Dienstafspraak heeft precies **één** prijsafspraak-type. De prijs kan afw
 - MVP: duur = geplande dienstduur (`estimated_duration_minutes`). Werkelijke-duur-registratie is V2 (PRD § 5.3, geen urenregistratie in MVP).
 - Voorbeeld: €35,00/uur × 45 min = €26,25 excl. BTW.
 
-### 1.3 Abonnement
+### 1.3 Abonnement (✅ gebouwd, Sprint 9)
 
-- `monthly_amount_cents` ongeacht aantal beurten.
-- **Inbegrepen beurten** (`included_jobs_per_period`): boven dat aantal → overage-regel (BR-304).
-- Facturatie: vooraf of achteraf per periode (maand/kwartaal), instelbaar.
+- `amount_cents` (hetzelfde veld als bij Per beurt, `pricings`-tabel) ongeacht aantal beurten.
+- **Inbegrepen beurten** (`included_jobs_per_period`, 0 = ongelimiteerd): boven dat aantal → overage-regel (`overage_amount_cents`, BR-304).
+- Facturatie: `billing_timing` (vooraf/achteraf) is instelbaar en wordt opgeslagen, maar de generatie (`generate_subscription_invoices()`, `034_subscription_billing.sql`) factureert in de praktijk altijd voor de zojuist afgesloten kalendermaand ("achteraf") — een vóóraf-gefactureerde stroom kan nog geen overage van een niet-uitgevoerde periode kennen (bewuste vereenvoudiging, PRD § 19 A-29). Alleen `billing_period = 'monthly'` wordt gefactureerd (FR-066 AC2).
 - Voorbeeld: €150,00/maand incl. 4 beurten; 5e beurt in de maand → +€50,00 overage.
 
 ### 1.4 Strippenkaart (V2)
@@ -183,3 +183,4 @@ Geen open beslissingen. Strippenkaart is expliciet V2 (PRD § 9.1) en hier conce
 | 2026-07-06 | 1.0 | Placeholder-tabel met 4 typen |
 | 2026-07-07 | 2.0 | Volledige uitwerking: 4 prijstypen met facturatiemoment, datamodel (`pricings`), facturatie-koppeling, validaties/foutmeldingen, 5 edge cases |
 | 2026-07-12 | 3.0 | § 7 toegevoegd: klant-specifieke prijsafspraken (prijs-overrides) — prioriteitsketen Job > Klant > Dienstafspraak > Dienst (nieuwe BR-306), instelbare velden (vast bedrag/uurtarief/korting %/opslag %/geldigheidsperiode/opmerking), 4 nieuwe edge cases (PA-06 t/m PA-09). Nog niet in `11_DatabaseConcept.md`/`12_Entiteiten.md` gemigreerd (geen sprint-toewijzing vandaag) — puur conceptuele documentatie. |
+| 2026-07-20 | 3.1 | § 1.3 (Abonnement) gemarkeerd als gebouwd (Sprint 9) — veldnaam gecorrigeerd (`amount_cents`, niet `monthly_amount_cents`) en de "altijd achteraf"-generatie-vereenvoudiging gedocumenteerd (PRD § 19 A-29). |

@@ -18,9 +18,9 @@ ADR-011 legt vast **dat** de Morning Briefing het primaire startscherm is en **w
 
 ## 1. Doel
 
-**Waarom de Morning Briefing het eerste scherm van RouteFlow is.** Traditionele planningssoftware opent op een leeg of grotendeels leeg rooster: de planner moet zelf ontdekken wat er die dag speelt, wat er 's nachts veranderd is, en wat er moet gebeuren. Dat is precies het werk dat RouteFlow overneemt (ADR-011 § Context: *"AI doet het denkwerk. De gebruiker neemt de beslissing."*). Als de applicatie zou openen op een leeg rooster of een generiek dashboard, zou de gebruiker alsnog zelf op zoek moeten naar wat er die dag toe doet — de kernbelofte van een AI-first platform zou dan alleen in de motor zitten, niet in de eerste seconde ervaring. De Morning Briefing is daarom geen los "extra"-scherm maar de plek waar RouteFlow zijn belangrijkste waarde toont vóórdat de gebruiker ook maar één klik heeft gedaan.
+**Waarom de Morning Briefing het eerste scherm van ServOps is.** Traditionele planningssoftware opent op een leeg of grotendeels leeg rooster: de planner moet zelf ontdekken wat er die dag speelt, wat er 's nachts veranderd is, en wat er moet gebeuren. Dat is precies het werk dat ServOps overneemt (ADR-011 § Context: *"AI doet het denkwerk. De gebruiker neemt de beslissing."*). Als de applicatie zou openen op een leeg rooster of een generiek dashboard, zou de gebruiker alsnog zelf op zoek moeten naar wat er die dag toe doet — de kernbelofte van een AI-first platform zou dan alleen in de motor zitten, niet in de eerste seconde ervaring. De Morning Briefing is daarom geen los "extra"-scherm maar de plek waar ServOps zijn belangrijkste waarde toont vóórdat de gebruiker ook maar één klik heeft gedaan.
 
-**Waarom planners niet meer starten met een leeg rooster, maar met AI-voorstellen.** Acht agents (`43_AI_Agents.md`) hebben tussen 00:00–06:00 (ADR-011 § 6) de nacht al gebruikt om te analyseren, te optimaliseren en te signaleren. Het resultaat van die nacht — niet de rauwe planning-tools zelf — is wat de gebruiker als eerste ziet. Dit verschuift de rol van de planner van *bouwer* naar *supervisor*: in plaats van "wat moet ik vandaag plannen?" wordt de eerste vraag "welke van deze voorstellen keur ik goed?". Een lege planning is voor RouteFlow een **uitzonderingssituatie** (nieuw bedrijf, geen dienstafspraken — zie § 10), nooit het startpunt van een normale werkdag.
+**Waarom planners niet meer starten met een leeg rooster, maar met AI-voorstellen.** Acht agents (`43_AI_Agents.md`) hebben tussen 00:00–06:00 (ADR-011 § 6) de nacht al gebruikt om te analyseren, te optimaliseren en te signaleren. Het resultaat van die nacht — niet de rauwe planning-tools zelf — is wat de gebruiker als eerste ziet. Dit verschuift de rol van de planner van *bouwer* naar *supervisor*: in plaats van "wat moet ik vandaag plannen?" wordt de eerste vraag "welke van deze voorstellen keur ik goed?". Een lege planning is voor ServOps een **uitzonderingssituatie** (nieuw bedrijf, geen dienstafspraken — zie § 10), nooit het startpunt van een normale werkdag.
 
 ---
 
@@ -232,7 +232,7 @@ Dit uitklappatroon is een verrijking van het bestaande `WhyExplanation`-componen
 ## 9. Interactieflow
 
 ```
-Gebruiker opent RouteFlow
+Gebruiker opent ServOps
         ↓
 Morning Briefing (§ 3.1–3.2: welkom + dagoverzicht, direct zichtbaar, geen laadvertraging — ADR-011 § 1)
         ↓

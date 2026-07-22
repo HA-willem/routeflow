@@ -2,6 +2,10 @@
 
 import { useRef, useState } from 'react';
 
+import type {
+  FillDayAction,
+  GetFillDayCandidatesAction,
+} from '@/components/domain/RouteBoard/FillDayDialog';
 import {
   RouteBoard,
   type MoveJobAction,
@@ -26,6 +30,8 @@ interface PlanningBoardProps {
   moveJobAction: MoveJobAction;
   optimizeEmployeeDayAction: OptimizeEmployeeDayAction;
   reportSickLeaveAction: ReportSickLeaveAction;
+  getFillDayCandidatesAction: GetFillDayCandidatesAction;
+  fillDayAction: FillDayAction;
 }
 
 /**
@@ -40,6 +46,8 @@ export function PlanningBoard({
   moveJobAction,
   optimizeEmployeeDayAction,
   reportSickLeaveAction,
+  getFillDayCandidatesAction,
+  fillDayAction,
 }: PlanningBoardProps) {
   const [openEmployeeId, setOpenEmployeeId] = useState<string | null>(null);
   const suppressUntilRef = useRef(0);
@@ -66,6 +74,8 @@ export function PlanningBoard({
         moveJobAction={suppressedMoveJobAction}
         optimizeEmployeeDayAction={suppressedOptimizeEmployeeDayAction}
         reportSickLeaveAction={reportSickLeaveAction}
+        getFillDayCandidatesAction={getFillDayCandidatesAction}
+        fillDayAction={fillDayAction}
       />
       <RouteDetailsDialog
         column={openColumn}

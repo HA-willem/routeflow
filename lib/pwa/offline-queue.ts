@@ -8,7 +8,7 @@
  * geïmporteerd (PWA-schermen, 'use client') — geen SSR-gebruik.
  */
 
-const DB_NAME = 'routeflow-m-queue';
+const DB_NAME = 'servops-m-queue';
 const STORE_NAME = 'mutations';
 const DB_VERSION = 1;
 

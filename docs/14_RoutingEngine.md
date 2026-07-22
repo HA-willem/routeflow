@@ -40,7 +40,7 @@ Vastgelegd in PRD § 19 (A-06). Motivatie samengevat: ~2× goedkoper dan Google,
 
 ### 1.3 Gebruikte Mapbox-API's
 
-| Functie | Mapbox-API | Gebruik in RouteFlow |
+| Functie | Mapbox-API | Gebruik in ServOps |
 |---|---|---|
 | Adres → lat/lng | **Geocoding v6** (of Search Box API voor autocomplete) | FR-002 objectinvoer |
 | N×N reistijdmatrix | **Matrix API** (`/directions-matrix/v1`) | Kern van VRP-kostenmatrix |

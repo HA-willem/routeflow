@@ -10,7 +10,7 @@
 
 ## Doel van dit document
 
-Dit document vertaalt de tien UX-principes uit PRD § 11 naar **concrete, toetsbare richtlijnen**: hoe voelt RouteFlow, hoe gedragen interacties zich, en welke regels gelden voor lege staten, foutmeldingen, laadstatussen en motion. Het is de brug tussen productvisie (01) en het design system (25).
+Dit document vertaalt de tien UX-principes uit PRD § 11 naar **concrete, toetsbare richtlijnen**: hoe voelt ServOps, hoe gedragen interacties zich, en welke regels gelden voor lege staten, foutmeldingen, laadstatussen en motion. Het is de brug tussen productvisie (01) en het design system (25).
 
 Design-DNA (PRD § 1): minimalistisch, premium, snel, veel witruimte — geïnspireerd op Apple, Linear, Notion, Stripe, Raycast. Nadrukkelijk géén ouderwetse ERP-uitstraling.
 
@@ -88,7 +88,7 @@ Design-DNA (PRD § 1): minimalistisch, premium, snel, veel witruimte — geïnsp
 
 | Scherm | Lege-staat-copy | Eerste actie |
 |---|---|---|
-| Klanten (geen) | "Nog geen klanten. Voeg je eerste klant toe — daarna plant RouteFlow automatisch." | "Klant toevoegen" |
+| Klanten (geen) | "Nog geen klanten. Voeg je eerste klant toe — daarna plant ServOps automatisch." | "Klant toevoegen" |
 | Planning-week (geen beurten) | "Nog niets gepland. Voeg klanten met dienstafspraken toe; wij stellen de eerste week voor." | "Naar klanten" |
 | Facturen (geen) | "Zodra je een beurt afrondt, verschijnt hier automatisch een conceptfactuur." | — (informatief) |
 | Herplan-wachtrij (leeg) | "Alles gepland — niets in de wachtrij. Mooi." | — |

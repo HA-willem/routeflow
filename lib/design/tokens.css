@@ -7,8 +7,8 @@
 @theme {
   /* § 1.1 — kleur (lichte modus als basiswaarde) */
   --color-bg: #ffffff;
-  --color-surface: #f7f8fa;
-  --color-border: #e5e7eb;
+  --color-surface: #f0efe8;
+  --color-border: #e2e0d4;
   --color-text: #111827;
   --color-text-muted: #5f6368;
   --color-primary: #1a73e8;
@@ -55,7 +55,7 @@
   --duration-fast: 150ms;
   --duration-base: 200ms;
   --duration-slow: 250ms;
-  --ease-routeflow-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-servops-out: cubic-bezier(0, 0, 0.2, 1);
 
   /*
    * shadcn/ui-alias-laag: de gegenereerde primitieven (components/primitives, via
@@ -88,8 +88,8 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --color-bg: #0e1116;
-    --color-surface: #161b22;
-    --color-border: #2a2f37;
+    --color-surface: #201f1a;
+    --color-border: #33322b;
     --color-text: #e6edf3;
     --color-text-muted: #9ba4b0;
     --color-primary: #4c8df6;
@@ -104,8 +104,8 @@
 /* § 7 — handmatige override (V1-toggle, hier al ondersteund op tokenniveau) */
 :root[data-theme='dark'] {
   --color-bg: #0e1116;
-  --color-surface: #161b22;
-  --color-border: #2a2f37;
+  --color-surface: #201f1a;
+  --color-border: #33322b;
   --color-text: #e6edf3;
   --color-text-muted: #9ba4b0;
   --color-primary: #4c8df6;
@@ -118,8 +118,8 @@
 
 :root[data-theme='light'] {
   --color-bg: #ffffff;
-  --color-surface: #f7f8fa;
-  --color-border: #e5e7eb;
+  --color-surface: #f0efe8;
+  --color-border: #e2e0d4;
   --color-text: #111827;
   --color-text-muted: #5f6368;
   --color-primary: #1a73e8;

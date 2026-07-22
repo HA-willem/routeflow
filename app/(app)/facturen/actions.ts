@@ -4,10 +4,11 @@ import { revalidatePath } from 'next/cache';
 
 import { requireOnboardedUser } from '@/lib/auth/session';
 import { sendEmail } from '@/lib/email/resend';
-import { actionError, actionSuccess, type ActionResult } from '@/lib/errors';
+import { actionError, actionSuccess, type ActionResult, validationActionError } from '@/lib/errors';
 import { generateInvoicePdf } from '@/lib/invoicing/pdf';
 import { logger } from '@/lib/logging/logger';
 import { createClient } from '@/lib/supabase/server';
+import { creditInvoiceSchema } from '@/lib/validation/invoice';
 
 /**
  * MVP-facturatie-acties (16_Facturatie.md, PRD § 19 A-19/A-20). Nummering
@@ -188,4 +189,46 @@ export async function markInvoicePaid(invoiceId: string): Promise<ActionResult<n
 
   revalidatePath('/facturen');
   return actionSuccess(null);
+}
+
+/**
+ * FR-068/BR-020: creditfactuur — create_credit_invoice() (035_invoice_credit_
+ * notes.sql) doet de rolcontrole/statuscontrole en maakt de negatieve
+ * factuur+regels aan (als 'draft'). Versturen (nummeren/PDF/e-mail) is een
+ * losse, bewuste vervolgstap door de planner via de bestaande sendInvoice()
+ * hierboven — geen automatische verzending vanuit deze actie.
+ */
+export async function createCreditInvoice(
+  invoiceId: string,
+  input: unknown,
+): Promise<ActionResult<{ id: string }>> {
+  const parsed = creditInvoiceSchema.safeParse(input);
+  if (!parsed.success) {
+    return validationActionError(parsed.error, 'Controleer de ingevulde correctieregels.');
+  }
+
+  await requireOnboardedUser();
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc('create_credit_invoice', {
+    p_invoice_id: invoiceId,
+    p_lines: parsed.data.lines.map((line) => ({
+      description: line.description,
+      amount_cents: Math.round(line.amountEuros * 100),
+      vat_rate: line.vatRate,
+    })),
+    p_note: parsed.data.note || undefined,
+  });
+
+  if (error || !data) {
+    logger.error('createCreditInvoice mislukt', { message: error?.message, invoiceId });
+    return actionError({
+      code: error?.code ?? 'create_credit_invoice_failed',
+      message: error?.message ?? 'De creditfactuur kon niet worden aangemaakt.',
+    });
+  }
+
+  revalidatePath('/facturen');
+  revalidatePath(`/facturen/${invoiceId}`);
+  return actionSuccess({ id: data.id });
 }

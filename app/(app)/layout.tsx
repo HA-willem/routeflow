@@ -1,5 +1,6 @@
 import { AppSidebar } from '@/components/composed/AppSidebar';
 import { CommandBar } from '@/components/composed/CommandBar';
+import { ThemeToggle } from '@/components/composed/ThemeToggle';
 import { Button } from '@/components/primitives/button';
 import { logout } from '@/lib/auth/actions';
 import { requireOnboardedUser } from '@/lib/auth/session';
@@ -25,6 +26,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             routeAiCommandAction={routeAiCommand}
           />
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <p className="text-text-muted hidden text-sm md:block">
               Ingelogd als {profile.full_name}
             </p>

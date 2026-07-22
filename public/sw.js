@@ -3,7 +3,7 @@
 // zichtbaar, mutaties gaan via de IndexedDB-queue in lib/pwa/offline-queue.ts),
 // géén volledige offline-first-synchronisatie-engine (20 § "Belangrijk
 // onderscheid").
-const CACHE_NAME = 'routeflow-m-v1';
+const CACHE_NAME = 'servops-m-v1';
 const SCOPE_PREFIX = '/m';
 
 self.addEventListener('install', (event) => {

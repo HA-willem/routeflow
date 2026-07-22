@@ -12,7 +12,7 @@ import { OnboardingForm } from './onboarding-form';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Bedrijf aanmaken — RouteFlow',
+  title: 'Bedrijf aanmaken — ServOps',
 };
 
 export default async function OnboardingPage() {
@@ -23,9 +23,9 @@ export default async function OnboardingPage() {
       <div className="w-full max-w-sm">
         <Card>
           <CardHeader>
-            <CardTitle>Welkom bij RouteFlow</CardTitle>
+            <CardTitle>Welkom bij ServOps</CardTitle>
             <CardDescription>
-              Hoe heet je bedrijf? Daarna plant RouteFlow automatisch je eerste week.
+              Hoe heet je bedrijf? Daarna plant ServOps automatisch je eerste week.
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Datum:** 2026-07-12
-- **Beslisser:** Chief Software Architect (RouteFlow)
+- **Beslisser:** Chief Software Architect (ServOps)
 - **Bron van waarheid:** `00_PRD.md` § 8.1/§ 8.5 (mens als eindredacteur, transparantie/vertrouwen) — deze ADR spreekt dat niet tegen, maar formaliseert en verbreedt het van "één AI Planner met drie lagen" naar een expliciete **meervoudige agent-architectuur**.
 - **Gerelateerd:** ADR-010 (AI Planner drielagen-architectuur — dit ADR generaliseert die architectuur, vervangt hem niet), ADR-007 (Provider Adapter Pattern), ADR-008 (Edge Functions), **ADR-012** (AI Execution Pipeline — de technische runtime-mechaniek waarmee de agents uit dit ADR daadwerkelijk uitvoeren); `15_AIPlanner.md`, `43_AI_Agents.md` (operationele uitwerking per agent), `10_BusinessRules.md` (BR-700/701, nieuw BR-702/703)
 
@@ -10,7 +10,7 @@
 
 ## Context
 
-Traditionele planningssoftware vereist dat planners dagelijks handmatig routes samenstellen en bijwerken: een leeg scherm bij het inloggen, en zelf op zoek naar wat er die dag geregeld moet worden. RouteFlow kiest een andere filosofie, al vastgelegd op PRD-niveau (§ 8.1: *"volautomatisch, met de mens als eindredacteur"*) maar tot nu toe uitgewerkt als één samenhangende "AI Planner" met drie lagen (ADR-010): horizon, dag, reactief.
+Traditionele planningssoftware vereist dat planners dagelijks handmatig routes samenstellen en bijwerken: een leeg scherm bij het inloggen, en zelf op zoek naar wat er die dag geregeld moet worden. ServOps kiest een andere filosofie, al vastgelegd op PRD-niveau (§ 8.1: *"volautomatisch, met de mens als eindredacteur"*) maar tot nu toe uitgewerkt als één samenhangende "AI Planner" met drie lagen (ADR-010): horizon, dag, reactief.
 
 Naarmate meer domeinen AI-ondersteuning krijgen (weer, capaciteit, communicatie, facturatie, omzetanalyse — niet alleen routeplanning) wordt "één AI Planner" een te grove eenheid: elk domein heeft eigen triggers, eigen input/output, en eigen risicoprofiel voor autonomie (een route-optimalisatie-voorstel is laag-risico; het versturen van een factuur is dat niet). Tegelijk moet de gebruiker niet met acht losse AI-schermen te maken krijgen — het geheel moet als één samenhangend, uitlegbaar systeem aanvoelen.
 
@@ -24,7 +24,7 @@ Hoe structureren we meerdere gespecialiseerde AI-verantwoordelijkheden (planning
 
 ## Gekozen oplossing
 
-**RouteFlow is een AI-first Operations Platform**: gespecialiseerde AI Agents werken continu op de achtergrond, de gebruiker opent de applicatie niet in een leeg scherm maar in een **Morning Briefing** — een dagelijks, vooraf samengesteld overzicht van voorstellen, waarschuwingen en analyses die de gebruiker beoordeelt, aanpast of goedkeurt. Planners worden daarmee steeds meer **supervisors** van AI-voorstellen dan handmatige planners: hun tijd gaat naar beoordelen en bijsturen, niet naar het vanaf nul samenstellen van een dagplanning.
+**ServOps is een AI-first Operations Platform**: gespecialiseerde AI Agents werken continu op de achtergrond, de gebruiker opent de applicatie niet in een leeg scherm maar in een **Morning Briefing** — een dagelijks, vooraf samengesteld overzicht van voorstellen, waarschuwingen en analyses die de gebruiker beoordeelt, aanpast of goedkeurt. Planners worden daarmee steeds meer **supervisors** van AI-voorstellen dan handmatige planners: hun tijd gaat naar beoordelen en bijsturen, niet naar het vanaf nul samenstellen van een dagplanning.
 
 Dit bouwt bewust **op** de bestaande architectuur, niet ernaast:
 
@@ -35,9 +35,9 @@ Dit bouwt bewust **op** de bestaande architectuur, niet ernaast:
 
 ### 1. Morning Briefing (primair startscherm)
 
-**De Morning Briefing is het standaard startscherm van RouteFlow** — geen los, optioneel overzicht bovenop een dashboard, maar de plek waar de gebruiker **altijd** landt bij het openen van de applicatie. De gebruiker komt dus niet eerst op een los dashboard of de planner terecht en klikt zich vandaar naar een briefing; de Morning Briefing ís het commandocentrum van de dag, elke dag. Technisch valt dit samen met de bestaande dashboard-route (`/`, FR-102) — geen nieuwe route, wel een architecturaal andere rol: `28_Dashboard.md` beschrijft vanaf nu de Morning Briefing, geen los KPI-schermpje ernaast (zie § 0 van dat document).
+**De Morning Briefing is het standaard startscherm van ServOps** — geen los, optioneel overzicht bovenop een dashboard, maar de plek waar de gebruiker **altijd** landt bij het openen van de applicatie. De gebruiker komt dus niet eerst op een los dashboard of de planner terecht en klikt zich vandaar naar een briefing; de Morning Briefing ís het commandocentrum van de dag, elke dag. Technisch valt dit samen met de bestaande dashboard-route (`/`, FR-102) — geen nieuwe route, wel een architecturaal andere rol: `28_Dashboard.md` beschrijft vanaf nu de Morning Briefing, geen los KPI-schermpje ernaast (zie § 0 van dat document).
 
-Bij het openen van RouteFlow (of het eerste bezoek van de dag) krijgt de gebruiker automatisch — niet op aanvraag — een samengesteld overzicht:
+Bij het openen van ServOps (of het eerste bezoek van de dag) krijgt de gebruiker automatisch — niet op aanvraag — een samengesteld overzicht:
 
 | Onderdeel | Bron-agent |
 |---|---|
@@ -159,7 +159,7 @@ Communication Agent   — bereidt conceptberichten voor (nog niet verzonden — 
       ↓
 Morning Briefing opgebouwd (samenvatting van alle bovenstaande output)
       ↓
-Gebruiker opent RouteFlow (komt direct op de Morning Briefing terecht, § 1)
+Gebruiker opent ServOps (komt direct op de Morning Briefing terecht, § 1)
       ↓
 Morning Briefing bekijken (elk voorstel met wat/waarom/regels/voordeel/impact + confidence, § 1/§ 4/§ 5)
       ↓

@@ -27,7 +27,14 @@ import {
 } from '@/components/primitives/dialog';
 import { EmptyState } from '@/components/primitives/empty-state';
 import type { ActionResult } from '@/lib/errors';
+import { formatDayHeading } from '@/lib/planning/dates';
 import { cn } from '@/lib/utils';
+
+import {
+  FillDayDialog,
+  type FillDayAction,
+  type GetFillDayCandidatesAction,
+} from './FillDayDialog';
 
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 
@@ -68,6 +75,8 @@ interface RouteBoardProps {
   moveJobAction: MoveJobAction;
   optimizeEmployeeDayAction: OptimizeEmployeeDayAction;
   reportSickLeaveAction: ReportSickLeaveAction;
+  getFillDayCandidatesAction: GetFillDayCandidatesAction;
+  fillDayAction: FillDayAction;
 }
 
 /** BR-202 werkdag-limiet (8,5u) — hier alleen als UI-preview-drempel voor de capaciteitsbalk (42_DesignSystem.md § 14); de harde grens wordt door route-move-job gehandhaafd. */
@@ -169,20 +178,26 @@ function ReportSickButton({
 
 function Column({
   column,
+  date,
   onOptimize,
   isOptimizing,
   onReportSick,
   isReportingSick,
   onOpenDetails,
   highlightedJobIds,
+  getFillDayCandidatesAction,
+  fillDayAction,
 }: {
   column: RouteColumn;
+  date: string;
   onOptimize: () => void;
   isOptimizing: boolean;
   onReportSick: () => void;
   isReportingSick: boolean;
   onOpenDetails?: () => void;
   highlightedJobIds?: Set<string>;
+  getFillDayCandidatesAction: GetFillDayCandidatesAction;
+  fillDayAction: FillDayAction;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: column.employeeId, data: { column } });
 
@@ -198,6 +213,14 @@ function Column({
             employeeName={column.employeeName}
             isReporting={isReportingSick}
             onConfirm={onReportSick}
+          />
+          <FillDayDialog
+            employeeId={column.employeeId}
+            employeeName={column.employeeName}
+            date={date}
+            dayLabel={formatDayHeading(date)}
+            getCandidatesAction={getFillDayCandidatesAction}
+            fillDayAction={fillDayAction}
           />
           <Button
             variant="ghost"
@@ -254,6 +277,8 @@ export function RouteBoard({
   moveJobAction,
   optimizeEmployeeDayAction,
   reportSickLeaveAction,
+  getFillDayCandidatesAction,
+  fillDayAction,
 }: RouteBoardProps) {
   const [prevColumns, setPrevColumns] = useState(columns);
   const [columnsState, setColumnsState] = useState(columns);
@@ -397,6 +422,7 @@ export function RouteBoard({
           <Column
             key={column.employeeId}
             column={column}
+            date={date}
             isOptimizing={optimizingEmployeeId === column.employeeId}
             onOptimize={() => handleOptimize(column.employeeId)}
             isReportingSick={reportingSickEmployeeId === column.employeeId}
@@ -405,6 +431,8 @@ export function RouteBoard({
               onOpenRouteDetails ? () => onOpenRouteDetails(column.employeeId) : undefined
             }
             highlightedJobIds={highlightedJobIds}
+            getFillDayCandidatesAction={getFillDayCandidatesAction}
+            fillDayAction={fillDayAction}
           />
         ))}
       </div>

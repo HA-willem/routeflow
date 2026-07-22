@@ -23,7 +23,7 @@ Resultaat: `009_jobs.sql` en `010_service_agreements_horizon.sql` succesvol toeg
 | RLS actief op alle tenant-tabellen | ✅ `companies`, `customers`, `jobs`, `objects`, `pricings`, `service_agreements`, `services`, `users` hebben allemaal `relrowsecurity = true`; policy-aantal per tabel komt overeen met de migraties (customers/jobs/objects/pricings/service_agreements/services: 3, companies: 2, users: 1) |
 | `planning-generate` Edge Function werkt nog | ❌ **niet gedeployed op productie** — `supabase functions list` geeft een lege lijst. De functie bestaat alleen lokaal (`supabase/functions/planning-generate/`) en is nooit naar Supabase Cloud gepusht. Dit stond niet expliciet in de opdracht ("deploy migraties 009 en 010"), dus niet zelfstandig alsnog gedeployed — zie Problemen/Conclusie. |
 
-### 4. Functionele hertest tegen productie (`https://routeflow-delta.vercel.app`)
+### 4. Functionele hertest tegen productie (`https://servops-delta.vercel.app`)
 
 Uitgevoerd via een tijdelijk Playwright-script (niet aan de repo toegevoegd, na afloop verwijderd) dat de live site aanstuurt, met e-mailbevestiging via een directe `auth.users`-controle (geen productie-mailbox beschikbaar voor automatische bevestiging).
 

@@ -56,6 +56,96 @@ describe('serviceAgreementSchema (FR-004)', () => {
     }
   });
 
+  it('accepteert een volledig ingevulde abonnements-afspraak (FR-066)', () => {
+    const result = serviceAgreementSchema.safeParse({
+      ...valid,
+      pricingType: 'subscription',
+      amountEuros: undefined,
+      subscriptionAmountEuros: 150,
+      includedJobsPerPeriod: 4,
+      overageAmountEuros: 50,
+      billingTiming: 'arrears',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepteert 0 inbegrepen beurten (ongelimiteerd, 18_Prijsafspraken.md § 7)', () => {
+    const result = serviceAgreementSchema.safeParse({
+      ...valid,
+      pricingType: 'subscription',
+      amountEuros: undefined,
+      subscriptionAmountEuros: 150,
+      includedJobsPerPeriod: 0,
+      overageAmountEuros: 50,
+      billingTiming: 'advance',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('weigert subscription zonder bedrag per maand', () => {
+    const result = serviceAgreementSchema.safeParse({
+      ...valid,
+      pricingType: 'subscription',
+      amountEuros: undefined,
+      subscriptionAmountEuros: undefined,
+      includedJobsPerPeriod: 4,
+      overageAmountEuros: 50,
+      billingTiming: 'arrears',
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.path).toEqual(['subscriptionAmountEuros']);
+    }
+  });
+
+  it('weigert subscription zonder inbegrepen-beurten-aantal', () => {
+    const result = serviceAgreementSchema.safeParse({
+      ...valid,
+      pricingType: 'subscription',
+      amountEuros: undefined,
+      subscriptionAmountEuros: 150,
+      includedJobsPerPeriod: undefined,
+      overageAmountEuros: 50,
+      billingTiming: 'arrears',
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.path).toEqual(['includedJobsPerPeriod']);
+    }
+  });
+
+  it('weigert subscription zonder overage-bedrag', () => {
+    const result = serviceAgreementSchema.safeParse({
+      ...valid,
+      pricingType: 'subscription',
+      amountEuros: undefined,
+      subscriptionAmountEuros: 150,
+      includedJobsPerPeriod: 4,
+      overageAmountEuros: undefined,
+      billingTiming: 'arrears',
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.path).toEqual(['overageAmountEuros']);
+    }
+  });
+
+  it('weigert subscription zonder facturatiemoment', () => {
+    const result = serviceAgreementSchema.safeParse({
+      ...valid,
+      pricingType: 'subscription',
+      amountEuros: undefined,
+      subscriptionAmountEuros: 150,
+      includedJobsPerPeriod: 4,
+      overageAmountEuros: 50,
+      billingTiming: undefined,
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.path).toEqual(['billingTiming']);
+    }
+  });
+
   it('weigert custom-frequentie zonder interval', () => {
     const result = serviceAgreementSchema.safeParse({
       ...valid,

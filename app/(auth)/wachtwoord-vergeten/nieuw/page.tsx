@@ -12,7 +12,7 @@ import { ResetPasswordForm } from './reset-password-form';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Nieuw wachtwoord — RouteFlow',
+  title: 'Nieuw wachtwoord — ServOps',
 };
 
 export default async function ResetPasswordPage() {

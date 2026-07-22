@@ -18,8 +18,8 @@ Dit document definieert de **rollen** binnen een Bedrijf en de **volledige recht
 
 | Rol | Primair device | Omschrijving |
 |---|---|---|
-| **Eigenaar** | Desktop + mobiel | Volledige controle incl. abonnement/billing van RouteFlow zelf |
-| **Admin** | Desktop | Alles behalve RouteFlow-abonnement/billing |
+| **Eigenaar** | Desktop + mobiel | Volledige controle incl. abonnement/billing van ServOps zelf |
+| **Admin** | Desktop | Alles behalve ServOps-abonnement/billing |
 | **Planner** | Desktop | Planning en klantbeheer; geen gebruikersbeheer, geen facturatie-mutaties |
 | **Administratie** | Desktop | Facturatie en debiteuren; geen planning-mutaties |
 | **Medewerker** | Mobiel (PWA) | Voert eigen routes uit; beperkte klantinfo, geen financiële data |
@@ -36,7 +36,7 @@ Legenda: **C** create · **R** read · **U** update · **D** delete · **—** g
 | Resource | Eigenaar | Admin | Planner | Administratie | Medewerker |
 |---|---|---|---|---|---|
 | Bedrijfsinstellingen | R U | R U | R | — | — |
-| RouteFlow-abonnement/billing | R U | — | — | — | — |
+| ServOps-abonnement/billing | R U | — | — | — | — |
 | Gebruikers & rollen | C R U D | C R U D | — | — | — |
 | Diensten (services) | C R U D | C R U D | R | R | R◦¹ |
 | Klanten | C R U D² | C R U D² | C R U | R | R◦³ |

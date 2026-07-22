@@ -1,7 +1,7 @@
 # 27 — Pagina-Overzicht
 
 **Status:** DONE
-**Versie:** 2.2
+**Versie:** 2.4
 **Bron van waarheid:** `00_PRD.md` § 7, § 11 — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 **Relaties:** 30_Navigatie.md (routes/IA), 26_ComponentLibrary.md (componenten), 28_Dashboard.md, 29_MobieleApp.md, 08_FunctioneleEisen.md (FR per pagina), 23_Gebruikersrollen.md (toegang), `docs/adr/ADR-011-human-in-the-loop-ai.md` en `43_AI_Agents.md` (FR-900 Morning Briefing, § 1.1).
@@ -44,12 +44,14 @@ Splitsing volgt PRD § 11.8: **desktop = regie**, **mobiel (PWA) = uitvoering**.
 - **Primaire actie:** "Klant toevoegen".
 - **Componenten:** DataTable, FilterBar, zoek.
 - **FR:** FR-001/006/008. **Rollen:** Eigenaar/Admin/Planner (C/R/U), Administratie (R).
+- **Nieuwe klant (2026-07-17):** `/klanten/nieuw` is een doorlopende 3-stappen-wizard (klantgegevens → adres/object → dienst+frequentie, `NieuweKlantWizard`) die klant, object en dienstafspraak in één flow aanmaakt — de bestaande automatische beurt-generatie (FR-020) start meteen na stap 3. Stap 2/3 hebben een "Later toevoegen"-ontsnapping voor een klant met meerdere/nog onbekende locaties; de losse pagina's (object/dienstafspraak toevoegen) blijven bestaan voor die gevallen.
 
 ### 1.5 Klant-detail `/klanten/[id]`
 - **Doel:** alles van één klant: objecten, dienstafspraken, tijdlijn, facturen.
 - **Primaire actie:** contextueel per tab.
 - **Componenten:** Tabs (Objecten · Dienstafspraken · Tijdlijn · Facturen), ServiceAgreementForm, CustomerTimeline.
 - **FR:** FR-003/004/005/007. **Rollen:** idem klanten.
+- **Beurten (2026-07-17):** boven de tabs toont een regel "Volgende beurt: …" (eerstvolgende niet-geannuleerde beurt, over alle objecten van de klant). De tab-lijst heeft een gerichte tab "Beurten": datum/adres/dienst/status van alle beurten (voorgesteld → uitgevoerd), met een vink bij `completed`. Dit is een eerste, afgebakende bouwsteen richting de volledige FR-007-Tijdlijn hierboven (die ook facturen/communicatie combineert) — nog geen vervanging ervan.
 
 ### 1.6 Object-detail `/klanten/[id]/objecten/[objectId]`
 - **Doel:** adres, locatie, toegangsinstructies, dienstafspraken van één object.
@@ -156,3 +158,5 @@ Elke datagedreven pagina implementeert loading/empty/error/loaded (26 § 5). Leg
 | 2026-07-07 | 2.0 | Volledige sitemap: 12 desktop-pagina's + 3 PWA-schermen + globale overlays, elk met doel/primaire actie/componenten/FR/rollen; boomstructuur |
 | 2026-07-12 | 2.1 | § 1.1 Dashboard aangevuld met FR-900 (Morning Briefing, ADR-011) — geen wijziging aan componenten/rollen, alleen de architecturale herkomst expliciet gemaakt. |
 | 2026-07-17 | 2.2 | § 1.2 Planning: ZZP-weekgrid (WeekBoard, alleen bij 1 actieve medewerker) en AI-voorstellen (ProposalList, gefilterd tot de zichtbare week/dag) toegevoegd — voortvloeiend uit gebruikersverzoek, geen PRD-conflict (FR-020…028 blijven ongewijzigd van toepassing). |
+| 2026-07-17 | 2.3 | § 1.4 Klanten: FilterBar (zoeken op naam/e-mail/telefoon, filter op type en plaats, actieve-filter-chips) en paginering nu daadwerkelijk gebouwd — dit was al onderdeel van FR-001/006/008 en 26_ComponentLibrary.md § 3, alleen nog niet geïmplementeerd. Kolommen Adres/Plaats tonen het adres van het eerste object van de klant (adres leeft op Object, niet op Klant — 12_Entiteiten.md § 3/4); "wijk" bestaat nergens als datamodel-veld en wordt hier vervangen door het wél bestaande `objects.city`. Geen FR-hernummering. |
+| 2026-07-17 | 2.4 | § 1.4 "Nieuwe klant" is nu een 3-stappen-wizard (klant→object→dienstafspraak in één flow, automatische beurt-generatie aan het eind — hergebruikt bestaande FR-001/003/004/020-mechanismen, geen nieuwe Server Actions). § 1.5 Klant-detail: "Volgende beurt"-regel + tab "Beurten" (geschiedenis met voltooid-vink) toegevoegd als gerichte eerste bouwsteen richting de bredere FR-007-Tijdlijn. Geen FR-hernummering. |

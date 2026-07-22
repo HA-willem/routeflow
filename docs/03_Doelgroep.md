@@ -23,7 +23,7 @@ Dit document detailleert de **primaire en secundaire doelgroepen**, hun pijnpunt
 
 ### 1.2 Segmentatie
 
-| Segment | Grootte | Kenmerken | RouteFlow-fit |
+| Segment | Grootte | Kenmerken | ServOps-fit |
 |---|---|---|---|
 | **ZZP'ers** | 1 | Eigenaar = uitvoerder = planner | Hoog: alles-in-één op telefoon |
 | **Klein (2–5 mw)** | 2–5 | Eigenaar + partners + medewerkers | Zeer hoog: KERNGROEP |

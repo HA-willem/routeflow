@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Datum:** 2026-07-12
-- **Beslisser:** Chief Software Architect (RouteFlow)
+- **Beslisser:** Chief Software Architect (ServOps)
 - **Bron van waarheid:** `docs/adr/ADR-011-human-in-the-loop-ai.md` (waarom/architectuurbeslissing) en `43_AI_Agents.md` (welke agents, per-agent verantwoordelijkheid) — dit ADR spreekt geen van beide tegen, het specificeert de **technische runtime-mechaniek**: hoe de acht agents daadwerkelijk uitvoeren, in welke volgorde, binnen welke tijds-/kostenbudgetten, en met welk gegarandeerd outputcontract.
 - **Gerelateerd:** ADR-007 (Provider Adapter Pattern), ADR-008 (Edge Functions), ADR-010 (AI Planner drielagen-architectuur, diff-model), ADR-011 (Human-in-the-Loop AI, Agent-orchestratie); `15_AIPlanner.md`, `43_AI_Agents.md`, `10_BusinessRules.md` (BR-700–703, BR-200–205), `41_CodingStandards.md` § 11 (logging), `14_RoutingEngine.md` (Optimization Agent-fundament)
 
@@ -10,7 +10,7 @@
 
 ## Context
 
-ADR-011 legt vast **dat** RouteFlow uit acht samenwerkende AI Agents bestaat, gecoördineerd door een Agent Orchestrator, resulterend in een dagelijkse Morning Briefing (FR-900) met een harde Human-Approval-grens (BR-702) en een verplicht confidence/explainability-outputcontract (BR-703). `43_AI_Agents.md` legt vast **wat** elke agent doet (verantwoordelijkheid, input, output, business rules, triggers).
+ADR-011 legt vast **dat** ServOps uit acht samenwerkende AI Agents bestaat, gecoördineerd door een Agent Orchestrator, resulterend in een dagelijkse Morning Briefing (FR-900) met een harde Human-Approval-grens (BR-702) en een verplicht confidence/explainability-outputcontract (BR-703). `43_AI_Agents.md` legt vast **wat** elke agent doet (verantwoordelijkheid, input, output, business rules, triggers).
 
 Geen van beide documenten specificeert **hoe** dit technisch samenkomt tijdens runtime: in welke volgorde agents daadwerkelijk uitvoeren (en welke parallel kunnen), hoe een individuele agent-aanroep zich technisch gedraagt (timeout, retry, cache), hoe een gefaalde of misvormde agent-output wordt afgehandeld zonder de rest van de keten te breken, hoe AI-kosten (calls/tokens) begrensd blijven bij honderden tenants, en hoe het BR-703-outputcontract *uniform* wordt afgedwongen ongeacht welke agent de output produceert — in plaats van dat elke agent zijn eigen explainability-logica herimplementeert.
 
@@ -213,7 +213,7 @@ sequenceDiagram
     end
 
     Orch->>Orch: assembleer Morning Briefing (incl. "niet beschikbaar"-notices, §4)
-    User->>Orch: opent RouteFlow
+    User->>Orch: opent ServOps
     Orch-->>User: Morning Briefing (voorstellen + confidence + uitleg)
     User->>AH: goedkeuren / aanpassen / afwijzen
     AH->>DB: voer goedgekeurde actie uit (bestaande Edge Functions, ongewijzigd)
@@ -235,7 +235,7 @@ sequenceDiagram
 - Eén plek (de pipeline, § 2) garandeert dat BR-703's contract nooit per ongeluk overgeslagen wordt door een individuele agent-implementatie.
 - Parallellisatie waar veilig (§ 1) houdt de dagelijkse cyclus binnen het 00:00–06:00-venster ook bij groei in tenant-aantal.
 - Cost management (§ 5) maakt AI-kosten voorspelbaar en begrensd per bedrijf, voorkomt een "runaway"-scenario bij een bug in een agent.
-- Graceful degradation (§ 4) garandeert dat RouteFlow nooit onbruikbaar wordt door een AI-storing — het handmatige pad (Sprint 4 Planning-UI) blijft altijd het vangnet.
+- Graceful degradation (§ 4) garandeert dat ServOps nooit onbruikbaar wordt door een AI-storing — het handmatige pad (Sprint 4 Planning-UI) blijft altijd het vangnet.
 - De confidence-drempel als niet-overrulebare veiligheidslaag (§ 7) is een concrete verscherping van ADR-011's Human Approval-principe, niet alleen een configuratie-optie.
 
 **Negatief / risico's**

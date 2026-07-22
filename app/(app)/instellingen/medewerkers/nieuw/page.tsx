@@ -7,7 +7,7 @@ import { createEmployee } from '../actions';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Nieuwe medewerker — RouteFlow',
+  title: 'Nieuwe medewerker — ServOps',
 };
 
 export default async function NieuweMedewerkerPage() {

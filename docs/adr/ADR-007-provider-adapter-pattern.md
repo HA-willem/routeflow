@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Datum:** 2026-07-07
-- **Beslisser:** Chief Software Architect (RouteFlow)
+- **Beslisser:** Chief Software Architect (ServOps)
 - **Bron van waarheid:** `00_PRD.md` § 12.2 (provider-agnostische adapters)
 - **Gerelateerd:** ADR-005 (Mapbox), ADR-006 (360dialog), ADR-002 (Supabase); 14_RoutingEngine.md § 2, 19_WhatsApp.md § 2, 16_Facturatie.md, 13_API_Specificatie.md
 
@@ -10,7 +10,7 @@
 
 ## Context
 
-RouteFlow leunt op meerdere **vervangbare** externe diensten: betalingen (Mollie, A-04), routing/geocoding (Mapbox, ADR-005), WhatsApp (360dialog, ADR-006), weer (Open-Meteo/KNMI) en e-mail (Resend). PRD § 18 benoemt expliciet risico's rond providerkosten en -lock-in. Tegelijk moet domeinlogica (facturatie, planning, communicatie) testbaar zijn zonder echte externe calls.
+ServOps leunt op meerdere **vervangbare** externe diensten: betalingen (Mollie, A-04), routing/geocoding (Mapbox, ADR-005), WhatsApp (360dialog, ADR-006), weer (Open-Meteo/KNMI) en e-mail (Resend). PRD § 18 benoemt expliciet risico's rond providerkosten en -lock-in. Tegelijk moet domeinlogica (facturatie, planning, communicatie) testbaar zijn zonder echte externe calls.
 
 ## Probleem
 
@@ -60,7 +60,7 @@ Domeinlogica (planning, facturatie, communicatie)
 
 ## Waarom deze keuze toekomstbestendig is
 
-Dit patroon is de directe operationalisering van het PRD-principe "provider-agnostische adapters" (§ 12.2) en het expliciete risicobeleid rond leverancierskosten/-lock-in (§ 18). Het maakt elke leveranciersbeslissing (ADR-005, ADR-006, en toekomstige) **omkeerbaar tegen lage kosten**: een providerwissel is een implementatie-swap achter een stabiel contract, nooit een architectuurwijziging. Dit is precies wat RouteFlow nodig heeft om mee te bewegen met kostenschommelingen, nieuwe markten (ADR-010/39) en leveranciersrisico, zonder de kernlogica ooit opnieuw te hoeven bouwen.
+Dit patroon is de directe operationalisering van het PRD-principe "provider-agnostische adapters" (§ 12.2) en het expliciete risicobeleid rond leverancierskosten/-lock-in (§ 18). Het maakt elke leveranciersbeslissing (ADR-005, ADR-006, en toekomstige) **omkeerbaar tegen lage kosten**: een providerwissel is een implementatie-swap achter een stabiel contract, nooit een architectuurwijziging. Dit is precies wat ServOps nodig heeft om mee te bewegen met kostenschommelingen, nieuwe markten (ADR-010/39) en leveranciersrisico, zonder de kernlogica ooit opnieuw te hoeven bouwen.
 
 ## Referenties
 

@@ -509,7 +509,7 @@ async function main() {
       const name = isBusiness
         ? `${pick(BEDRIJFSNAMEN, globalIndex)} ${globalIndex}`
         : `${pick(VOORNAMEN, globalIndex)} ${pick(ACHTERNAMEN, globalIndex + 7)}`;
-      const email = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '.')}.${globalIndex}@voorbeeld.routeflow.test`;
+      const email = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '.')}.${globalIndex}@voorbeeld.servops.test`;
       const customerId = randomUUID();
 
       customerRows.push({

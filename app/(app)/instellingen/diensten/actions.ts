@@ -4,9 +4,11 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { requireOnboardedUser } from '@/lib/auth/session';
+import { BRANCHE_TEMPLATES } from '@/lib/branche-templates/data';
 import { actionError, actionSuccess, type ActionResult, validationActionError } from '@/lib/errors';
 import { logger } from '@/lib/logging/logger';
 import { createClient } from '@/lib/supabase/server';
+import { importBrancheTemplateSchema } from '@/lib/validation/branche-template';
 import { serviceSchema } from '@/lib/validation/service';
 
 /**
@@ -111,4 +113,59 @@ export async function archiveService(serviceId: string): Promise<ActionResult<nu
 
   revalidatePath('/instellingen/diensten');
   redirect('/instellingen/diensten');
+}
+
+/**
+ * Branche-dienstensjabloon importeren (FR-104) — herleidt de daadwerkelijke
+ * sjabloonrijen server-side uit `BRANCHE_TEMPLATES` o.b.v. `industryId` +
+ * geselecteerde namen, i.p.v. de volledige (prijs/duur/BTW-)objecten van de
+ * client te vertrouwen.
+ */
+export async function importBrancheTemplate(
+  input: unknown,
+): Promise<ActionResult<{ count: number }>> {
+  const parsed = importBrancheTemplateSchema.safeParse(input);
+  if (!parsed.success) {
+    return validationActionError(parsed.error, 'Selecteer minstens één dienst.');
+  }
+
+  const { profile } = await requireOnboardedUser();
+  const supabase = await createClient();
+
+  const templateServices = (BRANCHE_TEMPLATES[parsed.data.industryId] ?? []).filter((service) =>
+    parsed.data.serviceNames.includes(service.name),
+  );
+
+  if (templateServices.length === 0) {
+    return actionError({ code: 'no_services_selected', message: 'Geen diensten geselecteerd.' });
+  }
+
+  const { error, data } = await supabase
+    .from('services')
+    .insert(
+      templateServices.map((service) => ({
+        company_id: profile.company_id,
+        name: service.name,
+        standard_duration_minutes: service.standardDurationMinutes,
+        standard_price_cents: Math.round(service.standardPriceEuros * 100),
+        vat_rate: service.vatRate,
+        is_weather_sensitive: service.isWeatherSensitive,
+        weather_sensitivity_type: service.weatherSensitivityType ?? null,
+      })),
+    )
+    .select('id');
+
+  if (error) {
+    logger.error('importBrancheTemplate failed', {
+      code: error.code,
+      companyId: profile.company_id,
+    });
+    return actionError({
+      code: error.code || 'import_branche_template_failed',
+      message: 'De diensten konden niet worden geïmporteerd. Probeer het opnieuw.',
+    });
+  }
+
+  revalidatePath('/instellingen/diensten');
+  return actionSuccess({ count: data?.length ?? templateServices.length });
 }

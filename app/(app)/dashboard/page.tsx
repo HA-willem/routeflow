@@ -12,7 +12,7 @@ import { createClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Dashboard — RouteFlow',
+  title: 'Dashboard — ServOps',
 };
 
 function startOfMonthIso(): string {
@@ -128,27 +128,31 @@ export default async function DashboardPage() {
             />
           </div>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <KPICard label="Uitgevoerd vandaag" value={String(completedToday ?? 0)} />
-            <KPICard label="Open opdrachten" value={String(openJobs ?? 0)} />
-            <KPICard label="Beurten deze week" value={String(jobsThisWeek ?? 0)} />
-            <KPICard label="Omzet vandaag" value={formatCents(revenueToday)} />
+            <KPICard
+              label="Uitgevoerd vandaag"
+              value={String(completedToday ?? 0)}
+              tone="success"
+            />
+            <KPICard label="Open opdrachten" value={String(openJobs ?? 0)} tone="warning" />
+            <KPICard label="Beurten deze week" value={String(jobsThisWeek ?? 0)} tone="info" />
+            <KPICard label="Omzet vandaag" value={formatCents(revenueToday)} tone="primary" />
           </div>
         </section>
 
         <section aria-label="Omzet" className="flex flex-col gap-3">
           <h2 className="text-text text-sm font-semibold">Omzet</h2>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <KPICard label="Deze week" value={formatCents(revenueThisWeek)} />
-            <KPICard label="Deze maand" value={formatCents(revenueThisMonth)} />
+            <KPICard label="Deze week" value={formatCents(revenueThisWeek)} tone="info" />
+            <KPICard label="Deze maand" value={formatCents(revenueThisMonth)} tone="primary" />
           </div>
         </section>
 
         <section aria-label="Facturen" className="flex flex-col gap-3">
           <h2 className="text-text text-sm font-semibold">Facturen</h2>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <KPICard label="Concept" value={String(draftInvoices ?? 0)} />
-            <KPICard label="Verzonden" value={String(sentInvoices ?? 0)} />
-            <KPICard label="Betaald" value={String(paidInvoices ?? 0)} />
+            <KPICard label="Concept" value={String(draftInvoices ?? 0)} tone="warning" />
+            <KPICard label="Verzonden" value={String(sentInvoices ?? 0)} tone="info" />
+            <KPICard label="Betaald" value={String(paidInvoices ?? 0)} tone="success" />
           </div>
         </section>
 

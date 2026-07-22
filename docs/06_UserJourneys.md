@@ -18,7 +18,7 @@ Dit document beschrijft concrete **user journeys** per scenario, mapping touchpo
 ### Stap 1: Sign-up (5 min)
 
 ```
-Frans → routeflow.nl → "Gratis proberen" 
+Frans → servops.nl → "Gratis proberen" 
 → E-mail + wachtwoord → Verify e-mail
 → Redirect: Onboarding-wizard
 ```
@@ -116,7 +116,7 @@ Jeroen: [Service voltooid]
 ### 06:30 — Weather Alert
 
 ```
-Frans opent RouteFlow dashboard
+Frans opent ServOps dashboard
 → Banner: "Weerwaarschuwing: 80% regen. 8 diensten gepland"
 → Knop: "Bekijk herplan-opties"
 ```

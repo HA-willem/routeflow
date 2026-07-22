@@ -76,7 +76,7 @@ export function JobExecutionPanel({
 
   async function runOrQueue(
     type: 'start' | 'pause' | 'resume' | 'complete' | 'notHome',
-    action: () => Promise<{ success: boolean; error?: { message: string } }>,
+    action: () => Promise<{ success: boolean; data?: unknown; error?: { message: string } }>,
     extra?: { notes?: string; reason?: string },
   ) {
     startTransition(async () => {
@@ -88,7 +88,12 @@ export function JobExecutionPanel({
         }
         toast.success('Bijgewerkt.');
         if (type === 'complete') {
-          toast.success('Top werk! Conceptfactuur aangemaakt.');
+          const invoiceSent = (result.data as { invoiceSent?: boolean } | undefined)?.invoiceSent;
+          toast.success(
+            invoiceSent
+              ? 'Top werk! Factuur is verstuurd.'
+              : 'Top werk! Conceptfactuur aangemaakt.',
+          );
           router.push('/m');
           return;
         }

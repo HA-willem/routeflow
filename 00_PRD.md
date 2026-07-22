@@ -1,9 +1,9 @@
 # 00_PRD.md — Product Requirements Document
 
-**Product:** RouteFlow
+**Product:** ServOps
 **Versie:** 1.0 (Concept)
 **Datum:** 6 juli 2026
-**Status:** Enige bron van waarheid (Single Source of Truth) voor de ontwikkeling van RouteFlow
+**Status:** Enige bron van waarheid (Single Source of Truth) voor de ontwikkeling van ServOps
 **Doelgroep van dit document:** Product managers, software architecten, UX designers, engineers en AI-agents die op basis van deze documentatie de software gaan bouwen.
 
 ---
@@ -35,11 +35,11 @@
 
 ## 1. Executive Summary
 
-RouteFlow is een moderne, Nederlandstalige SaaS-oplossing voor servicebedrijven die **periodiek terugkerende werkzaamheden** uitvoeren op klantlocaties. De eerste doelgroep is **glazenwassers**; de architectuur is vanaf dag één ontworpen als **verticaal-agnostisch platform** dat later uitbreidbaar is naar schoonmaakbedrijven, hoveniers, ongediertebestrijding, dakgootreinigers, installateurs, CV/airco-onderhoud en vastgoedonderhoud.
+ServOps is een moderne, Nederlandstalige SaaS-oplossing voor servicebedrijven die **periodiek terugkerende werkzaamheden** uitvoeren op klantlocaties. De eerste doelgroep is **glazenwassers**; de architectuur is vanaf dag één ontworpen als **verticaal-agnostisch platform** dat later uitbreidbaar is naar schoonmaakbedrijven, hoveniers, ongediertebestrijding, dakgootreinigers, installateurs, CV/airco-onderhoud en vastgoedonderhoud.
 
-Het hart van RouteFlow is de **AI Planner**: een planningsengine die op basis van frequentie-afspraken, geografische clustering, reistijd, beschikbaarheid van medewerkers, weer en klantvoorkeuren automatisch een optimale werkplanning genereert — en deze **automatisch herplant** bij verstoringen (ziekte, regen, uitloop).
+Het hart van ServOps is de **AI Planner**: een planningsengine die op basis van frequentie-afspraken, geografische clustering, reistijd, beschikbaarheid van medewerkers, weer en klantvoorkeuren automatisch een optimale werkplanning genereert — en deze **automatisch herplant** bij verstoringen (ziekte, regen, uitloop).
 
-Daaromheen levert RouteFlow de complete operationele keten:
+Daaromheen levert ServOps de complete operationele keten:
 
 | Pijler | Samenvatting |
 |---|---|
@@ -101,9 +101,9 @@ Bestaande pakketten in dit segment (zie 04_Concurrentieanalyse.md) zijn function
 
 ### 3.1 Visie
 
-> **RouteFlow wordt de mooiste, snelste en slimste bedrijfssoftware voor servicebedrijven met terugkerende werkzaamheden.**
+> **ServOps wordt de mooiste, snelste en slimste bedrijfssoftware voor servicebedrijven met terugkerende werkzaamheden.**
 
-De eigenaar opent 's ochtends RouteFlow en ziet in één oogopslag: wie werkt vandaag waar, welke routes rijden er, wat is er gefactureerd en wat staat open. De software denkt vooruit: zij stelt de planning voor, herplant bij verstoringen en factureert automatisch. De ondernemer houdt regie; RouteFlow doet het denkwerk.
+De eigenaar opent 's ochtends ServOps en ziet in één oogopslag: wie werkt vandaag waar, welke routes rijden er, wat is er gefactureerd en wat staat open. De software denkt vooruit: zij stelt de planning voor, herplant bij verstoringen en factureert automatisch. De ondernemer houdt regie; ServOps doet het denkwerk.
 
 ### 3.2 Productprincipes
 
@@ -117,9 +117,9 @@ De eigenaar opent 's ochtends RouteFlow en ziet in één oogopslag: wie werkt va
 
 ### 3.3 Positionering (one-liner)
 
-*"RouteFlow plant, rijdt en factureert je terugkerende klussen — automatisch."*
+*"ServOps plant, rijdt en factureert je terugkerende klussen — automatisch."*
 
-### 3.4 Wat RouteFlow expliciet NIET is (v1)
+### 3.4 Wat ServOps expliciet NIET is (v1)
 
 - Geen boekhoudpakket (wel export/koppeling naar boekhouding, zie roadmap);
 - Geen urenregistratie-/salarissysteem;
@@ -137,7 +137,7 @@ De eigenaar opent 's ochtends RouteFlow en ziet in één oogopslag: wie werkt va
 
 Segmenten:
 
-| Segment | Omvang team | Kenmerken | RouteFlow-fit |
+| Segment | Omvang team | Kenmerken | ServOps-fit |
 |---|---|---|---|
 | ZZP'er | 1 | Eigenaar = uitvoerder = planner = facturist | Hoog: alles-in-één op telefoon |
 | Klein bedrijf | 2–5 | Eigenaar werkt mee, partner doet administratie | Zeer hoog: kern-doelgroep |
@@ -195,7 +195,7 @@ Dit hoofdstuk definieert de taal van het systeem. Alle documenten en code gebrui
 
 ### 6.1 Bedrijf (Tenant)
 
-Elke klant van RouteFlow is een **Bedrijf** (tenant). Alle data is strikt gescheiden per bedrijf via row-level security (RLS) in PostgreSQL/Supabase. Een gebruiker kan lid zijn van meerdere bedrijven (edge case: franchise), maar werkt altijd in de context van één actief bedrijf.
+Elke klant van ServOps is een **Bedrijf** (tenant). Alle data is strikt gescheiden per bedrijf via row-level security (RLS) in PostgreSQL/Supabase. Een gebruiker kan lid zijn van meerdere bedrijven (edge case: franchise), maar werkt altijd in de context van één actief bedrijf.
 
 ### 6.2 Klant
 
@@ -364,7 +364,7 @@ De planner is geen black box. Bij elke voorgestelde beurt is een "waarom?"-uitle
 
 ### 9.3 NL-specifiek
 
-- BTW: glasbewassing particulier woningen = **9%** kan van toepassing zijn onder schoonmaakregeling — dit is een fiscale nuance; RouteFlow maakt BTW-tarief instelbaar **per dienst** met default 21% en waarschuwt de gebruiker eigen fiscale verantwoordelijkheid te nemen (disclaimer in UI). *(Expliciete aanname A-07, zie §19.)*
+- BTW: glasbewassing particulier woningen = **9%** kan van toepassing zijn onder schoonmaakregeling — dit is een fiscale nuance; ServOps maakt BTW-tarief instelbaar **per dienst** met default 21% en waarschuwt de gebruiker eigen fiscale verantwoordelijkheid te nemen (disclaimer in UI). *(Expliciete aanname A-07, zie §19.)*
 - Factuurvereisten Belastingdienst (nummer, datum, KVK, BTW-nr, specificatie) zijn afgedwongen in het PDF-template;
 - Betalingen via **Mollie** (iDEAL, betaalverzoek-link, QR); architectuur payment-provider-agnostisch.
 

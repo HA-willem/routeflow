@@ -10,7 +10,7 @@
 
 ## Doel van dit document
 
-Dit document beschrijft de **PWA-strategie**: installatie, offline-tolerantie, caching, web-push en updates. RouteFlow is **PWA-first voor mobiel** (A-05); native apps zijn expliciet buiten scope t/m V1 (heroverweging bij V2). De PWA is de leefomgeving van de Medewerker (PRD § 3.2).
+Dit document beschrijft de **PWA-strategie**: installatie, offline-tolerantie, caching, web-push en updates. ServOps is **PWA-first voor mobiel** (A-05); native apps zijn expliciet buiten scope t/m V1 (heroverweging bij V2). De PWA is de leefomgeving van de Medewerker (PRD § 3.2).
 
 **Belangrijk onderscheid (PRD § 3.4 / § 13):** MVP levert een **offline-tolerante** PWA (optimistic UI + retry-queue), **geen** volledige offline-first synchronisatie-engine. Dat laatste is V2.
 
@@ -19,7 +19,7 @@ Dit document beschrijft de **PWA-strategie**: installatie, offline-tolerantie, c
 ## 1. Installatie (Add to Home Screen)
 
 - **Manifest** (`manifest.webmanifest`): naam, iconen (maskable), `display: standalone`, thema-/achtergrondkleur (tokens uit 25), `start_url: /m`.
-- **Installatie-prompt:** proactief aangeboden aan Medewerkers na eerste succesvolle login (custom "Installeer RouteFlow"-hint, niet de rauwe browserprompt).
+- **Installatie-prompt:** proactief aangeboden aan Medewerkers na eerste succesvolle login (custom "Installeer ServOps"-hint, niet de rauwe browserprompt).
 - **iOS:** Safari "Zet op beginscherm" (geen `beforeinstallprompt`); instructiehint tonen op iOS.
 - **Resultaat:** full-screen app zonder adresbalk, eigen icoon op homescreen.
 

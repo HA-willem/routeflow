@@ -10,15 +10,15 @@
 
 ## Doel van dit document
 
-RouteFlow is ontworpen als een **AI-first Operations Platform** voor servicebedrijven: AI Agents voeren het operationele denkwerk uit, de gebruiker beoordeelt en keurt goed (ADR-011). Dit document beschrijft **uitsluitend architectuur en verantwoordelijkheden** per agent — geen code, geen implementatiedetails die niet architectuurrelevant zijn. Voor de *waarom*-vraag (waarom meerdere agents, waarom deze Human-Approval-grens) zie ADR-011; dit document beantwoordt de *wat*-vraag per agent.
+ServOps is ontworpen als een **AI-first Operations Platform** voor servicebedrijven: AI Agents voeren het operationele denkwerk uit, de gebruiker beoordeelt en keurt goed (ADR-011). Dit document beschrijft **uitsluitend architectuur en verantwoordelijkheden** per agent — geen code, geen implementatiedetails die niet architectuurrelevant zijn. Voor de *waarom*-vraag (waarom meerdere agents, waarom deze Human-Approval-grens) zie ADR-011; dit document beantwoordt de *wat*-vraag per agent.
 
 ---
 
 ## 1. Visie
 
-RouteFlow bestaat om servicebedrijven (glazenwassers, schoonmaakbedrijven, hovenierders — PRD § 3) te bevrijden van het dagelijkse, repetitieve plan- en coördinatiewerk. De kernbelofte (PRD § 8.1) is niet "software die planning *makkelijker* maakt" maar software die planning **grotendeels overneemt**, met de mens als eindredacteur.
+ServOps bestaat om servicebedrijven (glazenwassers, schoonmaakbedrijven, hovenierders — PRD § 3) te bevrijden van het dagelijkse, repetitieve plan- en coördinatiewerk. De kernbelofte (PRD § 8.1) is niet "software die planning *makkelijker* maakt" maar software die planning **grotendeels overneemt**, met de mens als eindredacteur.
 
-**Waarom RouteFlow AI-first is:** elke handmatige planningsactie (een route samenstellen, een ziekmelding verwerken, een weerswaarschuwing beoordelen, een conceptfactuur checken) is in essentie een **patroon-herkennings- en afwegingstaak** — precies het soort werk dat gespecialiseerde, regelgedreven AI-agents kunnen automatiseren zonder de betrouwbaarheid te verliezen die een servicebedrijf nodig heeft (BR-200/201/202/203 zijn harde regels, geen suggesties). Door dit vanaf de architectuur consequent door te voeren — niet als losse "AI-features" toegevoegd aan een verder handmatig systeem — schaalt RouteFlow naar bedrijven met veel medewerkers/klanten zonder dat de planner-rol evenredig meegroeit.
+**Waarom ServOps AI-first is:** elke handmatige planningsactie (een route samenstellen, een ziekmelding verwerken, een weerswaarschuwing beoordelen, een conceptfactuur checken) is in essentie een **patroon-herkennings- en afwegingstaak** — precies het soort werk dat gespecialiseerde, regelgedreven AI-agents kunnen automatiseren zonder de betrouwbaarheid te verliezen die een servicebedrijf nodig heeft (BR-200/201/202/203 zijn harde regels, geen suggesties). Door dit vanaf de architectuur consequent door te voeren — niet als losse "AI-features" toegevoegd aan een verder handmatig systeem — schaalt ServOps naar bedrijven met veel medewerkers/klanten zonder dat de planner-rol evenredig meegroeit.
 
 **Waarom planners steeds meer supervisors worden:** naarmate het aantal agents en hun betrouwbaarheid groeit (`15_AIPlanner.md` § 8, automatiseringsniveaus), verschuift de planner-taak van *zelf plannen* naar *voorstellen beoordelen*. Dit is geen verlies van controle (§ 12, Human Approval blijft hard) maar een verschuiving van *uitvoerend* naar *toezichthoudend* werk — vergelijkbaar met hoe een piloot een autopilot superviseert in plaats van elke stuurbeweging zelf te maken, met een expliciete, niet-onderhandelbare grens rond welke acties nooit worden overgenomen (§ 12).
 

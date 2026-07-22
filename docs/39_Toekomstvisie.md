@@ -10,7 +10,7 @@
 
 ## Doel van dit document
 
-Dit document schetst de **lange-termijnvisie** (3–5 jaar) voorbij de V2-roadmap: waar RouteFlow naartoe groeit, welke verticalen en markten, welke productrichtingen, en welke kansen/risico's daarbij horen. Het is richtinggevend, geen commitment — concrete inplanning gebeurt via 33/34. Het mag de scope-fasering (PRD § 5, MASTER_PROMPT § 3) niet vervroegen.
+Dit document schetst de **lange-termijnvisie** (3–5 jaar) voorbij de V2-roadmap: waar ServOps naartoe groeit, welke verticalen en markten, welke productrichtingen, en welke kansen/risico's daarbij horen. Het is richtinggevend, geen commitment — concrete inplanning gebeurt via 33/34. Het mag de scope-fasering (PRD § 5, MASTER_PROMPT § 3) niet vervroegen.
 
 ---
 
@@ -22,7 +22,7 @@ We denken in drie horizonten (McKinsey-stijl):
 |---|---|---|
 | **H1 — Kern** | MVP→V1→V2 uitmuntend maken voor glazenwassers (33) | 0–18 mnd |
 | **H2 — Verbreding** | Meer verticalen + integraties + grotere bedrijven | 18–36 mnd |
-| **H3 — Platform** | RouteFlow als platform/ecosysteem, evt. internationaal | 36–60 mnd |
+| **H3 — Platform** | ServOps als platform/ecosysteem, evt. internationaal | 36–60 mnd |
 
 ---
 

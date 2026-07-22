@@ -1,6 +1,6 @@
-# RouteFlow
+# ServOps.nl
 
-Premium SaaS voor Nederlandse servicebedrijven met terugkerende werkzaamheden (start: glazenwassers).
+Premium SaaS voor Nederlandse servicebedrijven met terugkerende werkzaamheden (start: glazenwassers). Voorheen "RouteFlow" — zie PRD § 19 A-31 voor de naamswijziging.
 
 ## Status
 - ✅ `docs/00_PRD.md` — volledig geschreven (single source of truth, ~4.200 woorden; per hoofdstuk uitbreidbaar)
@@ -19,8 +19,8 @@ Premium SaaS voor Nederlandse servicebedrijven met terugkerende werkzaamheden (s
 - ⚠️ `RESEND_API_KEY`/`RESEND_FROM_EMAIL` en `config_json.invoicing` (bedrijfscode/KVK/BTW-nr/IBAN/BIC, PRD § 19 A-20) staan nog niet op Supabase Cloud/voor enige productie-company — facturen versturen geeft daardoor nu nog `config_error` totdat dit is geconfigureerd.
 
 ## Deployment
-- **Productie:** [routeflow-delta.vercel.app](https://routeflow-delta.vercel.app) (Vercel)
-- **Database:** Supabase Cloud project "Routeflow" (eu-west-1), RLS-multitenancy, migraties 001–015 toegepast, 016–021 nog niet gepusht (zie hierboven)
+- **Productie:** [routeflow-delta.vercel.app](https://routeflow-delta.vercel.app) (Vercel) — **let op:** deze URL/het Vercel-projectnaam zelf is nog niet hernoemd; dat is een handmatige Vercel-dashboard/CLI-actie (project rename of nieuw domein `servops.nl` koppelen), geen bestandswijziging. Zie PRD § 19 A-31.
+- **Database:** Supabase Cloud project "Routeflow" (eu-west-1) — **let op:** ook dit is de naam in het Supabase-dashboard, nog niet hernoemd (handmatige actie, mogelijk niet zelf-service hernoembaar). RLS-multitenancy, migraties 001–015 toegepast, 016–021 nog niet gepusht (zie hierboven)
 - **Edge Functions op Supabase Cloud:** `planning-generate` (alleen lokaal, nog niet gedeployed), `route-optimize`, `route-move-job` (gedeployed, wachten op Mapbox-token + depot-configuratie). Sprint 5 voegde bewust geen nieuwe Edge Function toe — MVP-facturatie (geen Mollie) loopt via een normale Server Action + Postgres-RPC's (`next_invoice_number`, `complete_job`, SECURITY DEFINER).
 - Lokale ontwikkeling gebruikt de Supabase CLI (`npx supabase start`) tegen een losse lokale instantie — zie `41_CodingStandards.md` § 8/9.
 

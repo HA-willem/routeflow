@@ -8,6 +8,12 @@ export interface DataTableColumn<T> {
   header: string;
   cell: (row: T) => ReactNode;
   className?: string;
+  /**
+   * Sla de `onRowHref`-link-wrap voor deze kolom over — nodig voor kolommen
+   * die zelf al een interactief element bevatten (bv. een actielink), anders
+   * ontstaat een ongeldige geneste `<a>` (WCAG "nested-interactive").
+   */
+  interactive?: boolean;
 }
 
 interface DataTableProps<T> {
@@ -58,7 +64,7 @@ export function DataTable<T>({
               <tr key={getRowKey(row)} className="border-border hover:bg-surface border-t">
                 {columns.map((column) => (
                   <td key={column.header} className={`px-4 py-3 ${column.className ?? ''}`}>
-                    {href ? (
+                    {href && !column.interactive ? (
                       <Link href={href} className="block">
                         {column.cell(row)}
                       </Link>

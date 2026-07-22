@@ -10,7 +10,7 @@ import { JobExecutionPanel } from './JobExecutionPanel';
 
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Beurt — RouteFlow' };
+export const metadata: Metadata = { title: 'Beurt — ServOps' };
 
 /** Beurt-detail /m/beurt/[id] — 29_MobieleApp.md § 2.2. Geen prijzen (23 P1). */
 export default async function BeurtDetailPage({ params }: { params: Promise<{ id: string }> }) {

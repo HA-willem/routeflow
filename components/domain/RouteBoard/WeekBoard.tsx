@@ -28,6 +28,12 @@ import {
 import type { ActionResult } from '@/lib/errors';
 import { cn } from '@/lib/utils';
 
+import {
+  FillDayDialog,
+  type FillDayAction,
+  type GetFillDayCandidatesAction,
+} from './FillDayDialog';
+
 import type { OptimizeEmployeeDayAction, ReportSickLeaveAction } from './RouteBoard';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 
@@ -54,6 +60,8 @@ interface WeekBoardProps {
   moveJobAction: MoveJobToDateAction;
   optimizeEmployeeDayAction: OptimizeEmployeeDayAction;
   reportSickLeaveAction: ReportSickLeaveAction;
+  getFillDayCandidatesAction: GetFillDayCandidatesAction;
+  fillDayAction: FillDayAction;
 }
 
 /** Zelfde BR-202-preview-drempel als RouteBoard.tsx — bewust gedupliceerd i.p.v. geïmporteerd (kleine, stabiele constante, geen gedeelde module-afhankelijkheid waard). */
@@ -105,6 +113,8 @@ function DayColumn({
   onReportSick,
   isReportingSick,
   onOpenDetails,
+  getFillDayCandidatesAction,
+  fillDayAction,
 }: {
   column: WeekColumn;
   onOptimize: () => void;
@@ -112,6 +122,8 @@ function DayColumn({
   onReportSick: () => void;
   isReportingSick: boolean;
   onOpenDetails?: () => void;
+  getFillDayCandidatesAction: GetFillDayCandidatesAction;
+  fillDayAction: FillDayAction;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: column.date, data: { column } });
   const [confirmSickOpen, setConfirmSickOpen] = useState(false);
@@ -163,6 +175,14 @@ function DayColumn({
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          <FillDayDialog
+            employeeId={column.employeeId}
+            employeeName={column.employeeName}
+            date={column.date}
+            dayLabel={column.dayLabel}
+            getCandidatesAction={getFillDayCandidatesAction}
+            fillDayAction={fillDayAction}
+          />
           <Button
             variant="ghost"
             size="icon-sm"
@@ -218,6 +238,8 @@ export function WeekBoard({
   moveJobAction,
   optimizeEmployeeDayAction,
   reportSickLeaveAction,
+  getFillDayCandidatesAction,
+  fillDayAction,
 }: WeekBoardProps) {
   const [prevColumns, setPrevColumns] = useState(columns);
   const [columnsState, setColumnsState] = useState(columns);
@@ -361,6 +383,8 @@ export function WeekBoard({
             isReportingSick={reportingSickDate === column.date}
             onReportSick={() => handleReportSick(column)}
             onOpenDetails={onOpenRouteDetails ? () => onOpenRouteDetails(column.date) : undefined}
+            getFillDayCandidatesAction={getFillDayCandidatesAction}
+            fillDayAction={fillDayAction}
           />
         ))}
       </div>

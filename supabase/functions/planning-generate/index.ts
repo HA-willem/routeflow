@@ -27,10 +27,23 @@
 // route-optimize's `dry_run`-service-rol-pad (022_agent_pipeline.sql-precedent).
 // Het reguliere, gebruikersgeïnitieerde pad blijft ongewijzigd (company_id
 // wordt dan genegeerd, RLS scoped al correct).
+//
+// Geografische clustering (FR-025/BR-204, Sprint 7-vervolg): vóór het
+// invoegen wordt elke nieuw berekende datumreeks getoetst tegen al-bestaande
+// beurten van ándere dienstafspraken binnen 1km (lib/planning/clustering.ts).
+// Past een nabije beurt binnen het flexibiliteitsvenster, dan schuift de hele
+// reeks daar naartoe. Bestaande beurten worden hierbij nooit gewijzigd.
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
-import { generateHorizonDates, type HorizonAgreement } from '../../../lib/planning/horizon.ts';
+import { applyGeographicClusterNudge, type NearbyJob } from '../../../lib/planning/clustering.ts';
+import {
+  addDays,
+  generateHorizonDates,
+  toIso,
+  toUtcDate,
+  type HorizonAgreement,
+} from '../../../lib/planning/horizon.ts';
 
 interface RequestBody {
   from_date: string;
@@ -146,7 +159,7 @@ Deno.serve(async (req) => {
   let agreementsQuery = supabase
     .from('service_agreements')
     .select(
-      'id, company_id, frequency_type, frequency_interval_days, preferred_day, exclude_dates, status, service_id, last_completed_job_id',
+      'id, company_id, frequency_type, frequency_interval_days, preferred_day, exclude_dates, status, service_id, last_completed_job_id, object_id, flexibility_window_days, objects(location)',
     )
     .eq('status', 'active');
 
@@ -177,7 +190,52 @@ Deno.serve(async (req) => {
     return errorResponse({ code: 'not_found', message: 'Dienstafspraak niet gevonden.' }, 404);
   }
 
-  const generatedJobs: { service_agreement_id: string; dates: string[] }[] = [];
+  // Geografische clustering (FR-025/BR-204, 15_AIPlanner.md § 3): één keer
+  // vooraf alle al-bestaande beurten van ándere dienstafspraken ophalen binnen
+  // een royale marge rond het horizon-venster (max. flexibiliteitsvenster is
+  // 21 dagen, 008_service_agreements_flexibility_window_check), i.p.v. dit per
+  // dienstafspraak te herhalen. Nooit bestaande beurten wijzigen — alleen
+  // gebruikt om de nieuw te genereren datums hierop te laten aansluiten.
+  const CLUSTER_QUERY_PADDING_DAYS = 21;
+  const nearbyJobs: NearbyJob[] = [];
+  if (agreements.length > 0) {
+    const clusterCompanyId = agreements[0]!.company_id;
+    const horizonEnd = toIso(addDays(toUtcDate(body.from_date), body.weeks * 7));
+    const windowStart = toIso(addDays(toUtcDate(body.from_date), -CLUSTER_QUERY_PADDING_DAYS));
+    const windowEnd = toIso(addDays(toUtcDate(horizonEnd), CLUSTER_QUERY_PADDING_DAYS));
+
+    const { data: nearbyRows, error: nearbyError } = await supabase
+      .from('jobs')
+      .select(
+        'service_agreement_id, scheduled_date, service_agreements!jobs_service_agreement_id_fkey(objects(location))',
+      )
+      .eq('company_id', clusterCompanyId)
+      .neq('status', 'cancelled')
+      .gte('scheduled_date', windowStart)
+      .lte('scheduled_date', windowEnd);
+
+    if (nearbyError) {
+      log('error', 'planning-generate: kon nabije beurten niet ophalen (clustering overgeslagen)', {
+        code: nearbyError.code,
+      });
+    } else {
+      for (const row of nearbyRows ?? []) {
+        const agreementRel = row.service_agreements as {
+          objects: { location: unknown } | null;
+        } | null;
+        const coords = agreementRel?.objects?.location as
+          { coordinates: [number, number] } | null | undefined;
+        if (!coords) continue;
+        nearbyJobs.push({
+          serviceAgreementId: row.service_agreement_id,
+          scheduledDate: row.scheduled_date,
+          location: { lat: coords.coordinates[1], lng: coords.coordinates[0] },
+        });
+      }
+    }
+  }
+
+  const generatedJobs: { service_agreement_id: string; dates: string[]; clustered: boolean }[] = [];
   const skippedAgreements: { service_agreement_id: string; reason: string }[] = [];
 
   for (const agreement of agreements) {
@@ -221,7 +279,22 @@ Deno.serve(async (req) => {
       continue;
     }
 
-    const rows = dates.map((scheduledDate) => ({
+    // FR-025/BR-204 (soft): sluit aan bij een al-bestaande beurt van een
+    // ándere dienstafspraak binnen 1km als dat binnen dít flexibiliteitsvenster
+    // past — anders blijven de berekende (ideale) datums ongewijzigd.
+    const agreementLocation = (agreement.objects as { location: unknown } | null)?.location as
+      { coordinates: [number, number] } | null | undefined;
+    const { dates: clusteredDates, clustered } = applyGeographicClusterNudge({
+      objectLocation: agreementLocation
+        ? { lat: agreementLocation.coordinates[1], lng: agreementLocation.coordinates[0] }
+        : null,
+      rawDates: dates,
+      flexibilityWindowDays: agreement.flexibility_window_days,
+      excludeDates: agreement.exclude_dates ?? [],
+      nearbyJobs: nearbyJobs.filter((job) => job.serviceAgreementId !== agreement.id),
+    });
+
+    const rows = clusteredDates.map((scheduledDate) => ({
       company_id: agreement.company_id,
       service_agreement_id: agreement.id,
       scheduled_date: scheduledDate,
@@ -255,7 +328,7 @@ Deno.serve(async (req) => {
 
     const { error: nextIdealDateError } = await supabase
       .from('service_agreements')
-      .update({ next_ideal_date: dates[0] })
+      .update({ next_ideal_date: clusteredDates[0] })
       .eq('id', agreement.id);
 
     if (nextIdealDateError) {
@@ -271,7 +344,11 @@ Deno.serve(async (req) => {
       continue;
     }
 
-    generatedJobs.push({ service_agreement_id: agreement.id, dates: newlyInsertedDates });
+    generatedJobs.push({
+      service_agreement_id: agreement.id,
+      dates: newlyInsertedDates,
+      clustered,
+    });
   }
 
   log('info', 'planning-generate: voltooid', {

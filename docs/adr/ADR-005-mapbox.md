@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Datum:** 2026-07-07
-- **Beslisser:** Chief Software Architect (RouteFlow) — bekrachtigd door productbeslissing A-06
+- **Beslisser:** Chief Software Architect (ServOps) — bekrachtigd door productbeslissing A-06
 - **Bron van waarheid:** `00_PRD.md` § 19 (A-06)
 - **Gerelateerd:** ADR-007 (Provider Adapter Pattern), ADR-010 (AI Planner); 14_RoutingEngine.md, 11_DatabaseConcept.md, 37_Performance.md
 

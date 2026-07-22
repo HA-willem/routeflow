@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Datum:** 2026-07-07
-- **Beslisser:** Chief Software Architect (RouteFlow)
+- **Beslisser:** Chief Software Architect (ServOps)
 - **Bron van waarheid:** `00_PRD.md` § 6.1 (Bedrijf/tenant), § 12.2
 - **Gerelateerd:** ADR-003 (PostgreSQL + RLS), ADR-002 (Supabase); 11_DatabaseConcept.md, 22_Authenticatie.md, 36_Security.md, 38_Schaalbaarheid.md
 
@@ -10,7 +10,7 @@
 
 ## Context
 
-Elke klant van RouteFlow is een **Bedrijf** (tenant); data is strikt gescheiden (PRD § 6.1). De schaal-ambitie is **10.000 bedrijven** met elk tot 50 medewerkers en 5.000 objecten (PRD § 13). Een gebruiker kan (edge case: franchise) lid zijn van meerdere bedrijven, maar werkt in de context van één actief bedrijf.
+Elke klant van ServOps is een **Bedrijf** (tenant); data is strikt gescheiden (PRD § 6.1). De schaal-ambitie is **10.000 bedrijven** met elk tot 50 medewerkers en 5.000 objecten (PRD § 13). Een gebruiker kan (edge case: franchise) lid zijn van meerdere bedrijven, maar werkt in de context van één actief bedrijf.
 
 ## Probleem
 

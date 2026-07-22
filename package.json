@@ -1,5 +1,5 @@
 {
-  "name": "routeflow",
+  "name": "servops",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -25,6 +25,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^5.4.0",
+    "@sentry/nextjs": "^10.67.0",
     "@supabase/ssr": "0.12.0",
     "@supabase/supabase-js": "2.110.1",
     "class-variance-authority": "0.7.1",
@@ -32,6 +33,7 @@
     "cmdk": "^1.1.1",
     "lucide-react": "1.23.0",
     "next": "16.2.10",
+    "papaparse": "^5.5.4",
     "pdf-lib": "^1.17.1",
     "radix-ui": "^1.6.2",
     "react": "19.2.7",
@@ -42,11 +44,13 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@playwright/test": "1.61.1",
     "@tailwindcss/postcss": "4.3.2",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.2",
     "@types/node": "26.1.0",
+    "@types/papaparse": "^5.5.2",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "@typescript-eslint/eslint-plugin": "8.63.0",

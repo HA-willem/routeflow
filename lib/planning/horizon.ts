@@ -27,16 +27,17 @@ export interface HorizonAgreement {
   excludeDates: string[];
 }
 
-function toUtcDate(iso: string): Date {
+/** Ook gebruikt door lib/planning/clustering.ts (zelfde tijdzone-veilige datumrekenkunde). */
+export function toUtcDate(iso: string): Date {
   const [year, month, day] = iso.split('-').map(Number);
   return new Date(Date.UTC(year!, month! - 1, day!));
 }
 
-function toIso(date: Date): string {
+export function toIso(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
-function addDays(date: Date, days: number): Date {
+export function addDays(date: Date, days: number): Date {
   return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
 }
 

@@ -9,7 +9,7 @@
 
 | Onderdeel | Aantal | Toelichting |
 |---|---|---|
-| Bedrijf | 1 | "Glashelder Nijmegen B.V.", eigenaar `demo@routeflow.nl` / `DemoWachtwoord123` |
+| Bedrijf | 1 | "Glashelder Nijmegen B.V.", eigenaar `demo@servops.nl` / `DemoWachtwoord123` |
 | Klanten | 50 | Verdeeld over 7 wijken exact volgens opdracht (Noord/Oost/Zuid 10, Bottendaal/Lent/Hatert/Dukenburg 5), mix particulier/zakelijk, realistische NL namen/straten/postcodes/telefoon/e-mail |
 | Objecten | 101 | 1–3 per klant, type woning/complex/kantoor, opmerkingenveld gevuld |
 | Diensten | 5 | Glasbewassing buiten/binnen, Gevelreiniging, Dakgootreiniging, Zonnepanelen reinigen — met duur, prijs, BTW, weersgevoeligheid |
@@ -47,7 +47,7 @@ Alle klant-/object-/dienstafspraak-/medewerker-data blijft dus stabiel over herh
 npx supabase start          # lokale Supabase-instantie
 npx dotenv -e .env.local -- npx tsx scripts/seed-demo.ts
 npm run dev
-# Inloggen: demo@routeflow.nl / DemoWachtwoord123 (desktop/eigenaar)
+# Inloggen: demo@servops.nl / DemoWachtwoord123 (desktop/eigenaar)
 #           jan@glashelder-demo.nl / DemoWachtwoord123 (PWA, /m)
 ```
 

@@ -1,7 +1,7 @@
 # 08 — Functionele Eisen
 
 **Status:** DONE
-**Versie:** 1.6
+**Versie:** 1.13
 **Bron van waarheid:** `00_PRD.md` § 7 — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`.
 
@@ -9,7 +9,7 @@
 
 ## Doel van dit document
 
-Dit document bevat de **volledige gespecificeerde functionele requirements (FR-xxx)** voor RouteFlow. Elk requirement bevat:
+Dit document bevat de **volledige gespecificeerde functionele requirements (FR-xxx)** voor ServOps. Elk requirement bevat:
 - **Beschrijving:** wat doet de feature?
 - **Acceptatiecriteria:** wanneer is het klaar?
 - **Validaties:** wat moet ingecheckt?
@@ -92,7 +92,7 @@ Een object heeft één of meer **dienstafspraken** (Service Agreement), elk met 
 1. Object-detail: tab "Dienstafspraken"; knop "Afspraak toevoegen"
 2. Formulier:
    - Dienst: dropdown (per bedrijf ingesteld, bijv. "Glasbewassing binnen", "Dakgoot reiniging")
-   - Frequentie: keuzes = "wekelijks" | "elke 2 weken" | "elke 4 weken" | "maandelijks" | "elk kwartaal" | "halfjaarlijks" | "jaarlijks" | "eenmalig" | "custom" (dagpatroon)
+   - Frequentie: keuzes = "wekelijks" | "elke 2 weken" | "elke 4 weken" | "maandelijks" | "elk kwartaal" | "halfjaarlijks" | "jaarlijks" | "eenmalig" | "custom" (aangepast interval in **weken**, bijv. "elke 8 weken"/"elke 12 weken" — UI vraagt weken, intern opgeslagen als dagen; geen dag-patroon-builder)
    - Prijsafspraak: vast bedrag (€) | uurtarief (€/u) | maandabonnement (€/mnd)
    - Voorkeuren: "voorkeurdag" (ma-zo) | "voorkeursdagdeel" (ochtend/middag) | "bel vooraf" | "niet op [feestdag]"
    - Flexibiliteitsvenster: ±# werkdagen (default ±3)
@@ -239,10 +239,10 @@ Medewerker ziek of verlof → systeem verdeelt dagroute automatisch; toont diff 
 AI Planner clustert beurten geografisch: adressen in dezelfde buurt worden zelfde dag/week ingepland.
 
 **Acceptatiecriteria:**
-1. PostGIS-queries bepalen "buurt" (bijv. 1km2 cluster)
-2. Scoringsmodel (FR-023 van PRD): geografische clustering = gewogen criterium (default gewicht: middel)
-3. Planning-view: hints "8 beurten in buurt Wijk Noord, 3 ma/3 di; ga je ze samenplannen?"
-4. Planner kan clustering-gewicht aanpassen (slider "reistijd vs. frequentie-trouw")
+1. ✅ **Gebouwd** (Sprint 7-vervolg, 2026-07-18): `lib/planning/clustering.ts` bepaalt "buurt" als een straight-line afstand ≤1km (Haversine, hergebruikt `lib/routing/haversine.ts` i.p.v. een aparte PostGIS-query — functioneel gelijkwaardig aan `ST_DWithin(location, $punt, 1000m)` uit `15_AIPlanner.md` § 3, wel puur/unit-testbaar zonder DB). `planning-generate` past dit toe: een nieuw te genereren datumreeks schuift naar een al-bestaande nabije beurt van een ándere dienstafspraak als dat binnen het flexibiliteitsvenster (BR-101) past. Bestaande beurten worden hierbij nooit gewijzigd (alleen nieuw te plannen datums sluiten aan).
+2. **Niet gebouwd — bewust uitgesteld.** Een gewogen scoringsmodel (§4 uit `15_AIPlanner.md`) bestaat nog voor geen van de 4 BR-701-criteria; dit AC vereist een nieuw instellingen-/scoring-subsysteem, niet alleen clustering. Losstaand vervolgwerk.
+3. ✅ **Gebouwd**, in aangepaste vorm: geen losse "ga je ze samenplannen?"-hint-UI, maar een zin in de bestaande Planning Agent-samenvatting (`lib/agents/planning.ts`, zichtbaar via de al bestaande `ProposalList` op de Morning Briefing/Planning-pagina) die meldt hoeveel dienstafspraken geclusterd zijn. Geen aparte goedkeuringsstap nodig (het aanmaken van voorgestelde beurten is al de toegestane autonome actie, ADR-011 § 4).
+4. **Niet gebouwd — bewust uitgesteld**, zelfde reden als AC2 (geen bestaande slider-infrastructuur voor welk scoringscriterium dan ook).
 
 ---
 
@@ -281,6 +281,34 @@ Knop "Week opnieuw plannen" hergeneert routes onder respect vergrendelingen.
 2. Dialog: "Herplandatum: [komende 7 dagen]"; "Respecteer vergrendelingen": checkbox (default aan)
 3. Execute → algoritme ran; toon diff "10 beurten verplaatst, 2 nieuwe adressen geoptimaliseerd"
 4. Undo beschikbaar
+
+---
+
+### FR-029: Handmatige beurt-toevoeging op dag/tijdstip
+**Fase:** V1 | **Prio:** Must
+
+De AI Planner genereert beurten automatisch o.b.v. interval + flexibiliteitsvenster (FR-020, BR-101-Soft) — dat volstaat voor periodiek werk, maar niet voor klanten die uitsluitend op een vaste dag/tijdstip bereikbaar/beschikbaar zijn (bijv. een kantoor dat alleen dinsdagochtend open is, of een CV-onderhoudsafspraak op een exact tijdstip). Voor deze gevallen kan de planner een beurt direct en handmatig op een specifieke dag + tijdstip in het planning-board zetten, zonder af te wachten of de automatische generatie daar toevallig op uitkomt.
+
+**Acceptatiecriteria:**
+1. Planning-board (week-/dagview): knop "Beurt toevoegen" opent formulier: klant/object, dienst, datum, exact tijdstip (niet alleen dagdeel), medewerker (optioneel — leeg = "nog toewijzen")
+2. Een handmatig toegevoegde beurt is altijd gekoppeld aan een dienstafspraak — bij ontbreken daarvan maakt het formulier in dezelfde stap een eenmalige dienstafspraak (`frequency='once'`) aan; er bestaat geen "kale" beurt zonder dienstafspraak (bestaand domeinmodel, FR-003)
+3. Nieuwe beurt wordt direct `locked=true` met `locked_reason` = het ingevoerde tijdstip/toelichting (FR-026, `12_Entiteiten.md` § 1.4) — een expliciet vastgezet tijdstip mag niet automatisch verschuiven bij een volgende herplanning (FR-024/028)
+4. Validatie hergebruikt bestaande conflict-checks: geen dubbele beurt zelfde medewerker/tijdslot (BR-203), max 8,5u werkdag (BR-202)
+5. Na toevoegen: dagroute van de betrokken medewerker herberekent (zelfde gedrag als drag-and-drop, FR-022)
+
+---
+
+### FR-030: "Vul de dag" — capaciteit opvullen op een net vrijgekomen dag
+**Fase:** V1 | **Prio:** Should
+
+Spiegelbeeld van FR-024 (Replanning Agent): waar FR-024 draait bij capaciteit-*verlies* (ziekte/verlof) en beurten wegverdeelt, draait FR-030 bij capaciteit-*winst* — een medewerker (met name relevant voor de eenmanszaak/ZZP'er-weekweergave, PRD § 19 A-21) die besluit een normaal vrije dag (bijv. zaterdag) toch te werken, en die dag gevuld wil zien met beurten die anders pas later in de week aan de beurt waren.
+
+**Acceptatiecriteria:**
+1. "Vul de dag"-knop per dag/medewerker-kolom, zowel op de RouteBoard-dagweergave als de WeekBoard-weekgrid (eenmanszaken)
+2. Klik toont kandidaat-beurten: niet-vergrendelde, nog niet-geroute beurten (`status='proposed'`, `route_id is null`) waarvan de huidige geplande datum binnen het flexibiliteitsvenster (BR-101) van de gekozen dag valt — met klant, adres, dienst en oorspronkelijke datum per kandidaat
+3. Planner/medewerker vinkt kandidaten aan (default: alle aangevinkt) en bevestigt expliciet — geen automatische uitvoering zonder deze stap (zelfde human-in-the-loop-patroon als de Replanning/Capacity Agent, ADR-011)
+4. Na bevestigen: gekozen beurten krijgen de nieuwe datum; de dagroute herberekent (hergebruikt route-optimize, FR-022). Een beurt die alsnog niet past (BR-202) blijft zichtbaar met een waarschuwing i.p.v. stil te falen
+5. De dag wordt vastgelegd als `available` in `availability` (bestaande, tot dusver ongebruikte statuswaarde) — audit-trail dat dit een bewuste keuze was, geen automatisch gegenereerde planning
 
 ---
 
@@ -416,9 +444,9 @@ Factuur bevat QR-code + betaallink via Mollie; klant betaalt met één tik.
 
 **Acceptatiecriteria:**
 1. Concept-factuur → definitief: systeem maakt Mollie Payment Intent (iDEAL)
-2. QR-code in PDF: `https://routeflow.nl/pay/{payment_id}`; opener opent betaalpagina (mobile-optimized)
+2. QR-code in PDF: `https://servops.nl/pay/{payment_id}`; opener opent betaalpagina (mobile-optimized)
 3. Betaalpagina: bedrag, klantgegevens, "Betaal nu iDEAL" (geen andere betaalmethoden, NL-optimized)
-4. Webhook: Mollie POST naar RouteFlow bij payment-status-wijziging
+4. Webhook: Mollie POST naar ServOps bij payment-status-wijziging
 
 ---
 
@@ -429,7 +457,7 @@ Factuur verzonden per klantkanaal-voorkeur (e-mail of WhatsApp).
 
 **Acceptatiecriteria:**
 1. Klant-settings: "Hoe wil je facturen ontvangen?" = E-mail | WhatsApp
-2. Definitieve factuur → e-mail (MVP): "Factuur #12345 van RouteFlow" + PDF-bijlage + betaallink
+2. Definitieve factuur → e-mail (MVP): "Factuur #12345 van ServOps" + PDF-bijlage + betaallink
 3. WhatsApp (V1): template-bericht + link naar PDF + betaallink
 4. Logs tonen: "Verzonden op 07-07-2026 09:15 per e-mail"
 5. Foutmelding: "E-mail niet bereikt; probeer manueel" + herverzoek-knop
@@ -488,6 +516,20 @@ Correcties op facturen via creditfactuur; audit trail toon mutaties.
 3. Creditfactuur gegenereerd: negatieve bedragen; gekoppeld aan origineel (veld `parent_invoice_id`)
 4. Factuur-detail: "Correctie via creditfactuur #54321 op 08-07-2026"
 5. Export-audit: tabel toont "Origineel #123 | Betaald €100 | Credit #54321 -€50 | Saldo €50"
+
+---
+
+### FR-069: Direct factureren bij afronden (ZZP-versnelling)
+**Fase:** V2 | **Prio:** Should — ✅ **gebouwd** (Sprint 12, 2026-07-21)
+
+Nieuw (PRD § 19 A-33, 2026-07-21): een per-bedrijf instelbare optie waarmee het afronden van een beurt niet alleen een conceptfactuur aanmaakt (bestaand, `complete_job()`), maar in één stap ook direct verstuurt — voor een ZZP'er die zelf zowel uitvoert als factureert is "conceptfactuur later apart versturen" een overbodige extra stap. **Blijft binnen BR-702** (versturen is en blijft een menselijke actie): dit is geen automatisering zonder mens in de lus, het is dezelfde mens (de medewerker/eigenaar) die met één tap in plaats van twee schermen dezelfde actie uitvoert. Standaard **uit** voor MKB-bedrijven (financiële scheiding tussen uitvoering en administratie, 28_Dashboard.md § 3, blijft de default); standaard **aan** te zetten tijdens ZZP-onboarding, maar altijd een bewuste, zichtbare instelling — nooit stil verschillend gedrag o.b.v. `company_type` alleen.
+
+**Acceptatiecriteria:**
+1. Nieuwe instelling in Bedrijfsinstellingen (FR-100-uitbreiding): "Factuur direct versturen na afronden beurt" (aan/uit), met korte uitleg van het verschil met de standaardflow
+2. ~~Indien aan: `/m/beurt/[id]`'s "Gereed"-knop toont bevestiging "Beurt afronden én factuur versturen aan {klant}?" i.p.v. alleen "Gereed"~~ — **bij de bouw bewust vereenvoudigd**: geen tweede bevestigingsstap (dat zou precies de friction terugbrengen die deze FR probeert weg te nemen); de al-bestaande "Gereed"-bevestigingssheet (foto/notitie) blijft de enige stap, de vervolg-toast meldt achteraf "Factuur is verstuurd" i.p.v. "Conceptfactuur aangemaakt"
+3. Indien uit (default): ongewijzigd bestaand gedrag — conceptfactuur, apart te versturen
+4. Alleen beschikbaar voor gebruikers met een rol die al facturen mag versturen (Eigenaar/Admin/Administratie, 23_Gebruikersrollen.md § 2) — een Medewerker-rol zonder factuurrechten ziet deze versnelling niet, ook niet als de instelling aan staat — **gebouwd**
+5. Best-effort: als versturen mislukt (bv. ontbrekende factuurgegevens of Resend niet geconfigureerd, dezelfde `sendInvoice()`-foutafhandeling als PRD § 19 A-20), blijft de beurt gewoon afgerond en de factuur een concept — geen foutmelding die de succesvolle afronding zelf overschaduwt — **gebouwd**, browser-geverifieerd
 
 ---
 
@@ -551,14 +593,44 @@ Klant antwoordt "overslaan" op WhatsApp → beurt automatisch geannuleerd.
 ## 7. FR-serie 100+: Instellingen, Onboarding, Dashboard
 
 ### FR-100: Bedrijf-instellingen
-**Fase:** MVP | **Prio:** Must
+**Fase:** MVP | **Prio:** Must — ✅ **gebouwd** (Sprint 12, 2026-07-21), met één scope-cut
 
-Admin kan bedrijfs-metadata instellingen.
+Admin kan bedrijfs-metadata instellingen. Stond al sinds v1.0 in MVP-scope maar was nooit gebouwd tot Sprint 12 (PRD § 19 A-33) — `config_json.invoicing` (bedrijfscode/KVK/BTW-nr/IBAN/BIC, PRD § 19 A-20) had tot dan toe geen UI en vereiste directe DB-invoer.
 
 **Acceptatiecriteria:**
-1. Instellingen-pagina (admin-only): tabs "Bedrijf" | "Diensttypen" | "Medewerkers" | "Notificaties" | "Facturatie"
-2. Bedrijf-tab: naam, logo, primaire kleur, adres (KVK), BTW-nummer, IBAN
-3. Opslaan; validatie per veld
+1. ~~Instellingen-pagina (admin-only): tabs "Bedrijf" | "Diensttypen" | "Medewerkers" | "Notificaties" | "Facturatie"~~ — **gebouwd als aparte `/instellingen/bedrijf`-pagina** i.p.v. tabs, consistent met hoe Diensten/Medewerkers al eigen pagina's zijn i.p.v. tabs binnen één scherm (26_ComponentLibrary.md-conventie); "Notificaties" bestaat nog niet als aparte sectie (Sprint 8/WhatsApp-scope)
+2. Bedrijf-tab: naam, ~~logo, primaire kleur~~, adres (KVK), BTW-nummer, IBAN — **logo/primaire kleur bewust niet gebouwd**: white-label-branding (file-upload/kleurkiezer, raakt PDF-/e-mail-templates) is een materieel andere, grotere feature dan de rest van dit sprint; blijft open. Naam/KVK/BTW-nummer/IBAN + BIC (niet expliciet in de oorspronkelijke AC maar wel al in `config_json.invoicing`) **gebouwd**. "Adres" niet gebouwd — bestond nergens in het schema (alleen depot-locatie, PRD § 19 A-13, een ander veld met een ander doel)
+3. Opslaan; validatie per veld — **gebouwd**
+4. **(A-33)** Bedrijf-tab: bedrijfstype "ZZP" of "MKB" — stuurt uitsluitend standaardwaarden/onboarding-vragen (bv. FR-069's default), **nooit** welke pagina's/UI-onderdelen zichtbaar zijn; het bestaande, betrouwbaardere "1 actieve medewerker → weekweergave"-gedrag (27_PaginaOverzicht.md § 1.2) blijft ongewijzigd en leidt niet af van dit veld — **gebouwd**
+5. **(A-33)** Bedrijf-tab: branche-keuze uit een vaste lijst (glazenwassers/schoonmaak/hovenier/dakgoot-en-gevelreiniging/ongediertebestrijding/installatie-cv-airco/overig, volgorde per 39_Toekomstvisie.md § 2) — koppelt aan FR-104's dienstensjabloon-import, verandert verder geen terminologie elders in de app (§ 6.7-principe) — **gebouwd**
+
+---
+
+### FR-103: Medewerker-uitnodiging (eigen inlogaccount)
+**Fase:** V1 | **Prio:** Must — ✅ **gebouwd** (Sprint 12, 2026-07-21)
+
+Nieuw (PRD § 19 A-33). Sloot een kritiek gat: 22_Authenticatie.md § 8 documenteerde deze flow al sinds een eerdere sessie, maar de `invites`-tabel bestond niet en `createEmployee()` maakte uitsluitend een `employees`-rij aan zonder `user_id`/inlogaccount. Zonder deze flow kon een medewerker in de praktijk niet zelf inloggen om beurten af te vinken.
+
+**Acceptatiecriteria:**
+1. ~~Bij het aanmaken/bewerken van een Medewerker: veld "E-mailadres" + knop "Uitnodigen"~~ — **gebouwd als eigen `/instellingen/medewerkers/[id]/uitnodigen`-pagina** i.p.v. een inline veld, met een link vanaf de Medewerkers-lijst; uitnodigen is idempotent (een bestaande, niet-geaccepteerde uitnodiging wordt vervangen, niet gestapeld — dekt zowel "eerste keer" als "opnieuw uitnodigen" met één actie)
+2. Uitnodiging: token in nieuwe `invites`-tabel (`040_employee_invites.sql`, met `accepted_at` i.p.v. verwijderen — audit-spoor), verloopt na 7 dagen; e-mail via bestaande Resend-integratie — **gebouwd**
+3. Medewerker klikt link → wachtwoord instellen → `users`-rij aangemaakt met `role='employee'` → `employees.user_id` gekoppeld → redirect naar `/m` — **gebouwd**, incl. de tussenstap via Supabase's eigen e-mailbevestiging (`enable_confirmations=true`) die dit vereist; browser-E2E-geverifieerd
+4. Status zichtbaar op de Medewerkers-lijst: ~~"Uitgenodigd (verloopt over X dagen)"~~ / "Actief" / "Verlopen — opnieuw uitnodigen" — **gebouwd zonder de dagen-aftelling** (vereenvoudiging; "Uitgenodigd"/"Verlopen"/"Actief"/"Nog niet uitgenodigd")
+5. Alleen Eigenaar/Admin mag uitnodigen (23_Gebruikersrollen.md § 2) — **gebouwd**, zowel als vroege Server-Action-check als RLS
+6. RLS: `invites` volgt het standaard tenant-model; een verlopen/gebruikt token is nooit opnieuw bruikbaar — **gebouwd**, negatief getest (`tests/integration/employee-invites-rls.test.ts`)
+
+---
+
+### FR-104: Branche-dienstensjabloon
+**Fase:** V1 | **Prio:** Should — ✅ **gebouwd** (Sprint 12, 2026-07-21)
+
+Nieuw (PRD § 19 A-33) — het al sinds PRD v1.0 geplande "Diensttype-templates per branche" (§ 5.2/§ 6.7), tot dan toe nooit gebouwd. Een voorgedefinieerde, optioneel-toe-te-passen set Diensten per branche — geen automatische, dwingende actie en geen terminologie-vervanging elders in de app; de gebruiker kan na import nog vrij aanpassen/verwijderen (bestaande Diensten-CRUD, ongewijzigd).
+
+**Acceptatiecriteria:**
+1. ~~Tijdens onboarding of later vanaf Instellingen → Diensten~~ — **gebouwd als aparte `/instellingen/diensten/sjabloon`-pagina**, bereikbaar vanaf de Diensten-lijst (knop + lege-staat-actie); **niet** in de onboarding-wizard geïntegreerd (FR-101 ongewijzigd) — kleinere, bewuste scope-cut, de instellingen-route is altijd beschikbaar
+2. Sjabloon-data als statische seed-set per branche (`lib/branche-templates/data.ts`, geen nieuwe tabel — insert in de bestaande `services`-tabel); glazenwassers als volledig referentiesjabloon — **gebouwd**
+3. Import toont een preview-lijst met checkboxes vóór het daadwerkelijk aanmaken — **gebouwd**, browser-geverifieerd
+4. Overige branches starten met een kleinere sjabloon-set dan glazenwassers — **gebouwd** ("Overig" heeft bewust een lege set)
 
 ---
 
@@ -596,7 +668,7 @@ Nieuwe serie (ADR-011, Human-in-the-Loop AI — `docs/adr/ADR-011-human-in-the-l
 ### FR-900: Morning Briefing
 **Fase:** V1 (Sprint 7+, `40_Implementatieplan.md`) | **Prio:** Must
 
-De Morning Briefing is het **primaire startscherm** van RouteFlow (ADR-011 § 1) — bij het openen van de applicatie krijgt de gebruiker automatisch, direct, een samengesteld dagoverzicht van AI Agent-output te zien, niet een los dashboard of een leeg planningsscherm. Technisch valt dit samen met de bestaande dashboard-route (`/`, FR-102).
+De Morning Briefing is het **primaire startscherm** van ServOps (ADR-011 § 1) — bij het openen van de applicatie krijgt de gebruiker automatisch, direct, een samengesteld dagoverzicht van AI Agent-output te zien, niet een los dashboard of een leeg planningsscherm. Technisch valt dit samen met de bestaande dashboard-route (`/`, FR-102).
 
 **Acceptatiecriteria:**
 1. Overzicht toont: beschikbare medewerkers vandaag, aantal geplande routes, aantal opdrachten (incl. wachtrij-omvang), weersverwachting van vandaag + getroffen beurten, verkeerssituatie, capaciteit, omzetprognose, openstaande waarschuwingen, AI-voorstellen (elk met AI-confidence score), belangrijkste wijzigingen sinds gisteren.
@@ -633,12 +705,24 @@ Elk AI-voorstel in de Morning Briefing (FR-900) heeft een feedback-actie naast a
 
 **Fase:** los van MVP/V1/V2 (compliance-fundament, sprintplaatsing via `40_Implementatieplan.md`) | **Prio:** Must
 
-De gebruiker kan op elk moment in begrijpelijke taal nalezen welke onderdelen van RouteFlow een taalmodel gebruiken en welke niet, wie uiteindelijk beslist, en wat AI bij RouteFlow nooit doet — EU AI Act Art. 4 (AI-geletterdheid) en Art. 50(1) (transparantie bij AI-interactie), `47_AIAct_Compliance.md` § 6.1/6.2.
+De gebruiker kan op elk moment in begrijpelijke taal nalezen welke onderdelen van ServOps een taalmodel gebruiken en welke niet, wie uiteindelijk beslist, en wat AI bij ServOps nooit doet — EU AI Act Art. 4 (AI-geletterdheid) en Art. 50(1) (transparantie bij AI-interactie), `47_AIAct_Compliance.md` § 6.1/6.2.
 
 **Acceptatiecriteria:**
-1. Een vaste, vindbare pagina (`/instellingen/over-ai`) legt uit: welk onderdeel echt een taalmodel gebruikt (Command Bar-vrije-tekst, ADR-014) en welke data daarbij wel/niet meegaat; dat de overige "AI Agents" deterministische regels zijn, geen lerend model; dat geen enkel voorstel zonder menselijke goedkeuring wordt uitgevoerd (BR-702); en een expliciete lijst van wat AI bij RouteFlow nooit doet (incl. BR-706/707: nooit taakallocatie op gedrag/persoonskenmerken, nooit prestatiebeoordeling).
+1. Een vaste, vindbare pagina (`/instellingen/over-ai`) legt uit: welk onderdeel echt een taalmodel gebruikt (Command Bar-vrije-tekst, ADR-014) en welke data daarbij wel/niet meegaat; dat de overige "AI Agents" deterministische regels zijn, geen lerend model; dat geen enkel voorstel zonder menselijke goedkeuring wordt uitgevoerd (BR-702); en een expliciete lijst van wat AI bij ServOps nooit doet (incl. BR-706/707: nooit taakallocatie op gedrag/persoonskenmerken, nooit prestatiebeoordeling).
 2. Elke interactie met het taalmodel in de UI is expliciet gelabeld (bestaand: "Vraag AI" in de Command Bar, ADR-014) — geen verborgen of impliciete AI-interactie.
 3. De pagina-inhoud volgt de architectuur (ADR-014, `43_AI_Agents.md`-implementatiestatus) — wijzigingen daaraan die de classificatie raken (`47_AIAct_Compliance.md` § 7) vereisen een bijwerking van deze pagina in dezelfde wijziging, niet later.
+
+### FR-904: Automatiseringsniveau/confidence-drempel per agent (AI-assistent)
+**Fase:** V1 (Sprint 7-vervolg) | **Prio:** Should — ✅ **gebouwd** (2026-07-21)
+
+15_AIPlanner.md § 8 specificeerde dit al als "per bedrijf instelbaar" sinds Sprint 7, maar `decideApproval()` (lib/agents/approval-handler.ts) werd tot nu toe altijd met de hardcoded default aangeroepen (`automationLevel: 'proposal'`, confidence-drempel 0,7) — de "AI-assistent"-tegel op `/instellingen` stond sindsdien als niet-klikbare "Binnenkort"-placeholder. Alleen de zes daadwerkelijk gebouwde agents (Planning/Replanning/Weather/Capacity/Optimization/Invoice, Sprint 7/7-vervolg) worden getoond — `communication` (Sprint 8) en `revenue` (nooit gebouwd) bestaan alleen als toekomstige enum-waarden.
+
+**Acceptatiecriteria:**
+1. `/instellingen/ai-assistent` (Eigenaar/Admin, zelfde rechten als Bedrijfsinstellingen): per agent een automatiseringsniveau (Voorstel/Semi-automatisch/Volautomatisch) en confidence-drempel (0–1)
+2. `agent-orchestrator`/`agent-replanning` (Edge Functions) lezen deze instellingen per bedrijf en geven ze door aan de al-bestaande `decideApproval()`-beslisboom (ADR-012 § 7) — geen wijziging aan die beslisboom zelf, alleen aan de input
+3. Ontbrekende instelling voor een agent = de bestaande default (Voorstel/0,7) — geen migratie-eis om alle zes rijen vooraf te vullen
+4. Blijft binnen BR-702: agents met alleen informatieve voorstellen (Capacity/Weather/Invoice, geen `payload`) hebben sowieso geen uitvoerbare actie, ongeacht het gekozen niveau; een confidence-score onder de drempel valt altijd terug op "Voorstel"
+5. RLS: alleen Eigenaar/Admin schrijft, Planner leest mee, Administratie/Medewerker geen toegang — cross-tenant nooit zichtbaar
 
 ---
 
@@ -715,3 +799,10 @@ De platform-eigenaar ziet agent-rungezondheid (`agent_runs`-foutpercentages) gea
 | 2026-07-12 | 1.4 | FR-901 (Organizational Memory bekijken/beheren) en FR-902 (AI-feedback per voorstel) toegevoegd aan FR-serie 900+, voortvloeiend uit `45_AgentMemory.md`. |
 | 2026-07-16 | 1.5 | FR-serie 950+ toegevoegd: FR-950 (feature request indienen, tenant-zijde), FR-951 (Product Agent-triage & voorstellen), FR-952 (Platform Admin-portal), FR-953 (cross-tenant operationeel overzicht), voortvloeiend uit ADR-013/`46_PlatformAdmin.md`/PRD § 19 A-23. |
 | 2026-07-17 | 1.6 | FR-903 toegevoegd aan § 8: AI-transparantie & -geletterdheid (`/instellingen/over-ai`), voortvloeiend uit `47_AIAct_Compliance.md` § 6.1/6.2 (EU AI Act Art. 4/50). Gebouwd. |
+| 2026-07-17 | 1.7 | FR-004 AC2 verduidelijkt: "custom"-frequentie vraagt in de UI een interval in **weken** (bijv. "elke 8/12 weken"), intern nog steeds opgeslagen als dagen — corrigeert de oorspronkelijke formulering "dagpatroon", die nooit als een dag-van-de-week-patroon-builder is gebouwd. Geen schema-/DB-wijziging, geen FR-hernummering. |
+| 2026-07-18 | 1.8 | FR-025 (geografische clustering, Sprint 7-vervolg): AC1/AC3 gebouwd (`lib/planning/clustering.ts` + `planning-generate`-integratie + Briefing-samenvatting), AC2/AC4 (scoringsmodel + slider) expliciet als apart, nog niet gebouwd vervolgwerk gemarkeerd — geen van de 4 BR-701-gewichten heeft nu instelbare UI. Geen FR-hernummering. |
+| 2026-07-18 | 1.9 | FR-029 toegevoegd aan FR-serie 020–039: handmatige beurt-toevoeging op dag/tijdstip. Aanleiding: de automatische generatie (FR-020) dekt uitsluitend periodiek werk binnen een flexibiliteitsvenster (BR-101-Soft) — verticalen buiten glazenwassers (PRD § 5 principe 5, § 6.7) hebben vaak klanten die uitsluitend op een vaste dag/tijdstip bereikbaar zijn. Nog niet gebouwd; zie PRD § 19 A-27. |
+| 2026-07-19 | 1.10 | FR-030 toegevoegd aan FR-serie 020–039: "Vul de dag" (capaciteit opvullen op een net vrijgekomen dag, spiegelbeeld van FR-024/Replanning Agent). Aanleiding: een ZZP'er die besluit een normaal vrije dag toch te werken, kan die dag nu niet laten vullen met later-geplande flexibele beurten. Zie PRD § 19 A-28. |
+| 2026-07-21 | 1.11 | Strategische analyse "modulair MKB/ZZP/branche-pakket" (PRD § 19 A-33): FR-069 (direct factureren bij afronden, ZZP-versnelling) toegevoegd aan FR-serie 060–079; FR-103 (medewerker-uitnodiging/eigen inlogaccount — kritiek gat, gedocumenteerd in 22_Authenticatie.md § 8 maar nooit gebouwd) en FR-104 (branche-dienstensjabloon, al sinds PRD v1.0 gepland maar nooit gebouwd) toegevoegd aan FR-serie 100+. FR-100 (Bedrijf-instellingen) AC4/AC5 uitgebreid met bedrijfstype (MKB/ZZP) en branche-veld; FR-100 zelf blijkt nooit gebouwd (geen "Bedrijf"-tab bestaat vandaag). Geen FR-hernummering. Volledige, sprintklare uitwerking: `40_Implementatieplan.md` § Sprint 12 (nog te bouwen, wacht op gebruikersbevestiging op de module-/branche-indeling). |
+| 2026-07-21 | 1.12 | Sprint 12 gebouwd: FR-069/100/103/104 gemarkeerd als ✅ gebouwd, met per-FR aantekening van de scope-cuts t.o.v. de oorspronkelijke ACs (FR-100: geen logo/primaire kleur; FR-103: eigen uitnodigen-pagina i.p.v. inline veld, geen dagen-aftelling in de statustekst; FR-104: geen onboarding-integratie, alleen vanaf Instellingen; FR-069: geen aparte bevestigingsstap, alleen een andere afrondingstoast). Geen FR-hernummering, geen AC-nummerwijziging (doorgestreepte tekst markeert wat niet zo gebouwd is, niet verwijderd). |
+| 2026-07-21 | 1.13 | FR-904 toegevoegd aan FR-serie 900+ en direct gebouwd: automatiseringsniveau/confidence-drempel per agent, instelbaar op `/instellingen/ai-assistent` — sloot de "Binnenkort"-placeholder die sinds Sprint 7 op `/instellingen` stond. `decideApproval()` (lib/agents/approval-handler.ts, al sinds Sprint 7 met de volledige beslisboom) kreeg voor het eerst echte, per-bedrijf-instelbare input i.p.v. de hardcoded default. |

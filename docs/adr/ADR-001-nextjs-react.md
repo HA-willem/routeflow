@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Datum:** 2026-07-07
-- **Beslisser:** Chief Software Architect (RouteFlow)
+- **Beslisser:** Chief Software Architect (ServOps)
 - **Bron van waarheid:** `00_PRD.md` § 12.1 (vastgestelde stack)
 - **Gerelateerd:** ADR-002 (Supabase), ADR-008 (Edge Functions), ADR-009 (PWA); 24_UI_UX.md, 25_DesignSystem.md, 26_ComponentLibrary.md, 37_Performance.md
 
@@ -10,7 +10,7 @@
 
 ## Context
 
-RouteFlow is een premium, Nederlandstalige SaaS met twee zeer verschillende frontends: een **desktop-regie-omgeving** (planning, drag-and-drop, dashboards) en een **mobiele PWA voor medewerkers** (PRD § 11.8). De UX-lat ligt hoog: TTI < 2s op 4G, feedback < 100ms, optimistic UI, instant-voelende navigatie (PRD § 11.3, NFR-101/102/105). Het bedrijf host op Vercel (PRD § 12.1) en werkt met een klein team dat snel moet kunnen leveren.
+ServOps is een premium, Nederlandstalige SaaS met twee zeer verschillende frontends: een **desktop-regie-omgeving** (planning, drag-and-drop, dashboards) en een **mobiele PWA voor medewerkers** (PRD § 11.8). De UX-lat ligt hoog: TTI < 2s op 4G, feedback < 100ms, optimistic UI, instant-voelende navigatie (PRD § 11.3, NFR-101/102/105). Het bedrijf host op Vercel (PRD § 12.1) en werkt met een klein team dat snel moet kunnen leveren.
 
 ## Probleem
 

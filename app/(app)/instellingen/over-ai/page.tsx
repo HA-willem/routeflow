@@ -6,7 +6,7 @@ import { requireOnboardedUser } from '@/lib/auth/session';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Hoe RouteFlow AI gebruikt — RouteFlow',
+  title: 'Hoe ServOps AI gebruikt — ServOps',
 };
 
 /**
@@ -23,7 +23,7 @@ export default async function OverAiPage() {
   return (
     <div className="max-w-3xl space-y-8">
       <PageHeader
-        title="Hoe RouteFlow AI gebruikt"
+        title="Hoe ServOps AI gebruikt"
         description="Een eerlijk overzicht: wat is er echt AI, wat noemen we AI maar is het niet, en wie beslist er uiteindelijk."
       />
 
@@ -38,7 +38,7 @@ export default async function OverAiPage() {
             </h2>
             <p className="text-text-muted mt-2 text-sm">
               Wanneer je in de zoekbalk (⌘K) een vrije zin typt — bijvoorbeeld &ldquo;wie kan er
-              vandaag nog een klus bij hebben&rdquo; — stuurt RouteFlow die tekst naar Claude
+              vandaag nog een klus bij hebben&rdquo; — stuurt ServOps die tekst naar Claude
               (Anthropic) om te bepalen welke van een vaste lijst acties je bedoelt. Dit is altijd
               expliciet gelabeld als &ldquo;Vraag AI&rdquo; in de zoekresultaten — je kiest er zelf
               voor.
@@ -77,7 +77,7 @@ export default async function OverAiPage() {
             <p className="text-text-muted mt-2 text-sm">
               Waarom dit ertoe doet: het onderscheid tussen &ldquo;regels die we hebben
               geprogrammeerd&rdquo; en &ldquo;een model dat zelf besluit&rdquo; is precies waar de
-              Europese AI-verordening om draait. Bij RouteFlow is bijna alles het eerste.
+              Europese AI-verordening om draait. Bij ServOps is bijna alles het eerste.
             </p>
           </div>
         </div>
@@ -106,7 +106,7 @@ export default async function OverAiPage() {
             <CheckCircle2 aria-hidden className="size-5" />
           </span>
           <div className="min-w-0 flex-1">
-            <h2 className="text-text text-sm font-semibold">Wat AI bij RouteFlow nooit doet</h2>
+            <h2 className="text-text text-sm font-semibold">Wat AI bij ServOps nooit doet</h2>
             <ul className="text-text-muted mt-2 list-disc space-y-1 pl-5 text-sm">
               <li>
                 Nooit automatisch facturen versturen, betalingen uitvoeren of prijzen wijzigen.

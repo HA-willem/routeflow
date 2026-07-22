@@ -8,6 +8,17 @@ import { logger } from '@/lib/logging/logger';
 import { createClient } from '@/lib/supabase/server';
 import type { Database } from '@/types/database.types';
 
+// Geen @/app/*-padalias (tsconfig.json § paths) — relatief pad naar de
+// bestaande sendInvoice() (FR-069, hergebruikt i.p.v. gedupliceerd).
+import { sendInvoice } from '../(app)/facturen/actions';
+
+/** Rollen die zelf al facturen mogen versturen (23_Gebruikersrollen.md § 2, FR-069 AC4). */
+const INVOICE_SENDING_ROLES: Database['public']['Enums']['user_role'][] = [
+  'owner',
+  'admin',
+  'administration',
+];
+
 /**
  * Server Actions voor de PWA-uitvoeringsflow (29_MobieleApp.md § 2.2/2.3).
  * De logica zelf staat in de gelijknamige Postgres-RPC's
@@ -54,21 +65,48 @@ export async function resumeJob(jobId: string): Promise<ActionResult<Job>> {
   return actionSuccess(data);
 }
 
+/**
+ * FR-069 (ZZP-versnelling, PRD § 19 A-33): als het bedrijf
+ * `instant_invoice_on_complete` aan heeft staan én de afrondende gebruiker
+ * zelf al facturen mag versturen (23_Gebruikersrollen.md § 2), wordt de
+ * conceptfactuur meteen ook verstuurd — dezelfde bestaande `sendInvoice()`
+ * (app/(app)/facturen/actions.ts), alleen automatisch aangeroepen i.p.v. via
+ * een los scherm. Blijft binnen BR-702: het is nog altijd een user-
+ * geïnitieerde actie ("Gereed"), niet een systeemtrigger zonder mens.
+ * Best-effort: als versturen mislukt (bv. ontbrekende factuurgegevens),
+ * blijft de beurt gewoon afgerond en de factuur een concept — geen foutmelding
+ * die de succesvolle afronding zelf overschaduwt.
+ */
 export async function completeJob(
   jobId: string,
   notes?: string,
-): Promise<ActionResult<{ job: Job; invoiceId: string }>> {
-  await requireOnboardedUser();
+): Promise<ActionResult<{ job: Job; invoiceId: string; invoiceSent: boolean }>> {
+  const { profile } = await requireOnboardedUser();
   const supabase = await createClient();
   const { data, error } = await supabase
     .rpc('complete_job', { p_job_id: jobId, ...(notes ? { p_notes: notes } : {}) })
     .single();
   if (error || !data) return mapRpcError('completeJob', error);
 
-  const result = data as unknown as { job: Job; invoice: { id: string } };
+  const result = data as unknown as { job: Job; invoice: { id: string } | null };
   revalidatePath('/m');
   revalidatePath(`/m/beurt/${jobId}`);
-  return actionSuccess({ job: result.job, invoiceId: result.invoice.id });
+
+  let invoiceSent = false;
+  const invoiceId = result.invoice?.id;
+  if (invoiceId && INVOICE_SENDING_ROLES.includes(profile.role)) {
+    const { data: company } = await supabase
+      .from('companies')
+      .select('instant_invoice_on_complete')
+      .eq('id', profile.company_id)
+      .single();
+    if (company?.instant_invoice_on_complete) {
+      const sendResult = await sendInvoice(invoiceId);
+      invoiceSent = sendResult.success;
+    }
+  }
+
+  return actionSuccess({ job: result.job, invoiceId: invoiceId ?? '', invoiceSent });
 }
 
 export async function markJobNotHome(jobId: string, reason?: string): Promise<ActionResult<Job>> {

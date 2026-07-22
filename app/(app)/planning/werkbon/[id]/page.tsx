@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Werkbon — RouteFlow' };
+export const metadata: Metadata = { title: 'Werkbon — ServOps' };
 
 /** Desktop-variant van de werkbon (planner/administratie) — zelfde databron als /m/beurt/[id]/werkbon. */
 export default async function DesktopWerkbonPage({ params }: { params: Promise<{ id: string }> }) {

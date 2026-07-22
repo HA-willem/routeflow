@@ -1,5 +1,6 @@
 import { PageHeader } from '@/components/composed/PageHeader';
 import { AiUsageOverview } from '@/components/domain/platform-admin/AiUsageOverview';
+import { CronStatusOverview } from '@/components/domain/platform-admin/CronStatusOverview';
 import { FeatureRequestsInbox } from '@/components/domain/platform-admin/FeatureRequestsInbox';
 import { OperationalOverview } from '@/components/domain/platform-admin/OperationalOverview';
 import { PlatformProposalForm } from '@/components/domain/platform-admin/PlatformProposalForm';
@@ -8,6 +9,7 @@ import { requirePlatformAdmin } from '@/lib/platform-admin/guard';
 import {
   getAgentHealthOverview,
   getAiUsageOverview,
+  getCronJobStatus,
   getFeatureRequestsForPortal,
   getPlatformProposals,
 } from '@/lib/platform-admin/queries';
@@ -24,7 +26,7 @@ import {
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Platform Admin — RouteFlow',
+  title: 'Platform Admin — ServOps',
 };
 
 /**
@@ -36,11 +38,12 @@ export default async function PlatformAdminPage() {
   await requirePlatformAdmin();
   const supabase = await createClient();
 
-  const [companies, proposals, featureRequests, aiUsage] = await Promise.all([
+  const [companies, proposals, featureRequests, aiUsage, cronJobs] = await Promise.all([
     getAgentHealthOverview(supabase),
     getPlatformProposals(supabase),
     getFeatureRequestsForPortal(supabase),
     getAiUsageOverview(supabase),
+    getCronJobStatus(supabase),
   ]);
 
   return (
@@ -53,6 +56,11 @@ export default async function PlatformAdminPage() {
       <section>
         <h2 className="text-text mb-3 text-lg font-semibold">Operationeel overzicht (7 dagen)</h2>
         <OperationalOverview companies={companies} />
+      </section>
+
+      <section>
+        <h2 className="text-text mb-3 text-lg font-semibold">Cron-status</h2>
+        <CronStatusOverview jobs={cronJobs} />
       </section>
 
       <section>

@@ -20,6 +20,8 @@ import type { BusinessRuleRef, RawCandidate } from './types.ts';
 export interface PlanningAgreementResult {
   serviceAgreementId: string;
   datesGenerated: number;
+  /** FR-025/BR-204: of deze afspraak richting een nabije bestaande beurt genudged is. */
+  clustered: boolean;
 }
 
 export interface PlanningRunSummary {
@@ -34,6 +36,7 @@ const BUSINESS_RULES: BusinessRuleRef[] = [
   { code: 'BR-101', label: 'Flexvenster (soft)' },
   { code: 'BR-102', label: 'Geen gaten in de reeks' },
   { code: 'BR-103', label: 'Maandpatronen kalendergebaseerd' },
+  { code: 'BR-204', label: 'Geografische clustering (soft)' },
 ];
 
 /**
@@ -50,13 +53,22 @@ export function summarizePlanningRun(summary: PlanningRunSummary): RawCandidate 
   }
 
   const agreementCount = agreementResults.length;
+  const clusteredCount = agreementResults.filter((r) => r.clustered).length;
+  const clusteringNote =
+    clusteredCount > 0
+      ? ` Daarvan ${clusteredCount === 1 ? 'is 1 dienstafspraak' : `zijn ${clusteredCount} dienstafspraken`} dichter bij bestaande buurtgenoten gepland (binnen het flexibiliteitsvenster) voor efficiëntere routes.`
+      : '';
 
   return {
     title: `${totalDates} nieuwe ${totalDates === 1 ? 'beurt' : 'beurten'} voorgesteld`,
-    summary: `Voor ${agreementCount} ${agreementCount === 1 ? 'dienstafspraak' : 'dienstafspraken'} ${agreementCount === 1 ? 'is' : 'zijn'} ${totalDates} voorgestelde ${totalDates === 1 ? 'beurt' : 'beurten'} aangemaakt voor de komende ${weeks} ${weeks === 1 ? 'week' : 'weken'}.`,
+    summary: `Voor ${agreementCount} ${agreementCount === 1 ? 'dienstafspraak' : 'dienstafspraken'} ${agreementCount === 1 ? 'is' : 'zijn'} ${totalDates} voorgestelde ${totalDates === 1 ? 'beurt' : 'beurten'} aangemaakt voor de komende ${weeks} ${weeks === 1 ? 'week' : 'weken'}.${clusteringNote}`,
     reasoning:
-      'Elke actieve dienstafspraak is doorgerekend op basis van de laatst uitgevoerde beurt (of, bij een eerste beurt, de voorkeursdag) en de ingestelde frequentie — deterministische datumberekening, geen afweging.',
-    dataSources: [`Actieve dienstafspraken (${fromDate})`, 'Frequentie/voorkeursdag per afspraak'],
+      'Elke actieve dienstafspraak is doorgerekend op basis van de laatst uitgevoerde beurt (of, bij een eerste beurt, de voorkeursdag) en de ingestelde frequentie — deterministische datumberekening, geen afweging. Beurten binnen 1km van een al-bestaande beurt van een andere dienstafspraak schuiven, indien het flexibiliteitsvenster het toelaat, naar diezelfde datum (BR-204).',
+    dataSources: [
+      `Actieve dienstafspraken (${fromDate})`,
+      'Frequentie/voorkeursdag per afspraak',
+      'Objectlocaties van nabije beurten (buurt-clustering, BR-204)',
+    ],
     businessRules: BUSINESS_RULES,
     confidence: 0.95,
     impact: `${totalDates} ${totalDates === 1 ? 'beurt' : 'beurten'}, ${agreementCount} ${agreementCount === 1 ? 'dienstafspraak' : 'dienstafspraken'}${skippedCount > 0 ? `, ${skippedCount} overgeslagen` : ''}`,

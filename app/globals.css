@@ -4,6 +4,16 @@
 @import 'tw-animate-css';
 @import '../lib/design/tokens.css';
 
+/*
+ * 25_DesignSystem.md § 7 — handmatige thema-toggle: `dark:`-Tailwind-utilities
+ * volgen vanaf hier `[data-theme="dark"]` (door ThemeProvider/het inline
+ * anti-flits-script in app/layout.tsx gezet) i.p.v. uitsluitend
+ * `prefers-color-scheme`. De token-laag (lib/design/tokens.css) blijft
+ * daarnaast ook rechtstreeks op `prefers-color-scheme` reageren als
+ * progressive-enhancement-fallback wanneer JavaScript uitstaat.
+ */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
 @layer base {
   * {
     border-color: var(--color-border);

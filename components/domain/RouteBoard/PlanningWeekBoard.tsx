@@ -6,6 +6,7 @@ import { RouteDetailsDialog } from '@/components/domain/RouteDetailsDialog';
 
 import { WeekBoard, type MoveJobToDateAction, type WeekColumn } from './WeekBoard';
 
+import type { FillDayAction, GetFillDayCandidatesAction } from './FillDayDialog';
 import type { OptimizeEmployeeDayAction, ReportSickLeaveAction, RouteColumn } from './RouteBoard';
 
 interface PlanningWeekBoardProps {
@@ -13,6 +14,8 @@ interface PlanningWeekBoardProps {
   moveJobAction: MoveJobToDateAction;
   optimizeEmployeeDayAction: OptimizeEmployeeDayAction;
   reportSickLeaveAction: ReportSickLeaveAction;
+  getFillDayCandidatesAction: GetFillDayCandidatesAction;
+  fillDayAction: FillDayAction;
 }
 
 /**
@@ -27,6 +30,8 @@ export function PlanningWeekBoard({
   moveJobAction,
   optimizeEmployeeDayAction,
   reportSickLeaveAction,
+  getFillDayCandidatesAction,
+  fillDayAction,
 }: PlanningWeekBoardProps) {
   const [openDate, setOpenDate] = useState<string | null>(null);
 
@@ -49,6 +54,8 @@ export function PlanningWeekBoard({
         moveJobAction={moveJobAction}
         optimizeEmployeeDayAction={optimizeEmployeeDayAction}
         reportSickLeaveAction={reportSickLeaveAction}
+        getFillDayCandidatesAction={getFillDayCandidatesAction}
+        fillDayAction={fillDayAction}
       />
       <RouteDetailsDialog
         column={openColumnForDialog}

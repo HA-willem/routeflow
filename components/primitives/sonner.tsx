@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { Toaster as Sonner, type ToasterProps } from 'sonner';
 
-// RouteFlow gebruikt uitsluitend CSS (@media prefers-color-scheme + [data-theme])
+// ServOps gebruikt uitsluitend CSS (@media prefers-color-scheme + [data-theme])
 // voor donkere modus (25_DesignSystem.md § 7) — geen next-themes/ThemeProvider.
 // "system" laat Sonner zelf window.matchMedia gebruiken, consistent met die aanpak.
 const Toaster = ({ ...props }: ToasterProps) => {

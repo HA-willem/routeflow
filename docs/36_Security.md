@@ -107,7 +107,7 @@ Dit document beschrijft het **security- en privacybeleid**: multi-tenant isolati
 
 Register bijgehouden (NFR-402); nieuwe verwerker → DPA vóór ingebruikname.
 
-**EU AI Act:** de AI Act-classificatie van alle RouteFlow-onderdelen (incl. de Anthropic-keten en de Annex III 4(b)-grenzen rond taakallocatie/werknemersdata) is vastgelegd in `47_AIAct_Compliance.md` — het compliance-zusterdocument van dit securitydocument. BR-706/707 zijn de bijbehorende harde regels.
+**EU AI Act:** de AI Act-classificatie van alle ServOps-onderdelen (incl. de Anthropic-keten en de Annex III 4(b)-grenzen rond taakallocatie/werknemersdata) is vastgelegd in `47_AIAct_Compliance.md` — het compliance-zusterdocument van dit securitydocument. BR-706/707 zijn de bijbehorende harde regels.
 
 ---
 

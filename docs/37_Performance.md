@@ -10,7 +10,7 @@
 
 ## Doel van dit document
 
-Dit document vertaalt de performance-NFR's naar concrete **budgetten, technieken en meetpunten**. Snelheid is in RouteFlow een belevingsfeature (PRD § 11.3): optimistic UI, skeletons < 100ms, instant-voelende navigatie.
+Dit document vertaalt de performance-NFR's naar concrete **budgetten, technieken en meetpunten**. Snelheid is in ServOps een belevingsfeature (PRD § 11.3): optimistic UI, skeletons < 100ms, instant-voelende navigatie.
 
 ---
 

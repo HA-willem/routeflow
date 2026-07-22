@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Datum:** 2026-07-07
-- **Beslisser:** Chief Software Architect (RouteFlow)
+- **Beslisser:** Chief Software Architect (ServOps)
 - **Bron van waarheid:** `00_PRD.md` § 12.2 (RLS-multitenancy)
 - **Gerelateerd:** ADR-002 (Supabase), ADR-004 (Multi-tenancy), ADR-008 (Edge Functions); 11_DatabaseConcept.md, 23_Gebruikersrollen.md, 36_Security.md
 
@@ -10,7 +10,7 @@
 
 ## Context
 
-RouteFlow is een multi-tenant SaaS waarin elke datalek tussen bedrijven onaanvaardbaar is (NFR-301). Daarnaast bevat het domein sterk relationele data (klanten → objecten → dienstafspraken → beurten → routes/facturen) en **geodata** voor route-clustering (PostGIS). Autorisatie is fijnmazig: medewerkers mogen bijvoorbeeld geen prijzen/facturen zien (PRD § 14, 23_Gebruikersrollen.md).
+ServOps is een multi-tenant SaaS waarin elke datalek tussen bedrijven onaanvaardbaar is (NFR-301). Daarnaast bevat het domein sterk relationele data (klanten → objecten → dienstafspraken → beurten → routes/facturen) en **geodata** voor route-clustering (PostGIS). Autorisatie is fijnmazig: medewerkers mogen bijvoorbeeld geen prijzen/facturen zien (PRD § 14, 23_Gebruikersrollen.md).
 
 ## Probleem
 

@@ -80,11 +80,25 @@ export async function createServiceAgreement(
       amount_cents:
         parsed.data.pricingType === 'per_job' && parsed.data.amountEuros !== undefined
           ? Math.round(parsed.data.amountEuros * 100)
-          : null,
+          : parsed.data.pricingType === 'subscription' &&
+              parsed.data.subscriptionAmountEuros !== undefined
+            ? Math.round(parsed.data.subscriptionAmountEuros * 100)
+            : null,
       hourly_rate_cents:
         parsed.data.pricingType === 'hourly' && parsed.data.hourlyRateEuros !== undefined
           ? Math.round(parsed.data.hourlyRateEuros * 100)
           : null,
+      included_jobs_per_period:
+        parsed.data.pricingType === 'subscription'
+          ? (parsed.data.includedJobsPerPeriod ?? null)
+          : null,
+      overage_amount_cents:
+        parsed.data.pricingType === 'subscription' && parsed.data.overageAmountEuros !== undefined
+          ? Math.round(parsed.data.overageAmountEuros * 100)
+          : null,
+      billing_period: parsed.data.pricingType === 'subscription' ? 'monthly' : 'per_job',
+      billing_timing:
+        parsed.data.pricingType === 'subscription' ? (parsed.data.billingTiming ?? null) : null,
       vat_rate: parsed.data.vatRate,
     })
     .select('id')
@@ -168,11 +182,25 @@ export async function updateServiceAgreement(
       amount_cents:
         parsed.data.pricingType === 'per_job' && parsed.data.amountEuros !== undefined
           ? Math.round(parsed.data.amountEuros * 100)
-          : null,
+          : parsed.data.pricingType === 'subscription' &&
+              parsed.data.subscriptionAmountEuros !== undefined
+            ? Math.round(parsed.data.subscriptionAmountEuros * 100)
+            : null,
       hourly_rate_cents:
         parsed.data.pricingType === 'hourly' && parsed.data.hourlyRateEuros !== undefined
           ? Math.round(parsed.data.hourlyRateEuros * 100)
           : null,
+      included_jobs_per_period:
+        parsed.data.pricingType === 'subscription'
+          ? (parsed.data.includedJobsPerPeriod ?? null)
+          : null,
+      overage_amount_cents:
+        parsed.data.pricingType === 'subscription' && parsed.data.overageAmountEuros !== undefined
+          ? Math.round(parsed.data.overageAmountEuros * 100)
+          : null,
+      billing_period: parsed.data.pricingType === 'subscription' ? 'monthly' : 'per_job',
+      billing_timing:
+        parsed.data.pricingType === 'subscription' ? (parsed.data.billingTiming ?? null) : null,
       vat_rate: parsed.data.vatRate,
     })
     .eq('id', pricingId);

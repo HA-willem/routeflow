@@ -11,7 +11,7 @@ import { createClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Feature requests — RouteFlow',
+  title: 'Feature requests — ServOps',
 };
 
 /** Feature requests-overzicht (FR-950, 46_PlatformAdmin.md § 2) — eigen bedrijf, RLS-scoped. */
@@ -27,7 +27,7 @@ export default async function FeatureRequestsPage() {
     <div>
       <PageHeader
         title="Feature requests"
-        description="Verzoeken die jij hebt ingediend voor RouteFlow — we laten hier de status zien zodra we ernaar gekeken hebben."
+        description="Verzoeken die jij hebt ingediend voor ServOps — we laten hier de status zien zodra we ernaar gekeken hebben."
         action={
           <Button asChild>
             <Link href="/instellingen/feature-requests/nieuw">Nieuwe feature request</Link>
@@ -38,7 +38,7 @@ export default async function FeatureRequestsPage() {
         rows={requests ?? []}
         getRowKey={(row) => row.id}
         emptyTitle="Nog geen feature requests ingediend."
-        emptyDescription="Heb je een idee dat RouteFlow beter zou maken? Dien het in."
+        emptyDescription="Heb je een idee dat ServOps beter zou maken? Dien het in."
         emptyAction={
           <Button asChild>
             <Link href="/instellingen/feature-requests/nieuw">Nieuwe feature request</Link>

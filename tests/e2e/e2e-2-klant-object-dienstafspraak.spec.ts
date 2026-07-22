@@ -9,7 +9,7 @@ import { findConfirmationLink } from '../shared/mailpit';
  */
 test('klant + object + dienst + dienstafspraak aanmaken (FR-001…004/020)', async ({ page }) => {
   const uniqueSuffix = crypto.randomUUID().slice(0, 8);
-  const email = `e2e2-${uniqueSuffix}@routeflow.test`;
+  const email = `e2e2-${uniqueSuffix}@servops.test`;
   const fullName = 'Frans de Haan';
   const companyName = `E2E Glaswasserij ${uniqueSuffix}`;
   const customerName = `Bakkerij Jansen ${uniqueSuffix}`;
@@ -31,12 +31,17 @@ test('klant + object + dienst + dienstafspraak aanmaken (FR-001…004/020)', asy
   await page.getByRole('button', { name: 'Bedrijf aanmaken' }).click();
   await expect(page).toHaveURL('/');
 
-  // FR-001: klant aanmaken.
+  // FR-001: klant aanmaken. "/klanten/nieuw" is een 3-stappen-wizard
+  // (klant → object → dienstafspraak, § 27 § 1.4); deze test dekt object/
+  // dienstafspraak specifiek via de eigen standaardpagina's (FR-002/003/004),
+  // dus stap 1 afronden en via "Later toevoegen" naar de klantpagina springen.
   await page.goto('/klanten');
   await page.getByRole('link', { name: 'Nieuwe klant' }).first().click();
   await expect(page).toHaveURL('/klanten/nieuw');
   await page.getByLabel('Naam').fill(customerName);
-  await page.getByRole('button', { name: 'Klant aanmaken' }).click();
+  await page.getByRole('button', { name: 'Volgende: adres toevoegen' }).click();
+  await expect(page.getByText('Stap 2 van 3')).toBeVisible();
+  await page.getByRole('link', { name: 'Later toevoegen' }).click();
   await expect(page).toHaveURL(/\/klanten\/[0-9a-f-]+$/);
   await expect(page.getByRole('heading', { name: customerName })).toBeVisible();
 

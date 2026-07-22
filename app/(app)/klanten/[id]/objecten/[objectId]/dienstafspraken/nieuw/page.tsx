@@ -5,12 +5,13 @@ import { ServiceAgreementForm } from '@/components/domain/ServiceAgreementForm';
 import { requireOnboardedUser } from '@/lib/auth/session';
 import { createClient } from '@/lib/supabase/server';
 
+import { createService } from '../../../../../../instellingen/diensten/actions';
 import { createServiceAgreement } from '../actions';
 
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Nieuwe dienstafspraak — RouteFlow',
+  title: 'Nieuwe dienstafspraak — ServOps',
 };
 
 export default async function NieuweDienstafspraakPage({
@@ -46,6 +47,7 @@ export default async function NieuweDienstafspraakPage({
       <PageHeader title="Nieuwe dienstafspraak" description={object.address_line1} />
       <ServiceAgreementForm
         services={services ?? []}
+        createServiceAction={createService}
         submitLabel="Afspraak aanmaken"
         onSubmit={createServiceAgreement.bind(null, customerId, objectId)}
         redirectTo={`/klanten/${customerId}/objecten/${objectId}`}

@@ -16,7 +16,7 @@
 
 ## Doel van dit document
 
-Dit document biedt het **analyseraamwerk** voor de concurrentiepositie: welke categorieën concurrenten bestaan, op welke criteria we vergelijken, waar RouteFlow zich onderscheidt, en welke risico's daaruit volgen. Het raamwerk is stabiel; de ingevulde waarden zijn te valideren (zie statusnotitie).
+Dit document biedt het **analyseraamwerk** voor de concurrentiepositie: welke categorieën concurrenten bestaan, op welke criteria we vergelijken, waar ServOps zich onderscheidt, en welke risico's daaruit volgen. Het raamwerk is stabiel; de ingevulde waarden zijn te valideren (zie statusnotitie).
 
 ---
 
@@ -30,7 +30,7 @@ Dit document biedt het **analyseraamwerk** voor de concurrentiepositie: welke ca
 | **D. Generieke tools** | Kalender, spreadsheet, project-SaaS | Excel, Google Calendar, Monday | Hoog qua *inertie* (status quo) |
 | **E. Niets / papier** | Wijkboekje, hoofdrekenen | — | Hoog — de werkelijke "concurrent" bij de doelgroep |
 
-**Belangrijk:** de grootste concurrent is doorgaans niet ander softwarepakket maar **categorie E (papier/Excel)** — de status quo. RouteFlow's eerste gevecht is adoptie, niet vervanging (03 § 1.4 adoptiebarrières).
+**Belangrijk:** de grootste concurrent is doorgaans niet ander softwarepakket maar **categorie E (papier/Excel)** — de status quo. ServOps' eerste gevecht is adoptie, niet vervanging (03 § 1.4 adoptiebarrières).
 
 ---
 
@@ -41,21 +41,21 @@ Dit document biedt het **analyseraamwerk** voor de concurrentiepositie: welke ca
 - **Sterk:** gevestigd, multi-tenant, Nederlands, functioneel compleet.
 - **Zwak:** gedateerd/desktop-first UI, beperkte mobiel, basale planning (geen AI/herplannen), geen WhatsApp.
 - **Prijsindicatie:** ~€50–80/mnd.
-- **RouteFlow-voordeel:** UX, AI-planning + herplannen, WhatsApp, PWA, premium gevoel.
+- **ServOps-voordeel:** UX, AI-planning + herplannen, WhatsApp, PWA, premium gevoel.
 
 ### 2.2 "Fieldwork/FSM"-type (internationaal)
 - **Markt:** onderhoud/installatie, breed.
 - **Sterk:** GPS-tracking, asset-management, internationale dekking, integraties.
 - **Zwak:** duur, Engelstalig, geen NL-fiscale/betaal-fit (iDEAL/BTW), geen automatische frequentie-planning.
 - **Prijsindicatie:** hoog/custom.
-- **RouteFlow-voordeel:** NL-diepte, betaalbaar, automatische periodieke planning.
+- **ServOps-voordeel:** NL-diepte, betaalbaar, automatische periodieke planning.
 
 ### 2.3 "Jobmanager"-type (klus/uren)
 - **Markt:** bouw/schilder/installatie, onderaannemers.
 - **Sterk:** robuust, urenregistratie, offertes/facturen.
 - **Zwak:** complex, enterprise-heavy, overkill voor 1–15-persoons servicebedrijf, geen geo-clustering, steile onboarding.
 - **Prijsindicatie:** ~€100+/mnd.
-- **RouteFlow-voordeel:** lichtgewicht, nul-training, route-/frequentie-optimalisatie.
+- **ServOps-voordeel:** lichtgewicht, nul-training, route-/frequentie-optimalisatie.
 
 ---
 
@@ -72,7 +72,7 @@ Dit document biedt het **analyseraamwerk** voor de concurrentiepositie: welke ca
 
 ## 4. Vergelijkingscriteria (raamwerk)
 
-De criteria waarop RouteFlow zich meet — stabiel, ongeacht welke concurrent:
+De criteria waarop ServOps zich meet — stabiel, ongeacht welke concurrent:
 
 1. UI/UX-kwaliteit (modern, premium)
 2. Mobiele uitvoering (PWA voor medewerkers)
@@ -87,7 +87,7 @@ De criteria waarop RouteFlow zich meet — stabiel, ongeacht welke concurrent:
 
 ### 4.1 Feature-matrix (illustratieve invulling)
 
-| Criterium | A: vakpakket | B: FSM | C: klus/uren | **RouteFlow** |
+| Criterium | A: vakpakket | B: FSM | C: klus/uren | **ServOps** |
 |---|---|---|---|---|
 | UI/UX-kwaliteit | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ |
 | Mobiele uitvoering | Basis | Goed | Beperkt | Uitstekend (PWA) |
@@ -102,7 +102,7 @@ De criteria waarop RouteFlow zich meet — stabiel, ongeacht welke concurrent:
 
 ---
 
-## 5. RouteFlow's differentiatie (kern)
+## 5. ServOps' differentiatie (kern)
 
 1. **AI-planning + automatisch herplannen** voor het *kleine* servicebedrijf — de meeste concurrenten bieden dit niet of alleen enterprise.
 2. **Premium UX als wapen** — niet "meer features", maar prettiger, sneller, nul-training (PRD § 1, 01 § 4.7).

@@ -32,8 +32,8 @@ test('medewerker: inloggen, dagroute, starten, fotos, afronden, conceptfactuur',
   const admin = createClient(SUPABASE_URL, serviceRoleKey);
 
   const suffix = crypto.randomUUID().slice(0, 8);
-  const ownerEmail = `e2e-owner-${suffix}@routeflow.test`;
-  const employeeEmail = `e2e-employee-${suffix}@routeflow.test`;
+  const ownerEmail = `e2e-owner-${suffix}@servops.test`;
+  const employeeEmail = `e2e-employee-${suffix}@servops.test`;
   const password = 'Testwachtwoord123';
 
   // Eigenaar + bedrijf (via onboard_company, het enige toegestane pad).

@@ -8,7 +8,7 @@
 | Variabele | Bevinding | Actie |
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Correct: `https://zffxxhqmefkfjpesonbt.supabase.co` (matcht het productieproject) | Geen wijziging nodig |
-| `NEXT_PUBLIC_SITE_URL` | Correct: `https://routeflow-delta.vercel.app` | Geen wijziging nodig |
+| `NEXT_PUBLIC_SITE_URL` | Correct: `https://servops-delta.vercel.app` | Geen wijziging nodig |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | **Fout.** Stond op `sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH` — dit is niet een project-specifieke sleutel, maar de generieke, vaste publishable key die élke lokale `supabase start`-instantie gebruikt (bevestigd: identiek aan de key uit dit sessies eigen lokale `supabase status`-output). Elke Auth-aanroep vanuit productie werd hierdoor afgewezen vóórdat er zelfs maar credentials gecontroleerd werden — de oorzaak van zowel de kapotte registratie als login. | **Opgelost.** Bijgewerkt naar de echte anon-sleutel van het productieproject (`role: anon`, `ref: zffxxhqmefkfjpesonbt`, geverifieerd door de JWT-payload te decoderen) via `vercel env update`, voor zowel Production als Preview. |
 
 Na de fix is een nieuwe productiedeploy getriggerd (`vercel deploy --prod`, met expliciete toestemming) zodat de gecorrigeerde sleutel daadwerkelijk in de build is meegebakken (`NEXT_PUBLIC_*`-vars worden op build-tijd ingebakken, niet at runtime gelezen).
@@ -17,8 +17,8 @@ Na de fix is een nieuwe productiedeploy getriggerd (`vercel deploy --prod`, met 
 
 | Instelling | Bevinding | Actie |
 |---|---|---|
-| **Site URL** | **Fout.** Stond op `localhost:3000` — bevestigingsmail-links kregen hierdoor `redirect_to=http://localhost:3000`, onbruikbaar voor een echte gebruiker. | Door de gebruiker gecorrigeerd naar `https://routeflow-delta.vercel.app` in het Dashboard. Geverifieerd: een link die vóór de fix gegenereerd was, loste na de fix alsnog correct op naar `https://routeflow-delta.vercel.app/login` (GoTrue evalueert dit blijkbaar op verify-tijd, niet bij linkgeneratie). |
-| **Redirect URLs** | Aangevuld met `https://routeflow-delta.vercel.app/**` door de gebruiker. | Opgelost. |
+| **Site URL** | **Fout.** Stond op `localhost:3000` — bevestigingsmail-links kregen hierdoor `redirect_to=http://localhost:3000`, onbruikbaar voor een echte gebruiker. | Door de gebruiker gecorrigeerd naar `https://servops-delta.vercel.app` in het Dashboard. Geverifieerd: een link die vóór de fix gegenereerd was, loste na de fix alsnog correct op naar `https://servops-delta.vercel.app/login` (GoTrue evalueert dit blijkbaar op verify-tijd, niet bij linkgeneratie). |
+| **Redirect URLs** | Aangevuld met `https://servops-delta.vercel.app/**` door de gebruiker. | Opgelost. |
 | **Email confirmations** | Stond aan (`enable_confirmations=true`, consistent met `22_Authenticatie.md` §1 en de code in `app/(auth)/registreren/actions.ts`). | Geen wijziging nodig — werkt zoals bedoeld. |
 | **PKCE** | Werkend bevestigd: de bevestigingslink is een `pkce_...`-token via `/auth/v1/verify`, en de exchange rondt correct af (`auth.users.email_confirmed_at` wordt gezet). | Geen wijziging nodig. |
 | **SMTP** | **Bevinding, geen bug:** het project gebruikt Supabase's ingebouwde, gedeelde mailer (geen custom SMTP). E-mails komen aantoonbaar aan (bevestigd via een echte inbox), maar de rate limit is laag genoeg dat twee testregistraties binnen een paar minuten al een "wacht even"-melding gaven. **Niet geschikt voor echte productietrafiek.** | **Niet opgelost — aanbeveling voor vóór public beta:** configureer custom SMTP (Dashboard → Authentication → Emails → SMTP Settings) zodat het verzendvolume niet door onboarding van echte gebruikers geraakt wordt. |
@@ -26,13 +26,13 @@ Na de fix is een nieuwe productiedeploy getriggerd (`vercel deploy --prod`, met 
 
 ## 3. Volledige productie smoke test
 
-Uitgevoerd tegen `https://routeflow-delta.vercel.app`, ná de deploy met de gecorrigeerde anon-key en ná de Site-URL-fix.
+Uitgevoerd tegen `https://servops-delta.vercel.app`, ná de deploy met de gecorrigeerde anon-key en ná de Site-URL-fix.
 
 | Stap | Resultaat |
 |---|---|
 | Registreren | ✅ Slaagt (was stap 1 die eerder faalde met een generieke fout) |
 | Bevestigingsmail | ✅ Komt aan in een echte inbox; link bevat een geldig PKCE-token en een correcte `redirect_to` |
-| Bevestigen (linkbezoek) | ✅ `auth.users.email_confirmed_at` wordt gezet; eindbestemming is nu `routeflow-delta.vercel.app`, niet meer `localhost` |
+| Bevestigen (linkbezoek) | ✅ `auth.users.email_confirmed_at` wordt gezet; eindbestemming is nu `servops-delta.vercel.app`, niet meer `localhost` |
 | Login | ✅ Slaagt met de juiste credentials; foutmeldingen voor onjuiste credentials tonen nu ook correct "E-mail of wachtwoord onjuist." (was eerder ook de generieke fout) |
 | Onboarding | ✅ Bedrijf aanmaken slaagt; company + profielkoppeling correct |
 | Logout | ✅ Werkt, stuurt terug naar `/login` |
@@ -58,7 +58,7 @@ Herhaalde de RLS-verificatie uit het deploymentrapport ná alle wijzigingen: all
 
 ## 6. Opgeruimde testdata
 
-- Eén onbevestigd wegwerptestaccount (`deploy-verify-01c14839@routeflow.nl`) staat nog in `auth.users` zonder gekoppeld profiel/company — onschadelijk (nooit bevestigd, geen data eraan gekoppeld), maar niet actief opgeruimd: een directe `DELETE` op `auth.users` in productie viel buiten de scope van "uitsluitend configuratie of kleine bugfixes" en is niet zonder expliciete toestemming uitgevoerd.
+- Eén onbevestigd wegwerptestaccount (`deploy-verify-01c14839@servops.nl`) staat nog in `auth.users` zonder gekoppeld profiel/company — onschadelijk (nooit bevestigd, geen data eraan gekoppeld), maar niet actief opgeruimd: een directe `DELETE` op `auth.users` in productie viel buiten de scope van "uitsluitend configuratie of kleine bugfixes" en is niet zonder expliciete toestemming uitgevoerd.
 - Het testaccount `willemvanliempd@hotmail.nl` + bedrijf "Willem Test BV" is **bewust laten staan** — dit is het account dat je zelf gevraagd had om mee te kunnen testen.
 
 ## Wat niet is aangepast

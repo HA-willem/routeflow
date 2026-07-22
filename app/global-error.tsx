@@ -1,5 +1,6 @@
 'use client';
 
+import * as Sentry from '@sentry/nextjs';
 import { useEffect } from 'react';
 
 import { logger } from '@/lib/logging/logger';
@@ -20,6 +21,10 @@ export default function GlobalError({
       message: error.message,
       digest: error.digest,
     });
+    // Sprint 10 (observability-basis): no-opt zolang SENTRY_DSN niet gezet is
+    // (Sentry.init() met een lege dsn is bewust inert, geen crash/spam) —
+    // activeren vereist een eigen Sentry-project/DSN van de gebruiker.
+    Sentry.captureException(error);
   }, [error]);
 
   // Bewuste uitzondering op "alleen design tokens" (41_CodingStandards.md § 4):

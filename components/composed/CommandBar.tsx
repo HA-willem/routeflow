@@ -100,7 +100,7 @@ interface CommandBarProps {
 }
 
 /**
- * AI Command Bar (⌘K) — het snelle-toegangspunt van RouteFlow: navigatie,
+ * AI Command Bar (⌘K) — het snelle-toegangspunt van ServOps: navigatie,
  * acties en klantzoeken in één invoerveld, plus AI-voorbeeldcommando's die de
  * Sprint 7-agent-interface alvast laten zien (interface-only, met expliciete
  * voorbeeld-markering — er wordt geen AI gesuggereerd die er nog niet is).

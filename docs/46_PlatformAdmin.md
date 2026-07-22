@@ -10,7 +10,7 @@
 
 ## Doel van dit document
 
-Dit document beschrijft twee samenhangende, nieuwe onderdelen die **buiten** de tenant-scope van RouteFlow vallen: (1) het **Platform Admin-portal**, uitsluitend voor de platform-eigenaar, met overzicht over alle bedrijven; (2) de **Product Agent**, die het product zelf structureel beter maakt — op basis van door tenants ingediende feature requests én operationele signalen — door concrete code-voorstellen (Pull Requests) te doen, altijd ter goedkeuring van de platform-eigenaar. Dit is geen negende domein-agent naast de acht uit `43_AI_Agents.md` (die werken allemaal **binnen** een Bedrijf); de Product Agent werkt op de **codebase**.
+Dit document beschrijft twee samenhangende, nieuwe onderdelen die **buiten** de tenant-scope van ServOps vallen: (1) het **Platform Admin-portal**, uitsluitend voor de platform-eigenaar, met overzicht over alle bedrijven; (2) de **Product Agent**, die het product zelf structureel beter maakt — op basis van door tenants ingediende feature requests én operationele signalen — door concrete code-voorstellen (Pull Requests) te doen, altijd ter goedkeuring van de platform-eigenaar. Dit is geen negende domein-agent naast de acht uit `43_AI_Agents.md` (die werken allemaal **binnen** een Bedrijf); de Product Agent werkt op de **codebase**.
 
 ---
 

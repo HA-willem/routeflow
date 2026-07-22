@@ -12,7 +12,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Dagroute — RouteFlow' };
+export const metadata: Metadata = { title: 'Dagroute — ServOps' };
 
 function greeting(): string {
   const hour = new Date().getHours();

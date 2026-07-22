@@ -10,7 +10,7 @@ import { updateObject } from '../../actions';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Object bewerken — RouteFlow',
+  title: 'Object bewerken — ServOps',
 };
 
 export default async function ObjectBewerkenPage({

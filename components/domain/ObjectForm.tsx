@@ -38,6 +38,13 @@ interface ObjectFormProps {
   submitLabel: string;
   /** Plain pad, evt. met een `:id`-placeholder (zie lib/utils.ts resolveRedirectPath). */
   redirectTo: string;
+  /**
+   * Als gezet: navigeert het formulier niet zelf weg maar geeft het nieuwe
+   * id door aan de aanroeper (gebruikt door NieuweKlantWizard om zonder
+   * paginanavigatie naar de volgende stap te gaan). Zonder deze prop blijft
+   * het bestaande gedrag (navigeren naar `redirectTo`) ongewijzigd.
+   */
+  onSuccess?: (id: string | null) => void;
 }
 
 const DEFAULT_VALUES: ObjectInput = {
@@ -51,7 +58,13 @@ const DEFAULT_VALUES: ObjectInput = {
 };
 
 /** ObjectForm — FR-002/FR-003. Adres-only (PRD § 19 A-10, geen geocoding dit sprint). */
-export function ObjectForm({ defaultValues, onSubmit, submitLabel, redirectTo }: ObjectFormProps) {
+export function ObjectForm({
+  defaultValues,
+  onSubmit,
+  submitLabel,
+  redirectTo,
+  onSuccess,
+}: ObjectFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -68,6 +81,10 @@ export function ObjectForm({ defaultValues, onSubmit, submitLabel, redirectTo }:
         return;
       }
       toast.success('Object opgeslagen');
+      if (onSuccess) {
+        onSuccess(result.data?.id ?? null);
+        return;
+      }
       router.push(resolveRedirectPath(redirectTo, result.data?.id ?? null));
     });
   }

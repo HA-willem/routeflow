@@ -11,7 +11,7 @@ import { archiveService, updateService } from '../../actions';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Dienst bewerken — RouteFlow',
+  title: 'Dienst bewerken — ServOps',
 };
 
 export default async function DienstBewerkenPage({ params }: { params: Promise<{ id: string }> }) {

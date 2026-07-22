@@ -11,7 +11,7 @@ import { findConfirmationLink } from '../shared/mailpit';
  */
 test('registreren → bevestigen → bedrijf aanmaken → dashboard', async ({ page }) => {
   const uniqueSuffix = crypto.randomUUID().slice(0, 8);
-  const email = `e2e-${uniqueSuffix}@routeflow.test`;
+  const email = `e2e-${uniqueSuffix}@servops.test`;
   const fullName = 'Frans de Haan';
   const companyName = `E2E Glaswasserij ${uniqueSuffix}`;
 
@@ -30,7 +30,7 @@ test('registreren → bevestigen → bedrijf aanmaken → dashboard', async ({ p
   // /auth/confirm wisselt de PKCE-token server-side in en redirect naar / (dashboard),
   // waar proxy.ts een niet-onboarded gebruiker vervolgens naar /onboarding stuurt.
   await expect(page).toHaveURL(/\/onboarding$/);
-  await expect(page.getByRole('heading', { name: 'Welkom bij RouteFlow' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Welkom bij ServOps' })).toBeVisible();
 
   await page.getByLabel('Bedrijfsnaam').fill(companyName);
   await page.getByRole('button', { name: 'Bedrijf aanmaken' }).click();

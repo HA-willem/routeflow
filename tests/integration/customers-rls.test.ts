@@ -63,7 +63,7 @@ describe('customers RLS (NFR-301)', () => {
   });
 
   it('weigert een tweede klant met hetzelfde e-mailadres binnen hetzelfde bedrijf', async () => {
-    const email = `dup-${crypto.randomUUID()}@routeflow.test`;
+    const email = `dup-${crypto.randomUUID()}@servops.test`;
     await clientA
       .from('customers')
       .insert({ company_id: companyAId, name: 'Klant 1', type: 'person', email });

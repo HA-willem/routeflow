@@ -10,7 +10,7 @@ import { optimizeEmployeeDay } from '../actions';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Herplan-wachtrij — RouteFlow',
+  title: 'Herplan-wachtrij — ServOps',
 };
 
 /**

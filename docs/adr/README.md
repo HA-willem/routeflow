@@ -1,6 +1,6 @@
-# Architecture Decision Records — RouteFlow
+# Architecture Decision Records — ServOps
 
-Dit is het register van architectuurbeslissingen voor RouteFlow. Elke ADR legt een **onomkeerbare of kostbaar-te-wijzigen** architectuurkeuze vast: context, probleem, gekozen oplossing, alternatieven, consequenties en toekomstbestendigheid.
+Dit is het register van architectuurbeslissingen voor ServOps. Elke ADR legt een **onomkeerbare of kostbaar-te-wijzigen** architectuurkeuze vast: context, probleem, gekozen oplossing, alternatieven, consequenties en toekomstbestendigheid.
 
 **Bron van waarheid:** `../00_PRD.md`. Een ADR mag het PRD niet tegenspreken; bij conflict wint het PRD totdat het PRD expliciet wordt aangepast (zie `../MASTER_PROMPT.md`).
 

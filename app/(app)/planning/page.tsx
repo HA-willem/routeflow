@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { PageHeader } from '@/components/composed/PageHeader';
 import { ProposalList } from '@/components/domain/briefing/ProposalList';
 import type { PlanningJob } from '@/components/domain/JobCard';
-import { PlanningBoard, PlanningWeekBoard } from '@/components/domain/RouteBoard';
+import { AddJobDialog, PlanningBoard, PlanningWeekBoard } from '@/components/domain/RouteBoard';
 import type { RouteColumn, WeekColumn } from '@/components/domain/RouteBoard';
 import { Button } from '@/components/primitives/button';
 import { requireOnboardedUser } from '@/lib/auth/session';
@@ -21,13 +21,23 @@ import { PLANNING_JOB_SELECT, toPlanningJob, type PlanningJobRow } from '@/lib/p
 import { createClient } from '@/lib/supabase/server';
 
 import { decideProposal } from '../briefing-actions';
+import { searchCustomersForCommand } from '../command-actions';
 
-import { moveJob, moveJobToDate, optimizeEmployeeDay, reportSickLeave } from './actions';
+import {
+  addManualJob,
+  fillDay,
+  getCustomerObjectsForJob,
+  getFillDayCandidates,
+  moveJob,
+  moveJobToDate,
+  optimizeEmployeeDay,
+  reportSickLeave,
+} from './actions';
 
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Planning — RouteFlow',
+  title: 'Planning — ServOps',
 };
 
 interface PlanningPageProps {
@@ -48,13 +58,21 @@ export default async function PlanningPage({ searchParams }: PlanningPageProps) 
   const supabase = await createClient();
   const days = weekDates(date);
 
-  const { data: employees } = await supabase
-    .from('employees')
-    .select('id, first_name, last_name')
-    .eq('company_id', profile.company_id)
-    .eq('is_active', true)
-    .is('archived_at', null)
-    .order('first_name', { ascending: true });
+  const [{ data: employees }, { data: services }] = await Promise.all([
+    supabase
+      .from('employees')
+      .select('id, first_name, last_name')
+      .eq('company_id', profile.company_id)
+      .eq('is_active', true)
+      .is('archived_at', null)
+      .order('first_name', { ascending: true }),
+    supabase
+      .from('services')
+      .select('id, name')
+      .eq('company_id', profile.company_id)
+      .is('archived_at', null)
+      .order('name', { ascending: true }),
+  ]);
 
   // Eenmanszaak (ZZP'er, 1 actieve medewerker): een weekweergave met kolommen
   // per medewerker heeft dan niets om naast elkaar te zetten — een echte
@@ -166,9 +184,22 @@ export default async function PlanningPage({ searchParams }: PlanningPageProps) 
         title="Planning"
         description={heading.charAt(0).toUpperCase() + heading.slice(1)}
         action={
-          <Button asChild variant="outline">
-            <Link href="/planning/wachtrij">Herplan-wachtrij bekijken</Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <AddJobDialog
+              date={date}
+              employees={(employees ?? []).map((employee) => ({
+                id: employee.id,
+                name: `${employee.first_name} ${employee.last_name}`,
+              }))}
+              services={services ?? []}
+              searchCustomersAction={searchCustomersForCommand}
+              getCustomerObjectsAction={getCustomerObjectsForJob}
+              addManualJobAction={addManualJob}
+            />
+            <Button asChild variant="outline">
+              <Link href="/planning/wachtrij">Herplan-wachtrij bekijken</Link>
+            </Button>
+          </div>
         }
       />
 
@@ -267,6 +298,8 @@ export default async function PlanningPage({ searchParams }: PlanningPageProps) 
           moveJobAction={moveJobToDate}
           optimizeEmployeeDayAction={optimizeEmployeeDay}
           reportSickLeaveAction={reportSickLeave}
+          getFillDayCandidatesAction={getFillDayCandidates}
+          fillDayAction={fillDay}
         />
       ) : (
         <PlanningBoard
@@ -276,6 +309,8 @@ export default async function PlanningPage({ searchParams }: PlanningPageProps) 
           moveJobAction={moveJob}
           optimizeEmployeeDayAction={optimizeEmployeeDay}
           reportSickLeaveAction={reportSickLeave}
+          getFillDayCandidatesAction={getFillDayCandidates}
+          fillDayAction={fillDay}
         />
       )}
     </div>

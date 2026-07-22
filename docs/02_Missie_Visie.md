@@ -9,13 +9,13 @@
 
 ## Doel van dit document
 
-Dit document articuleert de **missie, visie, kernwaarden en merkbelofte** van RouteFlow als organisatie (niet enkel product — zie 01_Productvisie.md voor product-missie).
+Dit document articuleert de **missie, visie, kernwaarden en merkbelofte** van ServOps als organisatie (niet enkel product — zie 01_Productvisie.md voor product-missie).
 
 ---
 
 ## 1. Missie
 
-> **RouteFlow stelt servicebedrijven in staat om zonder stress aan hun belofte tegen klanten te voldoen: werk op tijd, goed uitgevoerd, en eerlijk gefactureerd.**
+> **ServOps stelt servicebedrijven in staat om zonder stress aan hun belofte tegen klanten te voldoen: werk op tijd, goed uitgevoerd, en eerlijk gefactureerd.**
 
 ### Uitleg
 
@@ -30,14 +30,14 @@ Dit document articuleert de **missie, visie, kernwaarden en merkbelofte** van Ro
 
 ## 2. Visie (organisatie, 5 jaar)
 
-> **RouteFlow is de vertrouwde business-partner van Nederlandse servicebedrijven — zij zetten ons in om beter te groeien en te concurreren met grotere spelers.**
+> **ServOps is de vertrouwde business-partner van Nederlandse servicebedrijven — zij zetten ons in om beter te groeien en te concurreren met grotere spelers.**
 
 ### Wat betekent dit?
 
 - **Vertrouwd:** best-in-class security, AVG-compliance, betrouwbare uptime
 - **Business-partner:** we geven advies (benchmarks, best-practices), niet alleen tools
 - **Nederlandse focus:** nl-taal, iDEAL, PostNL-integratie, lokale support
-- **Beter groeien:** bedrijf groeit van 5 naar 10 medewerkers zonder chaos; RouteFlow schaalt mee
+- **Beter groeien:** bedrijf groeit van 5 naar 10 medewerkers zonder chaos; ServOps schaalt mee
 - **Concurreren:** kleine bedrijven hebben dezelfde tech als TUI/DPD, niet alleen papier vs. software
 
 ---
@@ -49,7 +49,7 @@ Dit document articuleert de **missie, visie, kernwaarden en merkbelofte** van Ro
 | **Efficientie** | Elke minuut telt; automatisering is geen luxe, maar noodzaak | Design voor 1-click, niet 5-staps formulieren |
 | **Transparantie** | Gebruiker begrijpt waarom | "Waarom"-button op elke planning-suggestie |
 | **Lokaal eerst** | Nederland niet als launch-pad, maar kern | Nederlands support, iDEAL, KNMI-weer, NL-adressen |
-| **Betrouwbaarheid** | Wanneer RouteFlow niet beschikbaar is, staat werk stil | 99,5% uptime, GDPR-certified, backups getest |
+| **Betrouwbaarheid** | Wanneer ServOps niet beschikbaar is, staat werk stil | 99,5% uptime, GDPR-certified, backups getest |
 | **Groeien samen** | Je groei is onze groei | Pricing gestaffeld, geen hoge switching-costs |
 
 ---
@@ -58,7 +58,7 @@ Dit document articuleert de **missie, visie, kernwaarden en merkbelofte** van Ro
 
 ### Voor eigenaren/planners:
 
-> **RouteFlow plan je werkweek in de tijd van een koffie. Je weet wat je verdient. Je hoeft niet meer in het hoofd van je eigenaar te wonen.**
+> **ServOps plan je werkweek in de tijd van een koffie. Je weet wat je verdient. Je hoeft niet meer in het hoofd van je eigenaar te wonen.**
 
 - Automatische planning, niet handmatig puzzelen
 - Facturen volgen automatisch
@@ -66,7 +66,7 @@ Dit document articuleert de **missie, visie, kernwaarden en merkbelofte** van Ro
 
 ### Voor medewerkers:
 
-> **RouteFlow weet waar je heen moet, hoe lang het duurt, en geeft je een seintje als je achtert.**
+> **ServOps weet waar je heen moet, hoe lang het duurt, en geeft je een seintje als je achtert.**
 
 - Duidelijke dagroute op telefoon
 - Realtime updates van wijzigingen
@@ -74,7 +74,7 @@ Dit document articuleert de **missie, visie, kernwaarden en merkbelofte** van Ro
 
 ### Voor klanten (eindklanten):
 
-> **RouteFlow zorgt dat je bedrijf ons nooit vergeet, dat we stipt zijn, en dat je snel je geld krijgt.**
+> **ServOps zorgt dat je bedrijf ons nooit vergeet, dat we stipt zijn, en dat je snel je geld krijgt.**
 
 - "Morgen-bericht" punctueel (via WhatsApp/e-mail)
 - Betaallink in factuur
@@ -88,7 +88,7 @@ De merkstem is de consistente persoonlijkheid achter elke tekst — van knoplabe
 
 ### 5.1 Merkpersoonlijkheid
 
-RouteFlow klinkt als een **capabele, rustige collega die het overzicht heeft** — niet als een corporate ERP-handleiding en niet als een schreeuwerige start-up.
+ServOps klinkt als een **capabele, rustige collega die het overzicht heeft** — niet als een corporate ERP-handleiding en niet als een schreeuwerige start-up.
 
 | Wel | Niet |
 |---|---|
@@ -111,14 +111,14 @@ RouteFlow klinkt als een **capabele, rustige collega die het overzicht heeft** �
 |---|---|---|
 | Succes | Kort, bevestigend, gunnend | "Klaar! 6 beurten afgerond." |
 | Fout | Menselijk: oorzaak + oplossing + actie (24 § 5) | "Dit adres kunnen we niet vinden. Zet de locatie handmatig op de kaart." |
-| Lege staat | Uitnodigend, verkoopt de volgende stap (24 § 4) | "Nog geen klanten. Voeg je eerste klant toe — daarna plant RouteFlow automatisch." |
+| Lege staat | Uitnodigend, verkoopt de volgende stap (24 § 4) | "Nog geen klanten. Voeg je eerste klant toe — daarna plant ServOps automatisch." |
 | Klantbericht | Beleefd, namens het bedrijf, aanpasbaar per template (19/FR-081) | "Hallo {{voornaam}}, morgen komen wij langs voor {{dienst}}." |
 | Waarschuwing | Rustig, feitelijk, met keuze | "Deze beurt past niet op woensdag. Kies een andere dag." |
 
 ### 5.4 Merknaam & schrijfwijze
 
-- Productnaam: **RouteFlow** (één woord, hoofdletters R en F). Nooit "Routeflow" of "Route Flow".
-- Klantberichten spreken namens het **Bedrijf** (de RouteFlow-klant), niet namens "RouteFlow" — de eindklant kent RouteFlow niet noodzakelijk. Templates zijn per bedrijf aanpasbaar (FR-081).
+- Productnaam: **ServOps** (één woord, hoofdletters R en F). Nooit "ServOps" of "Route Flow".
+- Klantberichten spreken namens het **Bedrijf** (de ServOps-klant), niet namens "ServOps" — de eindklant kent ServOps niet noodzakelijk. Templates zijn per bedrijf aanpasbaar (FR-081).
 
 ### 5.5 Consistentie & governance
 

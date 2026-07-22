@@ -1,7 +1,7 @@
 # 40 — Implementatieplan (Sprint 1–11)
 
 **Status:** DONE
-**Versie:** 1.8
+**Versie:** 1.15
 **Bron van waarheid:** `00_PRD.md` (scope § 5, architectuur § 12) + 33_Roadmap.md — dit document mag het PRD niet tegenspreken.
 **Werkinstructie:** zie `MASTER_PROMPT.md`. **Let op:** dit is een *plan*; er wordt in de documentatiefase nog **niets** gebouwd (CLAUDE.md).
 **Relaties:** 08_FunctioneleEisen.md (FR), 10_BusinessRules.md (BR), 11_DatabaseConcept.md (tabellen), 12_Entiteiten.md, 13_API_Specificatie.md, 14_RoutingEngine.md, 15_AIPlanner.md, 26_ComponentLibrary.md, 31_Testplan.md, 33_Roadmap.md, `docs/adr/ADR-011-human-in-the-loop-ai.md` en `43_AI_Agents.md` (agent-architectuur relevant voor Sprint 7), `docs/adr/ADR-013-platform-admin-product-agent.md` en `46_PlatformAdmin.md` (Sprint 11).
@@ -10,7 +10,7 @@
 
 ## Doel & uitgangspunten
 
-Dit document verdeelt de bouw van RouteFlow in **10 sprints** (indicatief ~2 weken elk) en geeft per sprint: **doelen**, **bestanden**, **database-migraties**, **componenten** en **testcases**. Het volgt de fasering uit 33_Roadmap.md:
+Dit document verdeelt de bouw van ServOps in **10 sprints** (indicatief ~2 weken elk) en geeft per sprint: **doelen**, **bestanden**, **database-migraties**, **componenten** en **testcases**. Het volgt de fasering uit 33_Roadmap.md:
 
 | Sprints | Fase | Mijlpaal |
 |---|---|---|
@@ -153,6 +153,10 @@ RouteBoard (drag-and-drop), JobCard (sleepbaar/anker bij locked), RouteStopList,
 - BR: **BR-200** vergrendelde beurt verplaatst niet; **BR-202** > 8,5u geweigerd; BR-203 dubbele afspraak.
 - E2E: weekplanning + drag-and-drop + undo (E2E-3/4).
 
+**Sprint 4-vervolg (nog te plannen):** FR-029, handmatige beurt-toevoeging op dag/tijdstip (PRD § 19 A-27, 2026-07-18) — ontdekt als gat ná Sprint 7-vervolg: RouteBoard ondersteunt verplaatsen (FR-021/022) en genereren via dienstafspraken (FR-020), maar geen directe "voeg beurt toe op dag X, tijdstip Y"-actie voor klanten met een harde dag/tijdstip-beperking (relevant voor verticalen buiten glazenwassers, § 5 principe 5). Hergebruikt bestaand `locked`-mechanisme (FR-026); geen nieuwe migratie verwacht. Direct gebouwd (2026-07-19): `lib/validation/manual-job.ts`, `app/(app)/planning/actions.ts` (`getCustomerObjectsForJob`/`addManualJob`), `components/domain/RouteBoard/AddJobDialog.tsx`.
+
+Ook toegevoegd aan Sprint 4-vervolg: FR-030, "Vul de dag" (PRD § 19 A-28, 2026-07-19) — spiegelbeeld van FR-024 (Replanning Agent): capaciteit-*winst* i.p.v. -verlies, met name relevant voor de eenmanszaak-weekweergave. Voorstel-ter-goedkeuring (ADR-011), geen automatische invulling. Geeft `availability.status='available'` voor het eerst een echt schrijfpad.
+
 ---
 
 ## Sprint 5 — PWA-uitvoering, MVP-facturatie (e-mail) & dashboard → **MVP-release**
@@ -251,14 +255,14 @@ Geen nieuwe UI-componenten — de Morning Briefing-UI (`components/domain/briefi
 
 ---
 
-## Sprint 7-vervolg — Replanning + Planning + Invoice Agent (✅ gebouwd) + geografische clustering (nog te plannen)
+## Sprint 7-vervolg — Replanning + Planning + Invoice Agent + geografische clustering (✅ alle vier gebouwd)
 
 Expliciet uitgesteld tijdens Sprint 7 (PRD § 19 A-22), niet vergeten:
 
 - **Replanning Agent** (43 § 5) — ✅ **gebouwd en live geverifieerd** (2026-07-14, `HANDMATIGE_ACCEPTATIETEST_2026-07-13.md` TC-7.x): reactieve laag, herplan-diff bij ziekte/verlof (BR-802) via de nieuwe multi-job-diff-UI (`ReplanDiff`, `components/domain/briefing/ReplanDiff.tsx`), event-driven trigger-wiring (`reportSickLeave`-Server-Action → `agent-replanning`-Edge-Function, buiten de dagcyclus om, ADR-012 § 1), stabiliteitsgewogen bin-packing-algoritme (15 § 7.3, `lib/agents/replanning.ts`). Scope bewust beperkt tot ziekmelding/verlof van één medewerker op één dag; spoedopdracht/niet-thuis/weersgedreven herplanning volgen dezelfde vorm in een latere sprint.
 - **Planning Agent** (43 § 4) — ✅ **gebouwd en live geverifieerd** (2026-07-16, `HANDMATIGE_ACCEPTATIETEST_2026-07-13.md` TC-8.x): formaliseert de bestaande horizon-laag (`lib/planning/horizon.ts`/`planning-generate`, Sprint 3) tot agent — `planning-generate` kreeg een service-rol-pad met verplichte `company_id`-filter (RLS wordt bij service-rol volledig omzeild, dus expliciete filtering is de enige tenant-grens op dit pad) plus een fix zodat alleen daadwerkelijk-nieuw-ingevoegde beurten gerapporteerd worden (`ON CONFLICT DO NOTHING RETURNING *` i.p.v. het berekende, mogelijk-al-bestaande aantal — voorkomt dat de Briefing elke nacht hetzelfde aantal "nieuwe" beurten blijft melden). Nieuwe `agent-planning`-Edge-Function bouwt een informatieve kandidaat (`lib/agents/planning.ts`, geen `payload` — het aanmaken van `voorgesteld`-beurten is zelf al de door ADR-011 § 4 toegestane autonome actie), draait als eerste stap in `agent-orchestrator` (vóór Weather/Optimization/Capacity, die moeten weten welke beurten er zijn). "Medewerker-toewijzing per dag" bewust niet gedupliceerd — blijft bij Optimization Agent (43 § 4-implementatienotitie).
 - **Invoice Agent** (43 § 8) — ✅ **gebouwd en live geverifieerd** (2026-07-16, `HANDMATIGE_ACCEPTATIETEST_2026-07-13.md` TC-9.x). Bij de bouw bleek conceptfactuur-aanmaak zelf al volledig geïmplementeerd (`complete_job()`, 020_job_completion.sql, Sprint 5) — geen nieuwe aanmaaklogica nodig. De agent (`agent-invoice`, `lib/agents/invoice.ts`) signaleert uitsluitend openstaande conceptfacturen (`status = 'draft'`) als persistente Briefing-waarschuwing (severity schaalt naar `urgent` vanaf 3 dagen oud), analoog aan Capacity Agent. BR-702 blijft ongewijzigd: versturen is en blijft een losse, menselijke actie (bestaande `sendInvoice`-Server-Action) — geen `payload`, geen goedkeuringsstap.
-- **Geografische clustering** (FR-025, BR-204): kan nu wél bij een Planning Agent-uitbreiding, aangezien de formalisering hierboven is afgerond — nog niet gebouwd.
+- **Geografische clustering** (FR-025, BR-204) — ✅ **gebouwd** (2026-07-18): `lib/planning/clustering.ts` (puur, hergebruikt `lib/routing/haversine.ts` i.p.v. een aparte PostGIS-query) laat `planning-generate` een nieuw te genereren datumreeks aansluiten op een al-bestaande beurt van een ándere dienstafspraak binnen 1km, mits dat binnen het bestaande flexibiliteitsvenster (BR-101) past — nooit door bestaande beurten te verplaatsen, alleen door nieuw te plannen datums te kiezen. Zichtbaar als extra zin in de bestaande Planning Agent-Briefing-samenvatting (`lib/agents/planning.ts`), geen nieuwe UI. **Bewust niet meegenomen:** FR-025 AC2/AC4 (gewogen scoringsmodel + instelbare slider) — dat bestaat voor geen van de 4 BR-701-criteria en is losstaand, groter vervolgwerk (zie `08_FunctioneleEisen.md` FR-025-changelog).
 - **Organizational Memory-leeskant** (`45_AgentMemory.md`): Sprint 7 legt alleen het schrijfpad van impliciete waarnemingen vast (PRD § 19 A-22 punt 7); agents gebruiken geleerde voorkeuren nog niet als input.
 
 ---
@@ -291,59 +295,68 @@ NotificationInbox, TemplateEditor (variabelen {{...}}), kanaalvoorkeuren, Weathe
 
 ---
 
-## Sprint 9 — PWA+ & facturatie+ → **V1-release**
+## Sprint 9 — PWA+ & facturatie+ → **V1-release** (✅ afgerond, m.u.v. release-gate)
 
 ### Doelen
-- Foto's (voor/na) + offline-tolerantie/retry-queue (FR-044/045, 20 § 3).
-- CSV-import klanten/objecten (FR-006), klant-tijdlijn (FR-007).
-- Abonnementsfacturatie (FR-066, BR-304), creditfacturen (FR-068), donkere modus (25 § 7).
+- ✅ Foto's (voor/na) + offline-tolerantie/retry-queue (FR-044/045, 20 § 3) — al eerder gebouwd (Sprint 5, `018_job_photos.sql`, `lib/pwa/offline-queue.ts`) en donkere modus (25 § 7, `lib/design/tokens.css`) — beide vóór dit sprint al aanwezig.
+- ✅ CSV-import klanten/objecten (FR-006), klant-tijdlijn (FR-007, bewust verkleinde scope — zie PRD § 19 A-29).
+- ✅ Abonnementsfacturatie (FR-066, BR-304), creditfacturen (FR-068).
 
 ### Bestanden
-- `/lib/pwa/sync-queue.ts` (IndexedDB), `/components/domain/PhotoCapture.tsx`.
-- `/lib/import/csv.ts` + mapping-wizard, `/components/domain/CustomerTimeline.tsx`.
-- `/supabase/functions/invoice-credit/`, `/subscription-billing-cron/`.
+- `/lib/import/csv.ts` (mapping/validatie/geocoding-batch), `/components/domain/CsvImportWizard.tsx`, `/app/(app)/klanten/importeren/**`.
+- `/components/domain/CustomerTimeline.tsx` (client-side filter — zie A-29, geen query-param i.v.m. de al-bestaande ongecontroleerde Tabs).
+- `/components/domain/CreditInvoiceDialog.tsx`, `/app/(app)/facturen/[id]/page.tsx` (nieuwe factuur-detailpagina).
+- Geen nieuwe Edge Functions: abonnementsfacturatie is een pure DB-cron (`generate_subscription_invoices()`, `SECURITY DEFINER` + `pg_cron`), net als `complete_job()` — geen externe aanroep nodig zoals bij de agent-orchestrator.
 
 ### Database-migraties
-- `025_job_photos.sql` — `job_photos` (metadata bij Storage).
-- `026_invoices_credit.sql` — `parent_invoice_id` + credit-velden.
-- `027_import_jobs.sql` — import-batch + foutrapport.
+*(volgnummer bij daadwerkelijke bouw bleek `034`–`036`, niet de hier oorspronkelijk geplande `025`–`027` — die waren al bezet door Sprint 7/7-vervolg/11, zelfde migratienummer-drift als eerder bij Sprint 7 opgetreden, PRD § 19 A-22 punt 5.)*
+- `034_subscription_billing.sql` — patcht `complete_job()` (subscription-beurt maakt geen eigen conceptfactuur meer aan) + nieuwe `subscription_invoice_periods`-tabel (idempotentie) + `generate_subscription_invoices()` + `pg_cron`-schedule.
+- `035_invoice_credit_notes.sql` — `invoices.parent_invoice_id` + aangepaste check-constraints (credit = negatief totaal) + `create_credit_invoice()`.
+- `036_import_jobs.sql` — `import_jobs` (rapportagelog, geen staging-tabel voor ruwe CSV-rijen).
 
 ### Componenten
-PhotoCapture, ImportWizard, CustomerTimeline, credit-flow op InvoicePreview, thema-toggle.
+CsvImportWizard, CustomerTimeline, CreditInvoiceDialog, factuur-detailpagina (nieuw — bestond nog niet, alleen een lijst).
 
 ### Testcases
-- Integratie: offline afvinken → queue → sync bij herverbinding (PWA-02/03); foto-upload + compressie.
-- Unit: CSV-mapping + foutrapport; **BR-304** abonnement + overage; creditfactuur koppelt aan origineel (BR-020 immutabel).
-- E2E: import → klanten aangemaakt; abonnementsfactuur; creditfactuur (AC-068).
-- **Release-gate V1** (31 § 9) incl. security ASVS L2, AVG-DPA's, PITR.
+- Unit: `lib/import/csv.test.ts` (mapping/validatie/foutrapport, incl. dat een geocode-fout waarschuwt maar niet blokkeert); `lib/validation/service-agreement.test.ts` uitgebreid met het subscription-pad.
+- SQL-businesslogica (abonnement-overage-berekening, credit-koppeling) is — net als `complete_job()`'s bestaande pricing-logica — niet in Vitest getest (geen pgTAP-precedent in deze repo); lokaal geverifieerd via directe RPC-aanroepen tegen de lokale Supabase-instantie tijdens de bouw.
+- E2E: import-flow (upload → mapping → rapport → klant zichtbaar) en creditfactuur-flow (verzonden factuur → correctie → nieuwe creditfactuur + saldo).
+- **Release-gate V1** (31 § 9) incl. security ASVS L2, AVG-DPA's, PITR: **niet in deze afronding meegenomen** — overlapt inhoudelijk met Sprint 10 (Hardening/rapportage/security) en wordt daar behandeld, niet gedupliceerd.
 
 ---
 
-## Sprint 10 — Hardening, rapportage, schaal & security → **V1-hardening / V2-prep**
+## Sprint 10 — Hardening, rapportage, schaal & security → **V1-hardening / V2-prep** (✅ code-bouwbare deel afgerond)
+
+**Scope-toelichting (PRD § 19 A-30):** deze sprint mengt echte codewerk met operationele/audit-activiteiten (pentest, PITR-restore-executie, load-test-executie tegen een niet-bestaande staging-omgeving) die geen agent-bouwtaak zijn. Het codewerk hieronder is afgerond; de vijf operationele items staan expliciet als "bewust niet gedaan" geregistreerd, niet stilzwijgend overgeslagen.
 
 ### Doelen
-- Rapportage (omzet/route/productiviteit), donkere-modus-afwerking, WCAG 2.1 AA (NFR-601).
-- Performance-/load-tests (37/38), observability (Sentry, cron-monitoring, statuspagina).
-- Security-hardening (ASVS L2, pentest-voorbereiding), backups/PITR-hersteltest (NFR-803).
-- V2-voorbereiding: correctie-logging voor "leren van correcties" (15 § 10), OSRM-fallback-spike (BL-040).
+- ✅ Rapportage (omzet/route/productiviteit), WCAG 2.1 AA-pas (NFR-601/602/603) op de kernpagina's. Donkere-modus bestond al (zie Sprint 9-notitie).
+- ✅ Observability-basis (Sentry, cron-zichtbaarheid in Platform Admin). Geen statuspagina (productbeslissing, uitgesteld).
+- ✅ RLS-negatieve-testsuite aangevuld (`invoices`/`invoice_lines`/`pricings`/Sprint 9-tabellen).
+- ✅ V2-voorbereiding: correctie-logging (schrijfpad, `moved`/`rejected_proposal`).
+- ⏸ Niet gedaan: load-test-*executie* (wél scriptskeleton), ASVS L2-pentest, PITR-hersteltest-executie, statuspagina, OSRM-fallback-spike, `audit_log` (optioneel V2, bleef open).
 
 ### Bestanden
-- `/app/(app)/rapportage/**`, `/lib/analytics/*`.
-- `/lib/observability/*` (Sentry, structured logging), statuspagina-config.
-- `/tests/load/*` (LT-1…5, 38 § 6), `/tests/a11y/*` (axe).
+- `/app/(app)/rapportage/page.tsx`, `/lib/analytics/reporting.ts`, `/components/composed/DateRangePicker.tsx`, `/components/domain/reporting/*` (RevenueChart, RevenueExportButton).
+- `instrumentation.ts`/`instrumentation-client.ts` (Sentry, inert zonder DSN), `/components/domain/platform-admin/CronStatusOverview.tsx`.
+- `/tests/a11y/key-pages.spec.ts` (axe), `/tests/load/README.md` + `lt1-planning-query.js` (skeleton, niet uitgevoerd), `/tests/integration/pricings-rls.test.ts` + `sprint9-invoicing-rls.test.ts`.
 
 ### Database-migraties
-- `028_reporting_views.sql` — materialized views / aggregaties (voorberekening, 37 § 3).
-- `029_audit_log.sql` — audit-trail met triggers (11 § 7, optioneel V2).
-- `030_correction_log.sql` — planner-correcties loggen (15 § 10, V2-voorbereiding).
+*(volgnummer bij bouw: `037`–`039`, niet de hier oorspronkelijk geplande `028`–`030` — zelfde migratienummer-drift-precedent als eerdere sprints.)*
+- `037_reporting_indexes.sql` — indexen voor datumbereik-gefilterde rapportage-queries (geen materialized views, PRD § 19 A-30).
+- `038_correction_log.sql` — planner-correcties loggen (15 § 10, V2-voorbereiding, alleen schrijfpad).
+- `039_cron_job_status.sql` — `get_cron_job_status()`, ontsluit `cron.job_run_details` voor het Platform Admin-portal.
+- `029_audit_log.sql` (audit-trail met triggers) **niet gebouwd** — optioneel V2, blijft open.
 
 ### Componenten
-Rapportage-grafieken (dataviz-richtlijn), DateRangePicker, export (CSV), a11y-verbeteringen op bestaande componenten.
+RevenueChart (handgerolde SVG, dataviz-skill), RevenueExportButton (CSV), DateRangePicker, CronStatusOverview (Platform Admin).
 
 ### Testcases
-- NFR: Lighthouse/axe volledige suite (NFR-601/602); load LT-1…5 (NFR-503/504); PITR-hersteltest (NFR-803).
-- Security: RLS-negatieve suite compleet, dependency-/secret-scan, webhook-integriteit (NFR-301/302/307).
-- Regressie: volledige E2E-suite groen; performance-budgetten als gate (37 § 6).
+- Unit: `lib/analytics/reporting.test.ts`.
+- A11y: `tests/a11y/key-pages.spec.ts` (axe, wcag2a/wcag2aa/wcag21aa) tegen Vandaag/Klanten/Klant-detail/Planning/Facturen/Rapportage — groen.
+- Security: RLS-negatieve suite aangevuld (pricings, invoices/invoice_lines + `create_credit_invoice()`-cross-tenant-check, subscription_invoice_periods, import_jobs) — groen. Dependency-/secret-scan, webhook-integriteit: niet dit sprint (buiten code-bouwbare scope).
+- Regressie: volledige E2E-suite (11 specs) + integratiesuite (12 bestanden) groen; `npm run build` geverifieerd met Sentry-wrapper zonder DSN/auth-token (geen build-fout).
+- **Niet uitgevoerd**: load LT-1…5 (NFR-503/504), PITR-hersteltest (NFR-803), Lighthouse — zie "Bewust niet gedaan" hierboven.
 
 ---
 
@@ -410,6 +423,42 @@ Geen nieuwe UI-componenten verwacht — het bestaande `ProposalCard` (Sprint 11)
 
 ---
 
+## Sprint 12 — Modulair MKB/ZZP/branche-pakket & medewerker-uitnodiging (✅ gebouwd)
+
+**Aanleiding (PRD § 19 A-33, 2026-07-21):** gebruikersopdracht om te analyseren wat er nog gebouwd moet worden richting een simpel, modulair pakket — planner op kantoor, medewerkers met eigen account die taken/bezoeken afvinken, ZZP'ers die meteen kunnen factureren, instelbaar per bedrijfstype (MKB/ZZP) en branche. WhatsApp (Sprint 8) bleef expliciet buiten deze analyse. Na gebruikersbevestiging ("ja werk sprint 12 uit") direct gebouwd, in de volgorde die deze sectie al vastlegde: **FR-103 eerst** (zonder werkende medewerker-uitnodigingsflow is "medewerkers met een eigen account" een belofte zonder pad ernaartoe), daarna FR-100/FR-104 (modulaire configuratie) en FR-069 (ZZP-versnelling).
+
+**Migratienummers:** `040_employee_invites.sql`, `041_company_type_industry.sql` (het eerstvolgende vrije nummer ná Sprint 10, zoals verwacht).
+
+### Doelen (alle vier gerealiseerd)
+- ✅ FR-103: medewerker-uitnodigingsflow (eigen inlogaccount, token-based) — sluit het kritieke gat tussen "medewerker kan beurten afvinken" (bestond al) en "medewerker kan er als medewerker bij" (bestond niet).
+- ✅ FR-100: Bedrijfsinstellingen-pagina eindelijk gebouwd (was al MVP-scope, nooit gebouwd) — de bestaande, tot dan toe UI-loze `config_json.invoicing`-velden (PRD § 19 A-20) plus de nieuwe bedrijfstype (MKB/ZZP)- en branche-velden. **Scope-cut, bewust:** logo/primaire kleur (oorspronkelijke FR-100 AC2) niet meegebouwd — white-label-branding (file-upload/kleurkiezer, raakt PDF-/e-mail-templates) is een materieel andere, grotere feature dan de rest van dit sprint; blijft open voor een latere sessie.
+- ✅ FR-104: branche-dienstensjabloon — het al sinds PRD v1.0 beloofde "Diensttype-templates per branche" (§ 5.2/§ 6.7), voor het eerst gebouwd.
+- ✅ FR-069: optionele "direct factureren bij afronden" voor ZZP'ers, binnen BR-702 (blijft een menselijke actie, alleen sneller: hergebruikt de bestaande `sendInvoice()` rechtstreeks vanuit `completeJob()` i.p.v. een aparte `completeJobAndSend()`-variant).
+
+### Bestanden (zoals daadwerkelijk gebouwd)
+- **FR-103:** `app/(app)/instellingen/medewerkers/actions.ts` (`inviteEmployee()`/`revokeInvite()`, idempotent — vervangt een bestaande niet-geaccepteerde uitnodiging i.p.v. te stapelen), `app/(app)/instellingen/medewerkers/[id]/uitnodigen/page.tsx`, `components/domain/InviteEmployeeForm.tsx`, `lib/email/invite-employee.ts`, `lib/validation/employee.ts` (+`inviteEmployeeSchema`)/`lib/validation/auth.ts` (+`acceptInviteSchema`). Accepteren: `app/(auth)/uitnodiging/[token]/{page.tsx,actions.ts}`, `components/domain/AcceptInviteForm.tsx`, `app/uitnodiging/voltooien/route.ts` (koppelt `public.users`/`employees.user_id` ná Supabase's eigen e-mailbevestiging, analoog aan `app/onboarding/actions.ts`). **`proxy.ts` moest mee-wijzigen** — ontdekt tijdens E2E-verificatie: zonder toevoeging aan de publieke-pad-uitzondering (naast het al-bestaande `/auth/`-pad) stuurde de proxy zowel een niet-ingelogde bezoeker van `/uitnodiging/[token]` als de net-bevestigde-maar-nog-niet-gekoppelde medewerker op `/uitnodiging/voltooien` fout naar `/login`/`/onboarding` — de hele flow was zonder deze fix onbruikbaar.
+- **FR-100:** `app/(app)/instellingen/bedrijf/{page.tsx,actions.ts}`, `components/domain/CompanySettingsForm.tsx`, `lib/validation/company-settings.ts`. Nieuwe tegel op `/instellingen`.
+- **FR-104:** `lib/branche-templates/data.ts` (`INDUSTRIES`, `BRANCHE_TEMPLATES` — statische data, geen `applyBrancheTemplate()`-functie nodig; de Server Action filtert/mapt rechtstreeks), `app/(app)/instellingen/diensten/actions.ts` (+`importBrancheTemplate()`, herleidt sjabloonrijen server-side uit `industryId`+namen i.p.v. de client-objecten te vertrouwen), `app/(app)/instellingen/diensten/sjabloon/page.tsx`, `components/domain/BrancheTemplateImportForm.tsx` (preview + checkboxes, één client component i.p.v. een dialoog — consistent met hoe Diensten/Medewerkers al aparte pagina's i.p.v. modals gebruiken).
+- **FR-069:** `app/m/actions.ts` (`completeJob()` uitgebreid, geen nieuwe functie), `app/m/beurt/[id]/JobExecutionPanel.tsx` (toast-tekst reflecteert `invoiceSent`).
+- **DataTable-uitbreiding** (`components/composed/DataTable.tsx`): nieuwe optionele `interactive`-kolomvlag — nodig omdat `onRowHref` elke cel al in een eigen `<Link>` wrapt; de nieuwe "Uitnodigen"-actielink op de Medewerkers-lijst zou anders in een ongeldige geneste `<a>` terechtkomen (zelfde bugklasse als eerder al eens gefixt op de facturen-lijst).
+
+### Database-migraties
+- `040_employee_invites.sql` — `invites`-tabel (22_Authenticatie.md § 8-schema, met `token`/`accepted_at` i.p.v. het schema letterlijk te volgen — `accepted_at` vervangt "verwijderen bij accepteren" voor een audit-spoor) + RLS (standaard tenant-model, owner/admin-only insert/delete) + twee `SECURITY DEFINER`-functies: `get_invite_by_token()` (anoniem aanroepbaar, minimale info) en `accept_employee_invite()` (self-service koppeling, analoog aan `onboard_company()` — geen Admin-API/service-role in de applicatielaag, `lib/supabase/server.ts` staat dat bewust niet toe).
+- `041_company_type_industry.sql` — `companies.company_type` (enum `zzp`/`mkb`, nullable), `companies.industry` (varchar, geen eigen enum — nieuwe branches zonder migratie), `companies.instant_invoice_on_complete boolean not null default false` — echte kolommen i.p.v. `config_json` (zie PRD § 19 A-33-motivatie).
+- Geen nieuwe tabel voor FR-104 — een reeks inserts in de bestaande `services`-tabel.
+
+### Componenten
+CompanySettingsForm (FR-100), InviteEmployeeForm + AcceptInviteForm (FR-103), BrancheTemplateImportForm (FR-104, preview + checkboxes), StatusBadge-hergebruik voor uitnodigingsstatus ("Uitgenodigd"/"Actief"/"Verlopen"/"Nog niet uitgenodigd") op de Medewerkers-lijst.
+
+### Testcases (alle groen)
+- Integratie (`tests/integration/employee-invites-rls.test.ts`, 9 tests): `invites`-RLS (tenant-isolatie SELECT/INSERT/DELETE), `get_invite_by_token()` (verlopen → `valid:false`, onbestaand token → geen rij), `accept_employee_invite()` (koppelt account+medewerker correct, weigert een verkeerd e-mailadres, weigert dubbel accepteren).
+- E2E (`tests/e2e/sprint12-employee-invite.spec.ts`): volledige uitnodigingsflow browser-first — accepteren → wachtwoord instellen → Supabase-bevestigingsmail (Mailpit) → landt op `/m`, gekoppeld aan de medewerker. Dit was de test die de `proxy.ts`-bug hierboven blootlegde.
+- Handmatige browser-verificatie (niet als permanente test toegevoegd, wel uitgevoerd tijdens de bouw): Bedrijfsinstellingen opslaan+herladen behoudt waarden; branchesjabloon-import vult de Diensten-lijst; FR-069 met de toggle aan rondt een beurt af zonder te crashen (Resend ontbreekt lokaal → nette fallback naar conceptfactuur, geen foutmelding aan de medewerker).
+- Regressie: volledige bestaande suite (264 unit, 99 integratie incl. de 9 nieuwe, 12 E2E/a11y incl. de nieuwe) + `npm run build` — allemaal groen ná elke fase.
+- BR: **BR-702 blijft ongewijzigd** (FR-069 is geen automatisering-zonder-mens — `completeJob()` blijft één user-geïnitieerde actie, alleen met een extra stap erachteraan).
+
+---
+
 ## Afhankelijkheden-overzicht
 
 ```
@@ -451,3 +500,10 @@ S1 fundament ─▶ S2 klanten/geocoding ─▶ S3 afspraken/beurt-gen ─▶ S4
 | 2026-07-16 | 1.6 | Sprint 7-vervolg bijgewerkt: Invoice Agent gemarkeerd als gebouwd en live geverifieerd — bleek bij de bouw uitsluitend signalering nodig te hebben (conceptfactuur-aanmaak was al `complete_job()`, Sprint 5); geen Mollie/betaalverzoek-link meegenomen in deze stap (aparte, latere uitbreiding op `sendInvoice`). |
 | 2026-07-16 | 1.7 | Sprint 11-vervolg formeel uitgewerkt (scope, bestanden, database-migraties, componenten, testcases — zelfde diepte als reguliere sprintsecties), incl. verwijzing naar de nieuwe high-risk-classificatielijst (`46_PlatformAdmin.md` § 3.5). Uitdrukkelijk **planning, geen vrijgave om te bouwen**: de startvoorwaarde ("minstens één sprint stabiel gedraaid" sinds Sprint 11-fundament, 2026-07-16) is nog niet vervuld. |
 | 2026-07-17 | 1.8 | Sprint 11 § Bestanden: URL verkort van `/platform-admin` naar `/admin` (`app/admin/**`), zie `46_PlatformAdmin.md` § 1.2/changelog 1.3. |
+| 2026-07-18 | 1.9 | Sprint 7-vervolg afgerond: geografische clustering (FR-025/BR-204) gemarkeerd als gebouwd en live geverifieerd — laatste openstaande punt van Sprint 7/7-vervolg. AC2/AC4 (scoringsmodel + slider) expliciet uitgesteld naar een aparte, latere "AI-planner tuning"-uitbreiding (zie `08_FunctioneleEisen.md` FR-025-changelog). |
+| 2026-07-18 | 1.10 | Sprint 4 § "Sprint 4-vervolg" toegevoegd: nieuw FR-029 (handmatige beurt-toevoeging op dag/tijdstip, PRD § 19 A-27) geregistreerd als nog te plannen vervolgwerk op de bestaande RouteBoard. |
+| 2026-07-19 | 1.11 | Sprint 4-vervolg: FR-029 gebouwd (was "nog te plannen"). FR-030 toegevoegd ("Vul de dag", PRD § 19 A-28) — spiegelbeeld van FR-024, ontdekt tijdens de FR-029-bouw. |
+| 2026-07-20 | 1.12 | Sprint 9 afgerond (was gedeeltelijk gebouwd — foto's/donkere modus bleken al eerder klaar): CSV-import (FR-006), klant-tijdlijn (FR-007, verkleinde scope), abonnementsfacturatie (FR-066/BR-304) en creditfacturen (FR-068/BR-020) gebouwd en gecommit. Migratienummers `034`–`036` i.p.v. de gepland `025`–`027` (zelfde migratienummer-drift-precedent als Sprint 7, PRD § 19 A-22 punt 5). Vier scope-beslissingen geregistreerd als PRD § 19 A-29. Release-gate V1 (security ASVS L2/AVG-DPA's/PITR) bewust niet meegenomen — hoort inhoudelijk bij Sprint 10 en wordt daar behandeld. |
+| 2026-07-21 | 1.13 | Sprint 10 — code-bouwbare deel afgerond: rapportage-module (`/rapportage`), a11y-pas (axe tegen 6 kernpagina's, WCAG 2.1 AA), RLS-negatieve-suite aangevuld, correctie-logging-schrijfpad (V2-voorbereiding), Sentry-observability-basis, cron-zichtbaarheid in Platform Admin. Migratienummers `037`–`039` i.p.v. gepland `028`–`030`. Vijf operationele/audit-activiteiten (load-test-executie, ASVS L2-pentest, PITR-hersteltest-executie, statuspagina, OSRM-fallback-spike) + `audit_log` (optioneel V2) expliciet bewust niet gedaan, geregistreerd als PRD § 19 A-30 — geen agent-bouwtaken. |
+| 2026-07-21 | 1.14 | Naamswijziging RouteFlow → ServOps.nl door dit hele document (PRD § 19 A-31), geen inhoudelijke wijziging. Nieuwe "Sprint 12 (nog te plannen)"-sectie toegevoegd: modulair MKB/ZZP/branche-pakket + medewerker-uitnodigingsflow (FR-069/103/104, PRD § 19 A-33) — planning, nog niet gebouwd, wacht op korte gebruikersbevestiging op branche-lijst/module-indeling vóór start. Grootste ontdekte gat: de medewerker-uitnodigingsflow (FR-103) staat al sinds Sprint 1 gepland (`/app/(auth)/uitnodiging/[token]`) maar is nooit gebouwd — geverifieerd bij deze analyse. |
+| 2026-07-21 | 1.15 | Sprint 12 gebouwd en groen (op gebruikersbevestiging "ja werk sprint 12 uit"): medewerker-uitnodigingsflow (FR-103, incl. een tijdens E2E-verificatie ontdekte en gefixte `proxy.ts`-blokkade zonder welke de hele flow onbruikbaar was), Bedrijfsinstellingen-pagina (FR-100, logo/kleur bewust uitgesteld), branche-dienstensjabloon (FR-104), ZZP-directfactureren-toggle (FR-069). Migraties `040`/`041`. Nieuwe `DataTable`-`interactive`-kolomvlag (voorkomt geneste `<a>`-elementen bij rij-acties). 9 nieuwe integratietests + 1 nieuwe E2E-spec, volledige bestaande suite + build groen ná elke fase. |

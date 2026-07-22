@@ -3,10 +3,9 @@ import { z } from 'zod';
 /**
  * Combineert Dienstafspraak + Prijsafspraak in één formulier-schema (1:1-relatie,
  * 18_Prijsafspraken.md § 2: "gekoppeld aan een Dienstafspraak"; samen aangemaakt,
- * zie service-agreements/actions.ts). MVP-fase (18_Prijsafspraken.md § 1): alleen
- * `per_job`/`hourly` zijn hier kiesbaar — `subscription` (V1) en `punch_card` (V2)
- * bestaan al in het DB-schema (007_pricings.sql) maar krijgen pas een UI-optie
- * wanneer die fases aan de beurt zijn.
+ * zie service-agreements/actions.ts). Sprint 9 (FR-066) voegt `subscription` toe
+ * als derde kiesbare prijstype — `punch_card` (V2) bestaat al in het DB-schema
+ * (007_pricings.sql) maar krijgt pas een UI-optie wanneer die fase aan de beurt is.
  *
  * Net als bij lib/validation/service.ts blijven numerieke velden hier plain
  * `z.number()` (geen coerce/pipe) om het react-hook-form-type simpel te houden;
@@ -25,17 +24,34 @@ export const serviceAgreementSchema = z
       .min(7, 'Aangepaste frequentie moet minimaal 7 dagen zijn.')
       .max(365, 'Aangepaste frequentie mag maximaal 365 dagen zijn.')
       .optional(),
-    preferredDay: z.number().int().min(0).max(6).optional(),
-    preferredDaypart: z.enum(['morning', 'afternoon']).optional(),
+    // .nullable() (i.p.v. alleen .optional()): react-hook-form's Controller valt
+    // terug op de geregistreerde defaultValue zodra een veld op `undefined` wordt
+    // gezet (het kan "nooit ingevuld" en "expliciet gewist" niet onderscheiden) —
+    // `null` is daarom de enige manier om "geen voorkeur" na een eerdere keuze
+    // weer daadwerkelijk te laten plakken. Actions/DB blijven ongewijzigd (`?? null`).
+    preferredDay: z.number().int().min(0).max(6).nullable().optional(),
+    preferredDaypart: z.enum(['morning', 'afternoon']).nullable().optional(),
     flexibilityWindowDays: z
       .number()
       .int()
       .min(0, 'Flexibiliteitsvenster kan niet negatief zijn.')
       .max(21, 'Flexibiliteitsvenster mag maximaal 21 dagen zijn.'),
     callAheadRequired: z.boolean(),
-    pricingType: z.enum(['per_job', 'hourly'], { message: 'Kies een prijstype.' }),
+    pricingType: z.enum(['per_job', 'hourly', 'subscription'], { message: 'Kies een prijstype.' }),
     amountEuros: z.number().min(0, 'Bedrag kan niet negatief zijn.').optional(),
     hourlyRateEuros: z.number().min(0, 'Uurtarief kan niet negatief zijn.').optional(),
+    // FR-066/BR-304: abonnementsbedrag per maand, aantal inbegrepen beurten
+    // (0 = ongelimiteerd, 18_Prijsafspraken.md § 7 foutmelding) en overage-bedrag
+    // per beurt daarboven. `billingTiming` (vooraf/achteraf) stuurt de
+    // subscription-billing-cron (034_subscription_billing.sql).
+    subscriptionAmountEuros: z.number().min(0, 'Bedrag kan niet negatief zijn.').optional(),
+    includedJobsPerPeriod: z
+      .number()
+      .int()
+      .min(0, 'Aantal inbegrepen beurten kan niet negatief zijn.')
+      .optional(),
+    overageAmountEuros: z.number().min(0, 'Overage-bedrag kan niet negatief zijn.').optional(),
+    billingTiming: z.enum(['advance', 'arrears']).optional(),
     vatRate: z.number().refine((value) => [0, 9, 21].includes(value), {
       message: 'Kies een geldig BTW-tarief (0%, 9% of 21%).',
     }),
@@ -51,6 +67,25 @@ export const serviceAgreementSchema = z
   .refine((data) => data.pricingType !== 'hourly' || data.hourlyRateEuros !== undefined, {
     message: 'Vul het uurtarief in.',
     path: ['hourlyRateEuros'],
+  })
+  .refine(
+    (data) => data.pricingType !== 'subscription' || data.subscriptionAmountEuros !== undefined,
+    { message: 'Vul het bedrag per maand in.', path: ['subscriptionAmountEuros'] },
+  )
+  .refine(
+    (data) => data.pricingType !== 'subscription' || data.includedJobsPerPeriod !== undefined,
+    {
+      message: 'Geef aan hoeveel beurten in het abonnement zitten (0 = ongelimiteerd).',
+      path: ['includedJobsPerPeriod'],
+    },
+  )
+  .refine((data) => data.pricingType !== 'subscription' || data.overageAmountEuros !== undefined, {
+    message: 'Vul het bedrag per extra beurt boven het abonnement in.',
+    path: ['overageAmountEuros'],
+  })
+  .refine((data) => data.pricingType !== 'subscription' || data.billingTiming !== undefined, {
+    message: 'Kies of vooraf of achteraf gefactureerd wordt.',
+    path: ['billingTiming'],
   });
 
 export type ServiceAgreementInput = z.infer<typeof serviceAgreementSchema>;

@@ -10,9 +10,9 @@
 
 ## Doel van dit document
 
-Dit document specificeert het **API-contract** van RouteFlow: authenticatie, conventies, resource-endpoints, domein-acties (RPC), webhooks, foutmodel, paginatie, en rate limiting. De API is **API-first** (PRD § 12.2) zodat toekomstige integraties en native apps mogelijk zijn.
+Dit document specificeert het **API-contract** van ServOps: authenticatie, conventies, resource-endpoints, domein-acties (RPC), webhooks, foutmodel, paginatie, en rate limiting. De API is **API-first** (PRD § 12.2) zodat toekomstige integraties en native apps mogelijk zijn.
 
-**Architectuur:** RouteFlow combineert twee lagen:
+**Architectuur:** ServOps combineert twee lagen:
 1. **Data-API** — Supabase PostgREST genereert CRUD-endpoints per tabel, beveiligd met **RLS** (multi-tenant, PRD § 12.2). Gebruikt door de webclient via de Supabase-SDK.
 2. **Domein-API (Edge Functions)** — server-side logica die niet in de client hoort: planning genereren, route optimaliseren, factuur finaliseren, webhooks. Aangeroepen als RPC-endpoints.
 
@@ -23,13 +23,13 @@ Dit document specificeert het **API-contract** van RouteFlow: authenticatie, con
 | Aspect | Keuze |
 |---|---|
 | Base-URL (data) | `https://<project>.supabase.co/rest/v1` |
-| Base-URL (domein) | `https://<project>.supabase.co/functions/v1` (of `api.routeflow.nl` via proxy) |
+| Base-URL (domein) | `https://<project>.supabase.co/functions/v1` (of `api.servops.nl` via proxy) |
 | Formaat | JSON (`Content-Type: application/json`) |
 | Tijd | ISO 8601 UTC (bijv. `2026-07-14T09:15:00Z`); rendering Europe/Amsterdam client-side |
 | Bedragen | Integer in centen (`amount_cents`) + `currency` (EUR) |
 | ID's | UUID v4 |
 | Naamgeving velden | `snake_case` (PostgREST-conventie) |
-| Versionering | Header `X-RouteFlow-Api-Version` (bij breaking changes; PostgREST-pad blijft `/rest/v1`) |
+| Versionering | Header `X-ServOps-Api-Version` (bij breaking changes; PostgREST-pad blijft `/rest/v1`) |
 
 ---
 

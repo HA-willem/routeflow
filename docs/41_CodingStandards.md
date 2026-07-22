@@ -10,7 +10,7 @@
 
 ## Doel van dit document
 
-Dit document is de **technische stijlgids** waarmee een team van senior engineers RouteFlow bouwt vanaf Sprint 1. Waar de documenten 00–40 bepalen *wat* er gebouwd wordt en *waarom*, bepaalt dit document *hoe* — op een niveau van detail waarmee code van verschillende engineers niet van elkaar te onderscheiden is qua stijl, conventie en kwaliteitsniveau.
+Dit document is de **technische stijlgids** waarmee een team van senior engineers ServOps bouwt vanaf Sprint 1. Waar de documenten 00–40 bepalen *wat* er gebouwd wordt en *waarom*, bepaalt dit document *hoe* — op een niveau van detail waarmee code van verschillende engineers niet van elkaar te onderscheiden is qua stijl, conventie en kwaliteitsniveau.
 
 Dit is geen inleiding tot React/TypeScript/PostgreSQL — het is een verzameling **project-specifieke beslissingen** op punten waar de taal/het framework meerdere geldige keuzes toelaat. Waar dit document zwijgt, geldt de standaardconventie van het framework/de linter.
 

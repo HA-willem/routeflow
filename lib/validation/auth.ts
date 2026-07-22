@@ -57,3 +57,15 @@ export const onboardingSchema = z.object({
   companyName: z.string().trim().min(1, 'Vul je bedrijfsnaam in.').max(255),
 });
 export type OnboardingInput = z.infer<typeof onboardingSchema>;
+
+/** Wachtwoord instellen bij het accepteren van een medewerker-uitnodiging (FR-103). */
+export const acceptInviteSchema = z
+  .object({
+    password: passwordSchema,
+    passwordConfirmation: z.string(),
+  })
+  .refine((data) => data.password === data.passwordConfirmation, {
+    message: 'De wachtwoorden komen niet overeen.',
+    path: ['passwordConfirmation'],
+  });
+export type AcceptInviteInput = z.infer<typeof acceptInviteSchema>;

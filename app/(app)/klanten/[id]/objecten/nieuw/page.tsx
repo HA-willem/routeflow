@@ -10,7 +10,7 @@ import { createObject } from '../actions';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Nieuw object — RouteFlow',
+  title: 'Nieuw object — ServOps',
 };
 
 export default async function NieuwObjectPage({ params }: { params: Promise<{ id: string }> }) {

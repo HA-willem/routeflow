@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Datum:** 2026-07-16
-- **Beslisser:** Chief Software Architect (RouteFlow) i.o.v. platform-eigenaar
+- **Beslisser:** Chief Software Architect (ServOps) i.o.v. platform-eigenaar
 - **Bron van waarheid:** `00_PRD.md` § 19 A-24 — deze ADR formaliseert die aanname tot architectuur.
 - **Gerelateerd:** ADR-010 (AI Planner drielagen-architectuur — expliciete afwijzing van "black-box ML-first", dit ADR bakent af waarom dat hier niet wordt losgelaten), ADR-007 (Provider Adapter Pattern — de LLM-aanroep volgt hetzelfde vervangbare-provider-patroon als Mapbox/Mollie/360dialog), ADR-011 § 1 (Command Bar, `44_MorningBriefing_UX.md`), PRD § 19 A-21 (Command Bar geïntroduceerd als interface-only).
 

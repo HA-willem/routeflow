@@ -314,10 +314,21 @@ Deno.serve(async (req) => {
     );
   }
 
+  // Automatiseringsniveau/confidence-drempel per agent (042_agent_settings.sql,
+  // "AI-assistent"-instellingenpagina) — ontbrekende rij = decideApproval()'s
+  // eigen default (proposal/0.7, lib/agents/approval-handler.ts).
+  const { data: replanningSettings } = await serviceSupabase
+    .from('agent_settings')
+    .select('automation_level, confidence_threshold')
+    .eq('company_id', body.company_id)
+    .eq('agent', 'replanning')
+    .maybeSingle();
+
   const approval = decideApproval({
     actionType: suggestion.payload?.type ?? null,
-    automationLevel: 'proposal', // Sprint 7(-vervolg)-scope: geen automatiseringsniveau-instellingen-UI
+    automationLevel: replanningSettings?.automation_level ?? 'proposal',
     confidence: suggestion.confidence,
+    confidenceThreshold: replanningSettings?.confidence_threshold,
   });
 
   const { data: inserted, error: insertError } = await serviceSupabase

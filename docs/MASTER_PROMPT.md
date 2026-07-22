@@ -1,6 +1,6 @@
 # MASTER_PROMPT.md — Werkinstructie voor AI-agents
 
-Jij bent een AI-agent (of mens) die meewerkt aan **RouteFlow**. Dit document bepaalt hoe je werkt.
+Jij bent een AI-agent (of mens) die meewerkt aan **ServOps**. Dit document bepaalt hoe je werkt.
 
 ## 1. Bronnenhiërarchie
 1. `00_PRD.md` is de enige bron van waarheid. Bij conflict wint het PRD.

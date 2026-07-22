@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Diensten — RouteFlow',
+  title: 'Diensten — ServOps',
 };
 
 export default async function DienstenPage() {
@@ -26,9 +26,14 @@ export default async function DienstenPage() {
       <PageHeader
         title="Diensten"
         action={
-          <Button asChild>
-            <Link href="/instellingen/diensten/nieuw">Nieuwe dienst</Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild variant="outline">
+              <Link href="/instellingen/diensten/sjabloon">Sjabloon importeren</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/instellingen/diensten/nieuw">Nieuwe dienst</Link>
+            </Button>
+          </div>
         }
       />
       <DataTable
@@ -36,11 +41,16 @@ export default async function DienstenPage() {
         getRowKey={(row) => row.id}
         onRowHref={(row) => `/instellingen/diensten/${row.id}/bewerken`}
         emptyTitle="Nog geen diensten."
-        emptyDescription="Voeg je eerste dienst toe om dienstafspraken te kunnen aanmaken."
+        emptyDescription="Voeg je eerste dienst toe, of importeer een startset voor je branche."
         emptyAction={
-          <Button asChild>
-            <Link href="/instellingen/diensten/nieuw">Nieuwe dienst</Link>
-          </Button>
+          <div className="flex justify-center gap-2">
+            <Button asChild variant="outline">
+              <Link href="/instellingen/diensten/sjabloon">Sjabloon importeren</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/instellingen/diensten/nieuw">Nieuwe dienst</Link>
+            </Button>
+          </div>
         }
         columns={[
           { header: 'Naam', cell: (row) => row.name },

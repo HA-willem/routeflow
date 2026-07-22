@@ -35,7 +35,7 @@ const ANON_KEY: string = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const SERVICE_ROLE_KEY: string = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const admin = createClient<Database>(SUPABASE_URL, SERVICE_ROLE_KEY);
-const OWNER_EMAIL = 'demo@routeflow.nl';
+const OWNER_EMAIL = 'demo@servops.nl';
 const DEMO_PASSWORD = 'DemoWachtwoord123';
 const COMPANY_NAME = 'Glashelder Nijmegen B.V.';
 
@@ -553,7 +553,7 @@ async function main() {
       const name = isBusiness
         ? pick(BEDRIJFSNAMEN, globalIndex)
         : `${pick(VOORNAMEN, globalIndex)} ${pick(ACHTERNAMEN, globalIndex + 7)}`;
-      const email = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '.')}.${globalIndex}@voorbeeld.routeflow.test`;
+      const email = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '.')}.${globalIndex}@voorbeeld.servops.test`;
 
       const { data: existingCustomer } = await admin
         .from('customers')

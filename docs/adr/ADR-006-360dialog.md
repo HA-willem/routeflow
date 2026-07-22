@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Datum:** 2026-07-07
-- **Beslisser:** Chief Software Architect (RouteFlow) — bekrachtigd door productbeslissing A-08
+- **Beslisser:** Chief Software Architect (ServOps) — bekrachtigd door productbeslissing A-08
 - **Bron van waarheid:** `00_PRD.md` § 19 (A-08)
 - **Gerelateerd:** ADR-007 (Provider Adapter Pattern); 19_WhatsApp.md, 21_Notificaties.md, 36_Security.md
 
@@ -10,7 +10,7 @@
 
 ## Context
 
-WhatsApp is het communicatiekanaal waarmee RouteFlow zich onderscheidt van vakpakketten (PRD § 2.3, § 10). Het gaat live in **V1** (e-mail is MVP-first). Berichten (aankondiging, niet-thuis, factuur, herinnering, bevestiging) lopen via de officiële **WhatsApp Business Cloud API**, altijd via een erkende BSP (Business Solution Provider). AVG/EU-hosting is vereist (NFR-401/402).
+WhatsApp is het communicatiekanaal waarmee ServOps zich onderscheidt van vakpakketten (PRD § 2.3, § 10). Het gaat live in **V1** (e-mail is MVP-first). Berichten (aankondiging, niet-thuis, factuur, herinnering, bevestiging) lopen via de officiële **WhatsApp Business Cloud API**, altijd via een erkende BSP (Business Solution Provider). AVG/EU-hosting is vereist (NFR-401/402).
 
 ## Probleem
 
@@ -18,7 +18,7 @@ Welke BSP geeft ons **directe, laag-lock-in-toegang** tot de Meta Cloud API tege
 
 ## Gekozen oplossing
 
-**360dialog** als BSP voor V1, achter de **messaging-adapter** (ADR-007). Praktisch betekent dit: 360dialog provisioneert het WhatsApp-nummer en de goedkeuring, terwijl RouteFlow rechtstreeks tegen de **Meta Cloud API** praat (19 § 1.3).
+**360dialog** als BSP voor V1, achter de **messaging-adapter** (ADR-007). Praktisch betekent dit: 360dialog provisioneert het WhatsApp-nummer en de goedkeuring, terwijl ServOps rechtstreeks tegen de **Meta Cloud API** praat (19 § 1.3).
 
 - Flat-fee-abonnement (~€49/mnd) zonder per-bericht-markup + Meta-tarief pass-through.
 - EU-hosting, GDPR-first bedrijfsvoering (Duitsland).

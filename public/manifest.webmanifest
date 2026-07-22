@@ -1,6 +1,6 @@
 {
-  "name": "RouteFlow — Medewerker",
-  "short_name": "RouteFlow",
+  "name": "ServOps — Medewerker",
+  "short_name": "ServOps",
   "description": "Dagroute, beurten en werkbon voor medewerkers onderweg.",
   "start_url": "/m",
   "scope": "/m",

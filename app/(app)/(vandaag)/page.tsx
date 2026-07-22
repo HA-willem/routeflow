@@ -8,7 +8,7 @@ import { ProposalList } from '@/components/domain/briefing/ProposalList';
 import { QuickActions } from '@/components/domain/briefing/QuickActions';
 import { WarningsList } from '@/components/domain/briefing/WarningsList';
 import { WeatherTimeline } from '@/components/domain/briefing/WeatherTimeline';
-import { KPICard } from '@/components/domain/KPICard';
+import { KPI_TONES, KPICard } from '@/components/domain/KPICard';
 import { requireOnboardedUser } from '@/lib/auth/session';
 import { getMorningBriefing } from '@/lib/briefing/get-briefing';
 import { formatCents } from '@/lib/invoicing/money';
@@ -18,7 +18,7 @@ import { decideProposal } from '../briefing-actions';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Vandaag — RouteFlow',
+  title: 'Vandaag — ServOps',
 };
 
 function greeting(): string {
@@ -102,10 +102,23 @@ export default async function MorningBriefingPage() {
             <KPICard
               label="Omzet deze maand"
               value={formatCents(briefing.kpis.revenueThisMonthCents)}
+              tone={KPI_TONES[0]}
             />
-            <KPICard label="Openstaande facturen" value={String(briefing.kpis.openInvoices)} />
-            <KPICard label="Beurten deze week" value={String(briefing.kpis.jobsThisWeek)} />
-            <KPICard label="Uitgevoerd vandaag" value={String(briefing.kpis.completedToday)} />
+            <KPICard
+              label="Openstaande facturen"
+              value={String(briefing.kpis.openInvoices)}
+              tone={KPI_TONES[1]}
+            />
+            <KPICard
+              label="Beurten deze week"
+              value={String(briefing.kpis.jobsThisWeek)}
+              tone={KPI_TONES[2]}
+            />
+            <KPICard
+              label="Uitgevoerd vandaag"
+              value={String(briefing.kpis.completedToday)}
+              tone={KPI_TONES[3]}
+            />
           </div>
         </section>
       ) : null}

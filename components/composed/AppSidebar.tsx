@@ -23,7 +23,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
       aria-label="Hoofdnavigatie"
       className="border-border bg-bg flex h-screen w-56 shrink-0 flex-col gap-1 border-r px-3 py-6"
     >
-      <div className="text-text px-2 pb-4 text-lg font-semibold">RouteFlow</div>
+      <div className="text-text px-2 pb-4 text-lg font-semibold">ServOps</div>
       {items.map((item) => {
         const isActive = pathname === item.href;
         return (

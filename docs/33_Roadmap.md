@@ -10,7 +10,7 @@
 
 ## Doel van dit document
 
-Dit document beschrijft de **uitrolvolgorde** van RouteFlow in fasen (MVP → V1 → V2), met per fase de doelen, scope, exit-criteria en afhankelijkheden. Het respecteert de scopetabel PRD § 5.2 en de faseringregel uit MASTER_PROMPT § 3: **bouw niets uit een latere fase "omdat het makkelijk meegenomen kan worden"**.
+Dit document beschrijft de **uitrolvolgorde** van ServOps in fasen (MVP → V1 → V2), met per fase de doelen, scope, exit-criteria en afhankelijkheden. Het respecteert de scopetabel PRD § 5.2 en de faseringregel uit MASTER_PROMPT § 3: **bouw niets uit een latere fase "omdat het makkelijk meegenomen kan worden"**.
 
 De genoemde doorlooptijden zijn **indicatief** (richtinggevend, geen commitment); scope is leidend, niet datum.
 
@@ -66,7 +66,7 @@ De genoemde doorlooptijden zijn **indicatief** (richtinggevend, geen commitment)
 
 ## 3. V2 — "marktleiderschap"
 
-**Doel:** features die RouteFlow onderscheidend en schaalbaar maken (PRD § 5.2).
+**Doel:** features die ServOps onderscheidend en schaalbaar maken (PRD § 5.2).
 
 **Scope (Could/later):**
 - Klantportaal (self-service voorkeuren), tweeweg-WhatsApp ("OVERSLAAN", FR-083).

@@ -96,12 +96,12 @@ Variabelen: {{1}} voornaam, {{2}} datum, {{3}} dienst, {{4}} tijdvak, {{5}} bedr
 
 ### 4.1 Levenscyclus
 
-1. Bedrijf stelt template-tekst samen in RouteFlow (FR-081) met variabele-placeholders.
-2. RouteFlow dient de template via 360dialog in bij Meta ter **goedkeuring** (`PENDING`).
+1. Bedrijf stelt template-tekst samen in ServOps (FR-081) met variabele-placeholders.
+2. ServOps dient de template via 360dialog in bij Meta ter **goedkeuring** (`PENDING`).
 3. Meta keurt goed (`APPROVED`) of af (`REJECTED`, met reden).
 4. Alleen `APPROVED`-templates zijn selecteerbaar voor verzending.
 
-### 4.2 Statussen in RouteFlow
+### 4.2 Statussen in ServOps
 
 | Status | Betekenis | UI |
 |---|---|---|
@@ -113,14 +113,14 @@ Variabelen: {{1}} voornaam, {{2}} datum, {{3}} dienst, {{4}} tijdvak, {{5}} bedr
 
 ### 4.3 Standaard-templates (meegeleverd)
 
-RouteFlow levert vooraf-opgestelde NL-templates voor WA-1 t/m WA-6 die het bedrijf kan overnemen of aanpassen. Dit versnelt onboarding (nul-training, PRD § 3.2).
+ServOps levert vooraf-opgestelde NL-templates voor WA-1 t/m WA-6 die het bedrijf kan overnemen of aanpassen. Dit versnelt onboarding (nul-training, PRD § 3.2).
 
 ---
 
 ## 5. Meta-conversatiemodel & servicevenster
 
 - **Bedrijf-geïnitieerd** (onze cron/trigger-berichten): vereist een **goedgekeurde template**. Opent een *utility*-conversatie.
-- **Klant-geïnitieerd**: als de klant ántwoordt, opent een **24-uurs servicevenster** waarin RouteFlow met vrije tekst (`sendFreeText`) mag reageren zonder template.
+- **Klant-geïnitieerd**: als de klant ántwoordt, opent een **24-uurs servicevenster** waarin ServOps met vrije tekst (`sendFreeText`) mag reageren zonder template.
 - Na 24u zonder klantinteractie: alleen weer template-berichten.
 
 Dit model bepaalt de tweeweg-flow (§ 6) en de kosten (elke utility-conversatie kent een Meta-tarief; flat-fee-BSP 360dialog rekent dat pass-through door).
@@ -132,8 +132,8 @@ Dit model bepaalt de tweeweg-flow (§ 6) en de kosten (elke utility-conversatie 
 ### 6.1 Flow "OVERSLAAN"
 
 1. WA-1 nodigt uit: *"Niet gelegen? Antwoord OVERSLAAN."*
-2. Klant antwoordt → 360dialog/Meta stuurt **inbound webhook** naar RouteFlow.
-3. RouteFlow parseert de intent (case-insensitief, trefwoord `OVERSLAAN`/`SKIP`).
+2. Klant antwoordt → 360dialog/Meta stuurt **inbound webhook** naar ServOps.
+3. ServOps parseert de intent (case-insensitief, trefwoord `OVERSLAAN`/`SKIP`).
 4. Match → Beurt → `overgeslagen` (BR-803); beurt naar herplan-wachtrij; planner-notificatie.
 5. Binnen het 24u-venster: bevestiging via `sendFreeText`: *"Oké! We plannen je volgende keer opnieuw in."*
 6. Geen match (vrije tekst) → doorgezet naar planner-inbox als klantbericht; geen automatische actie.

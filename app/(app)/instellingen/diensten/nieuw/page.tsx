@@ -7,7 +7,7 @@ import { createService } from '../actions';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Nieuwe dienst — RouteFlow',
+  title: 'Nieuwe dienst — ServOps',
 };
 
 export default async function NieuweDienstPage() {

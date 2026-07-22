@@ -39,6 +39,13 @@ interface ServiceFormProps {
   submitLabel: string;
   /** Plain pad, evt. met een `:id`-placeholder (zie lib/utils.ts resolveRedirectPath). */
   redirectTo: string;
+  /**
+   * Als gezet: navigeert het formulier niet zelf weg maar geeft het nieuwe id
+   * door aan de aanroeper (gebruikt om een dienst inline aan te maken vanuit
+   * de dienstafspraak-form, zonder de pagina te verlaten). Zonder deze prop
+   * blijft het bestaande gedrag (navigeren naar `redirectTo`) ongewijzigd.
+   */
+  onSuccess?: (id: string | null) => void;
 }
 
 const DEFAULT_VALUES: ServiceInput = {
@@ -65,6 +72,7 @@ export function ServiceForm({
   onSubmit,
   submitLabel,
   redirectTo,
+  onSuccess,
 }: ServiceFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -84,6 +92,10 @@ export function ServiceForm({
         return;
       }
       toast.success('Dienst opgeslagen');
+      if (onSuccess) {
+        onSuccess(result.data?.id ?? null);
+        return;
+      }
       router.push(resolveRedirectPath(redirectTo, result.data?.id ?? null));
     });
   }

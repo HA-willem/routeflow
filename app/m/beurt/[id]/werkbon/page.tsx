@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Werkbon — RouteFlow' };
+export const metadata: Metadata = { title: 'Werkbon — ServOps' };
 
 export default async function WerkbonPage({ params }: { params: Promise<{ id: string }> }) {
   await requireOnboardedUser();

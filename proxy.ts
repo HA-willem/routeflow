@@ -20,7 +20,12 @@ export async function proxy(request: NextRequest) {
 
   // /auth/confirm verwerkt zelf de PKCE-uitwisseling en redirect vervolgens
   // (app/auth/confirm/route.ts) — nooit onderwerpen aan de auth/onboarding-gate.
-  if (pathname.startsWith('/auth/')) {
+  // /uitnodiging/* (FR-103) om dezelfde reden: /uitnodiging/[token] moet
+  // bereikbaar zijn zonder sessie (nog geen account), en /uitnodiging/voltooien
+  // juist door een net-bevestigde-maar-nog-niet-onboarded gebruiker (nog geen
+  // public.users-rij totdat accept_employee_invite() daar draait) — beide
+  // routes doen hun eigen auth-controle al zelf.
+  if (pathname.startsWith('/auth/') || pathname.startsWith('/uitnodiging/')) {
     return response;
   }
 

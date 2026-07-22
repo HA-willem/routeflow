@@ -7,7 +7,7 @@ import { createFeatureRequest } from '../actions';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Nieuwe feature request — RouteFlow',
+  title: 'Nieuwe feature request — ServOps',
 };
 
 export default async function NieuweFeatureRequestPage() {
@@ -17,7 +17,7 @@ export default async function NieuweFeatureRequestPage() {
     <div>
       <PageHeader
         title="Nieuwe feature request"
-        description="Wat zou RouteFlow voor jou beter maken? We bekijken elk verzoek."
+        description="Wat zou ServOps voor jou beter maken? We bekijken elk verzoek."
       />
       <FeatureRequestForm
         onSubmit={createFeatureRequest}

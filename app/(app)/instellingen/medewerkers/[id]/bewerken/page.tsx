@@ -11,7 +11,7 @@ import { archiveEmployee, updateEmployee } from '../../actions';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Medewerker bewerken — RouteFlow',
+  title: 'Medewerker bewerken — ServOps',
 };
 
 export default async function MedewerkerBewerkenPage({

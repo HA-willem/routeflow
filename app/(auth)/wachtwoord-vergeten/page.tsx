@@ -11,7 +11,7 @@ import { ForgotPasswordForm } from './forgot-password-form';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Wachtwoord vergeten — RouteFlow',
+  title: 'Wachtwoord vergeten — ServOps',
 };
 
 export default function ForgotPasswordPage() {

@@ -18,7 +18,7 @@ import { archiveObject } from '../actions';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Object — RouteFlow',
+  title: 'Object — ServOps',
 };
 
 const STATUS_BADGE: Record<

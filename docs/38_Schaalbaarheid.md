@@ -10,7 +10,7 @@
 
 ## Doel van dit document
 
-Dit document beschrijft hoe RouteFlow **schaalt** naar de doelgetallen uit PRD § 13, welke onderdelen het eerst knellen (bottlenecks), en welke architectuurkeuzes en mitigaties dat opvangen. Ontwerpuitgangspunt: de architectuur is *van dag één* ontworpen voor schaal (multi-tenant RLS, stateless compute, cachebare zware taken), maar wordt gefaseerd gevalideerd (33/34).
+Dit document beschrijft hoe ServOps **schaalt** naar de doelgetallen uit PRD § 13, welke onderdelen het eerst knellen (bottlenecks), en welke architectuurkeuzes en mitigaties dat opvangen. Ontwerpuitgangspunt: de architectuur is *van dag één* ontworpen voor schaal (multi-tenant RLS, stateless compute, cachebare zware taken), maar wordt gefaseerd gevalideerd (33/34).
 
 ---
 

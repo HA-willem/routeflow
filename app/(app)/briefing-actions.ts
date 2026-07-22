@@ -30,7 +30,7 @@ export async function decideProposal(
   proposalId: string,
   decision: 'approved' | 'rejected',
 ): Promise<ActionResult<{ executed: boolean }>> {
-  await requireOnboardedUser();
+  const { profile } = await requireOnboardedUser();
   const supabase = await createClient();
 
   const { data: proposal, error: decideError } = await supabase.rpc('decide_agent_proposal', {
@@ -43,6 +43,25 @@ export async function decideProposal(
       code: decideError?.code ?? 'decide_failed',
       message: 'Voorstel kon niet worden bijgewerkt — mogelijk is het al behandeld.',
     });
+  }
+
+  // V2-voorbereiding (15_AIPlanner.md § 10, 038_correction_log.sql):
+  // best-effort, non-blocking — een loggingfout mag de afwijzing zelf niet
+  // laten falen.
+  if (decision === 'rejected') {
+    const { error: logError } = await supabase.from('correction_log').insert({
+      company_id: proposal.company_id,
+      job_id: proposal.impacted_job_ids?.[0] ?? null,
+      correction_type: 'rejected_proposal',
+      old_value: { proposal_id: proposalId, agent: proposal.agent, payload: proposal.payload },
+      new_value: null,
+      created_by: profile.id,
+    });
+    if (logError) {
+      logger.warn('decideProposal: correction_log-schrijven mislukt (non-blocking)', {
+        message: logError.message,
+      });
+    }
   }
 
   let executed = false;
