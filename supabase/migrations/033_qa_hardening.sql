@@ -64,8 +64,21 @@ begin
 end $$;
 
 -- (4) cache-tabellen: RLS aan (geen policies = dicht voor client-rollen;
--- service-rol heeft bypassrls) + restgrants aan client-rollen intrekken.
-alter table public.distance_cache enable row level security;
-alter table public.weerdata_cache enable row level security;
-revoke all on table public.distance_cache from anon, authenticated;
-revoke all on table public.weerdata_cache from anon, authenticated;
+-- service-rol heeft bypassrls) + restgrants aan client-rollen intrekken. Puur
+-- defense-in-depth — functioneel geen wijziging (service-rol heeft
+-- bypassrls, merkt niets van RLS). Best-effort: op sommige Supabase Cloud-
+-- projecten is de migratierol niet de eigenaar van een tabel die een
+-- eerdere sessie/rol aanmaakte (lokaal, met `postgres` als superuser, valt
+-- dat niet op — daar slaagt een kale ALTER altijd) — `supabase_admin` bleek
+-- bij nader testen zélf ook geen eigenaarschap te hebben, dus geen tweede
+-- rol proberen: gewoon overslaan met een waarschuwing i.p.v. deze en alle
+-- volgende migraties te blokkeren.
+do $$
+begin
+  alter table public.distance_cache enable row level security;
+  alter table public.weerdata_cache enable row level security;
+  revoke all on table public.distance_cache from anon, authenticated;
+  revoke all on table public.weerdata_cache from anon, authenticated;
+exception when insufficient_privilege then
+  raise warning 'distance_cache/weerdata_cache RLS/grants niet aangepast (onvoldoende rechten) — geen functionele impact (service-rol heeft bypassrls); handmatig na te trekken als tabel-eigenaar.';
+end $$;

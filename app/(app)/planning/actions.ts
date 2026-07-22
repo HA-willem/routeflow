@@ -625,9 +625,31 @@ export async function fillDay(params: {
     employeeId: params.employeeId,
     date: params.date,
   });
-  const unplaceableCount = optimizeResult.success
-    ? optimizeResult.data.unplaceable_job_ids.filter((id) => params.jobIds.includes(id)).length
-    : 0;
+
+  if (!optimizeResult.success) {
+    // De datumwijziging op de beurten staat al (movedCount > 0 hierboven) —
+    // dat teruggedraaid krijgen is meer risico dan waard (de gebruiker moet
+    // dan opnieuw dezelfde selectie maken). In plaats daarvan een eerlijke
+    // foutmelding i.p.v. stilzwijgend "geslaagd" te melden terwijl er geen
+    // route/route_id tot stand kwam — anders lijkt de dag zonder verklaring
+    // leeg te blijven (bv. bij een ontbrekende depotlocatie/routing-config,
+    // PRD § 19 A-13).
+    logger.error('fillDay: optimizeEmployeeDay mislukt na verplaatsen', {
+      code: optimizeResult.error.code,
+      employeeId: params.employeeId,
+      date: params.date,
+    });
+    revalidatePath('/planning');
+    return actionError({
+      code: optimizeResult.error.code,
+      message: `${movedCount} beurt(en) zijn verzet naar ${params.date}, maar de route kon niet worden herberekend (${optimizeResult.error.message}). Ververs de pagina en probeer "Plan opnieuw" zodra dit is opgelost.`,
+      hint: optimizeResult.error.hint,
+    });
+  }
+
+  const unplaceableCount = optimizeResult.data.unplaceable_job_ids.filter((id) =>
+    params.jobIds.includes(id),
+  ).length;
 
   revalidatePath('/planning');
   return actionSuccess({ movedCount, skippedCount, unplaceableCount });
